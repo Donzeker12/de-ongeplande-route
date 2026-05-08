@@ -1,6 +1,7 @@
 import Dropdown from '@/Components/Dropdown';
 import { Link, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 
 
 export default function AdminLayout({ header, children }) {
@@ -8,6 +9,30 @@ export default function AdminLayout({ header, children }) {
     const { flash } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [flashVisible, setFlashVisible] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState(null);
+    const [uploadError, setUploadError] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const uploadFile = async (file) => {
+        setUploading(true);
+        setUploadError(null);
+        setUploadSuccess(null);
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            await axios.post('/admin/media', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            setUploadSuccess('Opgeslagen!');
+            setTimeout(() => setUploadSuccess(null), 3000);
+        } catch {
+            setUploadError('Upload mislukt');
+            setTimeout(() => setUploadError(null), 3000);
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     useEffect(() => {
         if (flash?.success || flash?.error) {
@@ -27,6 +52,7 @@ export default function AdminLayout({ header, children }) {
         { name: 'Social',        href: '/admin/snippets',    icon: '📱', current: route().current('admin.snippets.*') },
         { name: 'Gebruikers',    href: '/admin/users',       icon: '👥', current: route().current('admin.users.*') },
         { name: 'Instellingen',  href: '/admin/settings',    icon: '⚙️', current: route().current('admin.settings.*') },
+        { name: '🖼️ Media',     href: '/admin/media',       icon: '', current: route().current('admin.media.*'), media: true },
         { name: 'Website',       href: '/',                  icon: '🌐', current: false, external: true },
     ];
 
@@ -65,18 +91,49 @@ export default function AdminLayout({ header, children }) {
                                 target={item.external ? '_blank' : undefined}
                                 className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all ${
                                     item.current
-                                        ? 'bg-emerald-500/10 text-emerald-400'
-                                        : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
+                                        ? item.media ? 'bg-sky-500/10 text-sky-400' : 'bg-emerald-500/10 text-emerald-400'
+                                        : item.media ? 'text-sky-400 hover:bg-sky-900/30 hover:text-sky-300' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
                                 }`}
                             >
                                 <span className="text-lg">{item.icon}</span>
                                 <span className="font-medium text-sm">{item.name}</span>
                                 {item.current && (
-                                    <div className="ml-auto w-1 h-1 bg-emerald-400 rounded-full"></div>
+                                    <div className={`ml-auto w-1 h-1 rounded-full ${item.media ? 'bg-sky-400' : 'bg-emerald-400'}`}></div>
                                 )}
                             </Link>
                         ))}
                     </nav>
+
+                    {/* Quick Upload */}
+                    <div className="border-t border-gray-800 px-3 pt-3 pb-2">
+                        <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2 px-1">Snel uploaden</p>
+                        <div
+                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                            onDragLeave={() => setIsDragging(false)}
+                            onDrop={(e) => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) uploadFile(f); }}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={`border-2 border-dashed rounded-lg p-3 text-center cursor-pointer transition-colors select-none ${
+                                isDragging ? 'border-emerald-500 bg-emerald-900/20' : 'border-gray-700 hover:border-gray-500 hover:bg-gray-800/50'
+                            }`}
+                        >
+                            {uploading ? (
+                                <p className="text-xs text-emerald-400 flex items-center justify-center gap-1.5">
+                                    <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                    Uploaden...
+                                </p>
+                            ) : uploadSuccess ? (
+                                <p className="text-xs text-emerald-400 font-medium">✓ {uploadSuccess}</p>
+                            ) : uploadError ? (
+                                <p className="text-xs text-red-400">{uploadError}</p>
+                            ) : (
+                                <>
+                                    <svg className="w-5 h-5 mx-auto mb-1 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    <p className="text-xs text-gray-500">Sleep of klik</p>
+                                </>
+                            )}
+                        </div>
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f); }} />
+                    </div>
 
                     {/* User Section */}
                     <div className="border-t border-gray-800 p-4">
