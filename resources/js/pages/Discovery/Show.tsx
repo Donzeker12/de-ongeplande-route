@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 import Navigation from '@/Components/Navigation';
 import type { Discovery, DierMetadata, Outing, Venue } from '@/types';
 
@@ -11,6 +12,16 @@ interface Props {
 }
 
 export default function DiscoveryShow({ discovery, outing, venue }: Props) {
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+
+    useEffect(() => {
+        const handleKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setLightboxOpen(false);
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, []);
+
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('nl-NL', {
             year: 'numeric',
@@ -80,10 +91,45 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                 {/* Discovery Image */}
                                 {discovery.image && (
                                     <div className="mb-8">
-                                        <img 
-                                            src={discovery.image} 
+                                        <div
+                                            className="relative cursor-zoom-in group"
+                                            onClick={() => setLightboxOpen(true)}
+                                        >
+                                            <img
+                                                src={discovery.image}
+                                                alt={discovery.title}
+                                                className="w-full h-56 sm:h-72 md:h-96 object-cover rounded-xl shadow-lg transition-transform duration-200 group-hover:scale-[1.01]"
+                                            />
+                                            {/* Tap-to-enlarge hint */}
+                                            <div className="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2.5 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-sm pointer-events-none">
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                </svg>
+                                                Vergroot
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Lightbox */}
+                                {lightboxOpen && discovery.image && (
+                                    <div
+                                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+                                        onClick={() => setLightboxOpen(false)}
+                                    >
+                                        <button
+                                            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition"
+                                            onClick={() => setLightboxOpen(false)}
+                                        >
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                        <img
+                                            src={discovery.image}
                                             alt={discovery.title}
-                                            className="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg"
+                                            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+                                            onClick={e => e.stopPropagation()}
                                         />
                                     </div>
                                 )}
