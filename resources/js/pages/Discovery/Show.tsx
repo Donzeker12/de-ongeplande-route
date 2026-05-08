@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import Navigation from '@/Components/Navigation';
-import type { Discovery, Outing, Venue } from '@/types';
+import type { Discovery, DierMetadata, Outing, Venue } from '@/types';
 
 interface Props {
     discovery: Discovery & {
@@ -94,6 +94,74 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                         {discovery.description}
                                     </p>
                                 </div>
+
+                                {/* Metadata: Dier */}
+                                {discovery.type === 'dier' && discovery.metadata && (() => {
+                                    const m = discovery.metadata as DierMetadata;
+                                    const bedreigingLabels: Record<string, string> = {
+                                        niet_bedreigd: 'Niet bedreigd',
+                                        bijna_bedreigd: 'Bijna bedreigd',
+                                        kwetsbaar: 'Kwetsbaar',
+                                        bedreigd: 'Bedreigd',
+                                        ernstig_bedreigd: 'Ernstig bedreigd',
+                                        uitgestorven_wild: 'Uitgestorven in het wild',
+                                    };
+                                    const facts = [
+                                        { label: 'Wetenschappelijke naam', value: m.wetenschappelijke_naam, italic: true },
+                                        { label: 'Voedsel', value: m.voedsel },
+                                        { label: 'Gewicht', value: m.gewicht },
+                                        { label: 'Lengte', value: m.lengte },
+                                        { label: 'Leefgebied', value: m.leefgebied },
+                                        { label: 'Bedreigingsstatus', value: m.bedreigingsstatus ? (bedreigingLabels[m.bedreigingsstatus] ?? m.bedreigingsstatus) : undefined },
+                                        { label: 'Nesttijd', value: m.nesttijd },
+                                        { label: 'Zorgtijd', value: m.zorgtijd },
+                                        { label: 'Geslachtsrijp', value: m.geslachtsrijp },
+                                        { label: 'Leeftijd (wild)', value: m.leeftijd_wild },
+                                        { label: 'Sociaal gedrag', value: m.sociaal_gedrag },
+                                    ].filter(f => f.value);
+
+                                    return (
+                                        <>
+                                            {facts.length > 0 && (
+                                                <div className="mt-8">
+                                                    <h2 className="text-xl font-serif text-warm-700 mb-4">Feiten</h2>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                        {facts.map(({ label, value, italic }) => (
+                                                            <div key={label} className="flex flex-col px-4 py-3 bg-warm-50 rounded-lg">
+                                                                <span className="text-xs text-warm-500 uppercase tracking-wide font-medium">{label}</span>
+                                                                <span className={`text-warm-700 font-medium mt-0.5 ${italic ? 'italic' : ''}`}>{value}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {m.weetje_tekst && (
+                                                <div className="mt-6 p-5 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl">
+                                                    <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1">💡 Weetje</p>
+                                                    <p className="text-warm-700 leading-relaxed">{m.weetje_tekst}</p>
+                                                </div>
+                                            )}
+                                        </>
+                                    );
+                                })()}
+
+                                {/* Metadata: Plek */}
+                                {discovery.type === 'plek' && discovery.metadata?.weetje_tekst && (
+                                    <div className="mt-6 p-5 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl">
+                                        <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1">💡 Weetje</p>
+                                        <p className="text-warm-700 leading-relaxed">{discovery.metadata.weetje_tekst}</p>
+                                    </div>
+                                )}
+
+                                {/* Metadata: Weetje (source) */}
+                                {discovery.type === 'weetje' && discovery.metadata?.bron && (
+                                    <div className="mt-6 p-4 bg-warm-50 rounded-xl flex items-center gap-3">
+                                        <svg className="w-4 h-4 text-warm-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                        </svg>
+                                        <span className="text-sm text-warm-600">Bron: <span className="text-warm-700 font-medium">{discovery.metadata.bron}</span></span>
+                                    </div>
+                                )}
 
                                 {/* Related Outing Link */}
                                 {outing && (

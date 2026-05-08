@@ -35,6 +35,30 @@ export interface Outing {
     discoveries?: Discovery[];
 }
 
+export interface DierMetadata {
+    wetenschappelijke_naam?: string;
+    sociaal_gedrag?: string;
+    voedsel?: string;
+    gewicht?: string;
+    lengte?: string;
+    nesttijd?: string;
+    zorgtijd?: string;
+    geslachtsrijp?: string;
+    leeftijd_wild?: string;
+    leefgebied?: string;
+    bedreigingsstatus?: string;
+    weetje_tekst?: string;
+}
+
+export interface PlekMetadata {
+    extra_fotos?: string[];
+    weetje_tekst?: string;
+}
+
+export interface WeetjeMetadata {
+    bron?: string;
+}
+
 export interface Discovery {
     id: number;
     title: string;
@@ -45,6 +69,7 @@ export interface Discovery {
     outing_id?: number;
     outing_title?: string;
     outing?: Outing;
+    metadata?: DierMetadata & PlekMetadata & WeetjeMetadata;
 }
 
 export interface HeroSettings {
