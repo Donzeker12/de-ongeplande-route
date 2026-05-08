@@ -57,8 +57,12 @@ class VenueController extends Controller
             'opening_hours' => 'nullable|array',
             'prices' => 'nullable|array',
             'highlights' => 'nullable|string|max:2000',
-            'accessibility_transport' => 'nullable|string|max:2000',
-            'accessibility_facilities' => 'nullable|string|max:2000',
+            'accessibility_transport' => 'nullable|array',
+            'accessibility_transport.*.type' => 'required|string',
+            'accessibility_transport.*.info' => 'required|string',
+            'accessibility_facilities' => 'nullable|array',
+            'accessibility_facilities.*.name' => 'required|string',
+            'accessibility_facilities.*.available' => 'required|in:ja,nee,onbekend',
         ]);
 
         if (empty($validated['slug'])) {
@@ -96,8 +100,12 @@ class VenueController extends Controller
             'opening_hours' => 'nullable|array',
             'prices' => 'nullable|array',
             'highlights' => 'nullable|string|max:2000',
-            'accessibility_transport' => 'nullable|string|max:2000',
-            'accessibility_facilities' => 'nullable|string|max:2000',
+            'accessibility_transport' => 'nullable|array',
+            'accessibility_transport.*.type' => 'required|string',
+            'accessibility_transport.*.info' => 'required|string',
+            'accessibility_facilities' => 'nullable|array',
+            'accessibility_facilities.*.name' => 'required|string',
+            'accessibility_facilities.*.available' => 'required|in:ja,nee,onbekend',
         ]);
 
         if (empty($validated['slug'])) {
