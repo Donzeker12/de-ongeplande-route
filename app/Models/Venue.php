@@ -29,6 +29,14 @@ class Venue extends Model
         'accessibility_facilities',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'opening_hours' => 'array',
+            'prices' => 'array',
+        ];
+    }
+
     /** @var array<string, string[]> */
     public static array $types = [
         'dierentuin' => ['label' => 'Dierentuin',  'emoji' => '🦁'],
