@@ -29,8 +29,8 @@ class VenueController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/Venues/Index', [
-            'venues'  => $venues,
-            'types'   => Venue::$types,
+            'venues' => $venues,
+            'types' => Venue::$types,
             'filters' => ['search' => $search, 'type' => $type],
         ]);
     }
@@ -45,15 +45,20 @@ class VenueController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:200',
-            'slug'           => 'nullable|string|max:200|unique:venues,slug',
-            'type'           => 'required|in:'.implode(',', array_keys(Venue::$types)),
-            'description'    => 'nullable|string|max:2000',
-            'city'           => 'nullable|string|max:100',
-            'country'        => 'nullable|string|max:100',
-            'address'        => 'nullable|string|max:300',
-            'website'        => 'nullable|url|max:300',
+            'name' => 'required|string|max:200',
+            'slug' => 'nullable|string|max:200|unique:venues,slug',
+            'type' => 'required|in:'.implode(',', array_keys(Venue::$types)),
+            'description' => 'nullable|string|max:5000',
+            'city' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:300',
+            'website' => 'nullable|url|max:300',
             'featured_image' => 'nullable|url|max:500',
+            'opening_hours' => 'nullable|string|max:2000',
+            'prices' => 'nullable|string|max:2000',
+            'highlights' => 'nullable|string|max:2000',
+            'accessibility_transport' => 'nullable|string|max:2000',
+            'accessibility_facilities' => 'nullable|string|max:2000',
         ]);
 
         if (empty($validated['slug'])) {
@@ -79,15 +84,20 @@ class VenueController extends Controller
     public function update(Request $request, Venue $venue): RedirectResponse
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:200',
-            'slug'           => "nullable|string|max:200|unique:venues,slug,{$venue->id}",
-            'type'           => 'required|in:'.implode(',', array_keys(Venue::$types)),
-            'description'    => 'nullable|string|max:2000',
-            'city'           => 'nullable|string|max:100',
-            'country'        => 'nullable|string|max:100',
-            'address'        => 'nullable|string|max:300',
-            'website'        => 'nullable|url|max:300',
+            'name' => 'required|string|max:200',
+            'slug' => "nullable|string|max:200|unique:venues,slug,{$venue->id}",
+            'type' => 'required|in:'.implode(',', array_keys(Venue::$types)),
+            'description' => 'nullable|string|max:5000',
+            'city' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:300',
+            'website' => 'nullable|url|max:300',
             'featured_image' => 'nullable|url|max:500',
+            'opening_hours' => 'nullable|string|max:2000',
+            'prices' => 'nullable|string|max:2000',
+            'highlights' => 'nullable|string|max:2000',
+            'accessibility_transport' => 'nullable|string|max:2000',
+            'accessibility_facilities' => 'nullable|string|max:2000',
         ]);
 
         if (empty($validated['slug'])) {

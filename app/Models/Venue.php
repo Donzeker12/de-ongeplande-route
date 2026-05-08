@@ -22,19 +22,24 @@ class Venue extends Model
         'address',
         'website',
         'featured_image',
+        'opening_hours',
+        'prices',
+        'highlights',
+        'accessibility_transport',
+        'accessibility_facilities',
     ];
 
     /** @var array<string, string[]> */
     public static array $types = [
-        'dierentuin'  => ['label' => 'Dierentuin',  'emoji' => '🦁'],
-        'pretpark'    => ['label' => 'Pretpark',    'emoji' => '🎡'],
-        'winkel'      => ['label' => 'Winkel',      'emoji' => '🛍️'],
-        'museum'      => ['label' => 'Museum',      'emoji' => '🏛️'],
-        'speeltuin'   => ['label' => 'Speeltuin',   'emoji' => '🎓'],
-        'restaurant'  => ['label' => 'Restaurant',  'emoji' => '🍽️'],
-        'attractie'   => ['label' => 'Attractie',   'emoji' => '🎟️'],
-        'natuur'      => ['label' => 'Natuur',      'emoji' => '🌲'],
-        'overig'      => ['label' => 'Overig',      'emoji' => '📍'],
+        'dierentuin' => ['label' => 'Dierentuin',  'emoji' => '🦁'],
+        'pretpark' => ['label' => 'Pretpark',    'emoji' => '🎡'],
+        'winkel' => ['label' => 'Winkel',      'emoji' => '🛍️'],
+        'museum' => ['label' => 'Museum',      'emoji' => '🏛️'],
+        'speeltuin' => ['label' => 'Speeltuin',   'emoji' => '🎓'],
+        'restaurant' => ['label' => 'Restaurant',  'emoji' => '🍽️'],
+        'attractie' => ['label' => 'Attractie',   'emoji' => '🎟️'],
+        'natuur' => ['label' => 'Natuur',      'emoji' => '🌲'],
+        'overig' => ['label' => 'Overig',      'emoji' => '📍'],
     ];
 
     protected static function boot(): void
