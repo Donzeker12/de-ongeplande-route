@@ -24,6 +24,11 @@ function formatBytes(bytes: number | null): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function totalSize(items: MediaItem[]): string {
+    const total = items.reduce((sum, i) => sum + (i.size ?? 0), 0);
+    return formatBytes(total);
+}
+
 export default function MediaIndex({ media }: MediaIndexProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
@@ -54,10 +59,8 @@ export default function MediaIndex({ media }: MediaIndexProps) {
     const uploadFile = async (file: File) => {
         setUploading(true);
         setUploadError(null);
-
         const formData = new FormData();
         formData.append('image', file);
-
         try {
             await axios.post('/admin/media', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -109,16 +112,30 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         }
     };
 
+    const lightboxIdx = lightbox ? media.findIndex((m) => m.id === lightbox.id) : -1;
+
     return (
         <>
         <AdminLayout
             header={
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-white">🖼️ Media Bibliotheek</h2>
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-lg font-semibold text-white">Media Bibliotheek</h2>
+                        {media.length > 0 && (
+                            <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-full text-xs text-gray-400">
+                                    {media.length} bestand{media.length !== 1 ? 'en' : ''}
+                                </span>
+                                <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-full text-xs text-gray-400">
+                                    {totalSize(media)}
+                                </span>
+                            </div>
+                        )}
+                    </div>
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition"
+                        className="flex items-center gap-2 px-4 py-2 bg-white text-gray-900 text-sm font-semibold rounded-lg hover:bg-gray-100 disabled:opacity-50 transition shadow-sm"
                     >
                         {uploading ? (
                             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -130,7 +147,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                             </svg>
                         )}
-                        {uploading ? 'Uploaden...' : 'Foto uploaden'}
+                        {uploading ? 'Uploaden...' : 'Upload'}
                     </button>
                 </div>
             }
@@ -146,157 +163,221 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                 onChange={handleFileChange}
             />
 
-            <div className="p-6 lg:p-8">
-                {/* Drop zone */}
-                <div
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`mb-6 border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${isDragging ? 'border-emerald-500 bg-emerald-500/10' : 'border-gray-700 hover:border-gray-500'}`}
-                >
-                    <svg className="w-10 h-10 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="text-gray-400 text-sm">Sleep foto's hierheen of <span className="text-emerald-400">klik om te uploaden</span></p>
-                    <p className="text-gray-600 text-xs mt-1">JPG, PNG, WebP — max 10 MB per bestand</p>
-                </div>
-
-                {uploadError && (
-                    <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-300 text-sm">
-                        {uploadError}
+            <div
+                className="flex h-full"
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
+                onDrop={handleDrop}
+            >
+                {/* Drag overlay */}
+                {isDragging && (
+                    <div className="fixed inset-0 z-40 bg-emerald-500/10 border-2 border-emerald-500 border-dashed pointer-events-none flex items-center justify-center">
+                        <div className="bg-[#0f1117] border border-emerald-500/50 rounded-2xl px-10 py-8 text-center shadow-2xl">
+                            <svg className="w-12 h-12 mx-auto mb-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            <p className="text-emerald-400 font-semibold text-lg">Loslaten om te uploaden</p>
+                        </div>
                     </div>
                 )}
 
-                <div className="flex gap-6">
-                    {/* Grid */}
-                    <div className="flex-1">
-                        {media.length === 0 ? (
-                            <div className="text-center py-16 text-gray-600">
-                                <p className="text-lg">Nog geen foto's geüpload</p>
-                                <p className="text-sm mt-1">Upload je eerste foto hierboven</p>
-                            </div>
-                        ) : (
-                            <>
-                                <p className="text-gray-500 text-sm mb-4">{media.length} bestand{media.length !== 1 ? 'en' : ''}</p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                                    {media.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            onClick={() => setSelected(item)}
-                                            className={`group relative aspect-square rounded-lg overflow-hidden border cursor-pointer transition ${selected?.id === item.id ? 'border-emerald-500 ring-2 ring-emerald-500/50' : 'border-gray-700 hover:border-gray-500'}`}
-                                        >
-                                            <img
-                                                src={item.url}
-                                                alt={item.alt || item.filename}
-                                                className="w-full h-full object-cover"
-                                            />
-                                            {/* Hover overlay */}
-                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setLightbox(item); }}
-                                                    className="px-2 py-1 bg-white/20 hover:bg-white/30 text-white text-xs rounded transition"
-                                                >
-                                                    🔍 Vergroot
-                                                </button>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); copyUrl(item); }}
-                                                    className="px-2 py-1 bg-white/20 hover:bg-white/30 text-white text-xs rounded transition"
-                                                >
-                                                    {copiedId === item.id ? '✓ Gekopieerd' : 'Kopieer URL'}
-                                                </button>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); deleteMedia(item); }}
-                                                    disabled={deletingId === item.id}
-                                                    className="px-2 py-1 bg-red-500/60 hover:bg-red-500/80 text-white text-xs rounded transition disabled:opacity-50"
-                                                >
-                                                    {deletingId === item.id ? 'Verwijderen...' : 'Verwijder'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                {/* Main content */}
+                <div className="flex-1 p-6 lg:p-8 min-w-0">
+                    {uploadError && (
+                        <div className="mb-5 flex items-center gap-3 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {uploadError}
+                        </div>
+                    )}
 
-                    {/* Detail panel */}
-                    {selected && (
-                        <div className="w-64 flex-shrink-0 bg-[#16181f] border border-gray-800 rounded-xl p-4 space-y-4 self-start sticky top-6">
+                    {media.length === 0 ? (
+                        /* Empty state */
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex flex-col items-center justify-center border-2 border-dashed border-gray-800 rounded-2xl p-16 cursor-pointer hover:border-gray-600 transition group"
+                        >
+                            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4 group-hover:bg-white/10 transition">
+                                <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <p className="text-gray-300 font-medium mb-1">Sleep foto's hierheen</p>
+                            <p className="text-gray-600 text-sm">of <span className="text-emerald-400">klik om te uploaden</span> · JPG, PNG, WebP · max 10 MB</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                            {/* Upload tile */}
                             <div
-                                className="aspect-video rounded-lg overflow-hidden border border-gray-700 cursor-zoom-in group relative"
-                                onClick={() => setLightbox(selected)}
+                                onClick={() => fileInputRef.current?.click()}
+                                className="aspect-square rounded-xl border-2 border-dashed border-gray-800 hover:border-gray-600 cursor-pointer transition flex flex-col items-center justify-center gap-2 group"
                             >
-                                <img src={selected.url} alt={selected.alt || selected.filename} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                    <span className="text-white text-xs bg-black/60 px-2 py-1 rounded">🔍 Vergroot</span>
+                                <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-white/10 transition flex items-center justify-center">
+                                    <svg className="w-4 h-4 text-gray-500 group-hover:text-gray-300 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                                <span className="text-gray-600 group-hover:text-gray-400 text-xs transition">Toevoegen</span>
+                            </div>
+
+                            {media.map((item) => (
+                                <div
+                                    key={item.id}
+                                    onClick={() => setSelected(selected?.id === item.id ? null : item)}
+                                    className={`group relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${
+                                        selected?.id === item.id
+                                            ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-[#0f1117] scale-[0.97]'
+                                            : 'hover:scale-[0.97] hover:ring-2 hover:ring-white/20 hover:ring-offset-2 hover:ring-offset-[#0f1117]'
+                                    }`}
+                                >
+                                    <img
+                                        src={item.url}
+                                        alt={item.alt || item.filename}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    {/* Hover actions */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 gap-1">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setLightbox(item); }}
+                                            className="w-full py-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs rounded-lg transition font-medium"
+                                        >
+                                            Vergroot
+                                        </button>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); copyUrl(item); }}
+                                                className="flex-1 py-1 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs rounded-lg transition"
+                                            >
+                                                {copiedId === item.id ? '✓' : 'Kopieer'}
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); deleteMedia(item); }}
+                                                disabled={deletingId === item.id}
+                                                className="flex-1 py-1 bg-red-500/40 hover:bg-red-500/60 backdrop-blur-sm text-white text-xs rounded-lg transition disabled:opacity-50"
+                                            >
+                                                {deletingId === item.id ? '...' : 'Wis'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Detail panel */}
+                {selected && (
+                    <div className="w-72 flex-shrink-0 border-l border-gray-800/60 bg-[#0d0f14] flex flex-col">
+                        {/* Preview */}
+                        <div
+                            className="relative cursor-zoom-in group overflow-hidden bg-black/40"
+                            style={{ aspectRatio: '4/3' }}
+                            onClick={() => setLightbox(selected)}
+                        >
+                            <img
+                                src={selected.url}
+                                alt={selected.alt || selected.filename}
+                                className="w-full h-full object-contain"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                    </svg>
                                 </div>
                             </div>
-                            <div className="space-y-2 text-sm">
-                                <p className="text-white font-medium break-all">{selected.filename}</p>
-                                {selected.size && <p className="text-gray-500">{formatBytes(selected.size)}</p>}
-                                {selected.mime_type && <p className="text-gray-500">{selected.mime_type}</p>}
-                                <p className="text-gray-600 text-xs">{new Date(selected.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            {/* Close button */}
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setSelected(null); }}
+                                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white/70 hover:text-white flex items-center justify-center text-sm transition"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 p-5 space-y-5">
+                            <div>
+                                <p className="text-white font-medium text-sm break-all leading-snug">{selected.filename}</p>
+                                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                    {selected.size && (
+                                        <span className="text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">{formatBytes(selected.size)}</span>
+                                    )}
+                                    {selected.mime_type && (
+                                        <span className="text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">{selected.mime_type.replace('image/', '')}</span>
+                                    )}
+                                </div>
+                                <p className="text-gray-600 text-xs mt-2">{new Date(selected.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                             </div>
+
+                            {/* URL */}
                             <div className="space-y-2">
-                                <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">URL</p>
-                                <div className="flex gap-1">
+                                <p className="text-xs text-gray-600 font-medium uppercase tracking-wider">Afbeelding URL</p>
+                                <div className="flex gap-1.5">
                                     <input
                                         readOnly
                                         value={selected.url}
-                                        className="flex-1 bg-[#0d0f14] border border-gray-700 rounded px-2 py-1.5 text-xs text-gray-300 truncate"
+                                        className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-gray-300 truncate focus:outline-none"
                                     />
                                     <button
                                         onClick={() => copyUrl(selected)}
-                                        className="px-2 py-1.5 bg-gray-700 hover:bg-gray-600 text-xs text-white rounded transition whitespace-nowrap"
+                                        className={`px-3 py-2 rounded-lg text-xs font-medium transition whitespace-nowrap ${copiedId === selected.id ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/8 hover:bg-white/12 text-gray-300 border border-white/10'}`}
                                     >
-                                        {copiedId === selected.id ? '✓' : 'Kopieer'}
+                                        {copiedId === selected.id ? '✓ Klaar' : 'Kopieer'}
                                     </button>
                                 </div>
                             </div>
+
                             <button
                                 onClick={() => deleteMedia(selected)}
                                 disabled={deletingId === selected.id}
-                                className="w-full py-2 bg-red-900/40 hover:bg-red-900/60 text-red-400 text-sm rounded-lg border border-red-900/40 transition disabled:opacity-50"
+                                className="w-full py-2.5 rounded-xl text-sm font-medium text-red-400 border border-red-500/20 hover:bg-red-500/10 transition disabled:opacity-50"
                             >
                                 {deletingId === selected.id ? 'Verwijderen...' : 'Verwijder bestand'}
                             </button>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </AdminLayout>
 
         {/* Lightbox */}
-
         {lightbox && (
             <div
-                className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+                className="fixed inset-0 z-50 flex items-center justify-center p-6"
+                style={{ backgroundColor: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)' }}
                 onClick={() => setLightbox(null)}
             >
-                {/* Close */}
-                <button
-                    className="absolute top-4 right-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl transition"
-                    onClick={() => setLightbox(null)}
-                >
-                    ✕
-                </button>
+                {/* Top bar */}
+                <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/60 to-transparent">
+                    <div>
+                        <p className="text-white/80 text-sm font-medium">{lightbox.filename}</p>
+                        <p className="text-white/40 text-xs mt-0.5">{lightboxIdx + 1} / {media.length}</p>
+                    </div>
+                    <button
+                        className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition text-base"
+                        onClick={() => setLightbox(null)}
+                    >
+                        ✕
+                    </button>
+                </div>
 
                 {/* Prev */}
-                {media.findIndex((m) => m.id === lightbox.id) > 0 && (
+                {lightboxIdx > 0 && (
                     <button
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl transition"
-                        onClick={(e) => { e.stopPropagation(); const idx = media.findIndex((m) => m.id === lightbox.id); setLightbox(media[idx - 1]); }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-2xl transition"
+                        onClick={(e) => { e.stopPropagation(); setLightbox(media[lightboxIdx - 1]); }}
                     >
                         ‹
                     </button>
                 )}
 
                 {/* Next */}
-                {media.findIndex((m) => m.id === lightbox.id) < media.length - 1 && (
+                {lightboxIdx < media.length - 1 && (
                     <button
-                        className="absolute right-14 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl transition"
-                        onClick={(e) => { e.stopPropagation(); const idx = media.findIndex((m) => m.id === lightbox.id); setLightbox(media[idx + 1]); }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-2xl transition"
+                        onClick={(e) => { e.stopPropagation(); setLightbox(media[lightboxIdx + 1]); }}
                     >
                         ›
                     </button>
@@ -306,15 +387,15 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                 <img
                     src={lightbox.url}
                     alt={lightbox.alt || lightbox.filename}
-                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                    className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+                    style={{ maxHeight: 'calc(100vh - 120px)' }}
                     onClick={(e) => e.stopPropagation()}
                 />
 
-                {/* Caption */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
-                    <p className="text-white/70 text-sm">{lightbox.filename}</p>
-                    <p className="text-white/40 text-xs mt-0.5">{media.findIndex((m) => m.id === lightbox.id) + 1} / {media.length} — ESC of klik buiten om te sluiten</p>
-                </div>
+                {/* Bottom hint */}
+                <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/25 text-xs">
+                    ← → navigeren · ESC sluiten
+                </p>
             </div>
         )}
         </>
