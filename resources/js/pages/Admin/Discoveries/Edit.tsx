@@ -1,4 +1,4 @@
-import AdminLayout from '@/Layouts/AdminLayout';
+﻿import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
 import type { Discovery } from '@/types';
@@ -8,22 +8,30 @@ interface Outing {
     title: string;
 }
 
+interface Venue {
+    id: number;
+    name: string;
+}
+
 interface DiscoveryEditProps {
     discovery: Discovery;
     outings: Outing[];
+    venues: Venue[];
 }
 
 interface DiscoveryFormData {
     outing_id: number | '';
+    venue_id: number | '';
     title: string;
     type: 'dier' | 'plek' | 'weetje' | '';
     description: string;
     image: string;
 }
 
-export default function DiscoveryEdit({ discovery, outings }: DiscoveryEditProps) {
+export default function DiscoveryEdit({ discovery, outings, venues }: DiscoveryEditProps) {
     const { data, setData, patch, processing, errors } = useForm<DiscoveryFormData>({
         outing_id: discovery.outing_id ?? '',
+        venue_id: (discovery as unknown as { venue_id?: number }).venue_id ?? '',
         title: discovery.title || '',
         type: discovery.type || '',
         description: discovery.description || '',
@@ -34,6 +42,8 @@ export default function DiscoveryEdit({ discovery, outings }: DiscoveryEditProps
         e.preventDefault();
         patch(`/admin/discoveries/${discovery.id}`);
     };
+
+    const selectClass = 'w-full bg-[#0d0f14] border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition';
 
     return (
         <AdminLayout
@@ -57,20 +67,37 @@ export default function DiscoveryEdit({ discovery, outings }: DiscoveryEditProps
                 <div className="mx-auto max-w-2xl">
                     <form onSubmit={handleSubmit} className="space-y-6">
 
-                        {/* Uitje koppeling */}
-                        <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6">
-                            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Koppel aan Uitje</h3>
+                        {/* Koppeling */}
+                        <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-4">
+                            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Koppel aan</h3>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                                    Uitje <span className="text-red-400">*</span>
+                                    Locatie (dierenpark, park, museumâ€¦)
+                                </label>
+                                <select
+                                    value={data.venue_id}
+                                    onChange={(e) => setData('venue_id', Number(e.target.value) || '')}
+                                    className={selectClass}
+                                >
+                                    <option value="">Geen locatie</option>
+                                    {venues.map((v) => (
+                                        <option key={v.id} value={v.id}>{v.name}</option>
+                                    ))}
+                                </select>
+                                {errors.venue_id && <p className="text-red-400 text-sm mt-1">{errors.venue_id}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Uitje <span className="text-gray-600 font-normal">(optioneel)</span>
                                 </label>
                                 <select
                                     value={data.outing_id}
                                     onChange={(e) => setData('outing_id', Number(e.target.value) || '')}
-                                    className="w-full bg-[#0d0f14] border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition"
+                                    className={selectClass}
                                 >
-                                    <option value="">Selecteer een uitje...</option>
+                                    <option value="">Geen uitje</option>
                                     {outings.map((outing) => (
                                         <option key={outing.id} value={outing.id}>{outing.title}</option>
                                     ))}
@@ -113,7 +140,7 @@ export default function DiscoveryEdit({ discovery, outings }: DiscoveryEditProps
                                                     : 'bg-[#0d0f14] border-gray-700 text-gray-400 hover:border-gray-600'
                                             }`}
                                         >
-                                            {type === 'dier' ? '🐾' : type === 'plek' ? '📍' : '💡'} {type}
+                                            {type === 'dier' ? 'ðŸ¾' : type === 'plek' ? 'ðŸ“' : 'ðŸ’¡'} {type}
                                         </button>
                                     ))}
                                 </div>
@@ -176,3 +203,5 @@ export default function DiscoveryEdit({ discovery, outings }: DiscoveryEditProps
         </AdminLayout>
     );
 }
+
+

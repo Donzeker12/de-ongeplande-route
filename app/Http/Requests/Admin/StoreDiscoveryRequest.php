@@ -14,7 +14,8 @@ class StoreDiscoveryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'outing_id' => ['required', 'exists:outings,id'],
+            'outing_id' => ['nullable', 'exists:outings,id'],
+            'venue_id' => ['nullable', 'exists:venues,id'],
             'title' => ['required', 'string', 'max:255'],
             'type' => ['required', 'in:dier,plek,weetje'],
             'description' => ['required', 'string'],

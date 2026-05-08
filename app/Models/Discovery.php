@@ -19,6 +19,7 @@ class Discovery extends Model
      */
     protected $fillable = [
         'outing_id',
+        'venue_id',
         'title',
         'slug',
         'type',
@@ -46,5 +47,10 @@ class Discovery extends Model
     public function outing(): BelongsTo
     {
         return $this->belongsTo(Outing::class);
+    }
+
+    public function venue(): BelongsTo
+    {
+        return $this->belongsTo(Venue::class);
     }
 }

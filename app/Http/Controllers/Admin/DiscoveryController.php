@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreDiscoveryRequest;
 use App\Http\Requests\Admin\UpdateDiscoveryRequest;
 use App\Models\Discovery;
 use App\Models\Outing;
+use App\Models\Venue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -46,12 +47,12 @@ class DiscoveryController extends Controller
      */
     public function create(): Response
     {
-        $outings = Outing::query()
-            ->orderBy('title')
-            ->get(['id', 'title']);
+        $outings = Outing::query()->orderBy('title')->get(['id', 'title']);
+        $venues = Venue::query()->orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Admin/Discoveries/Create', [
             'outings' => $outings,
+            'venues' => $venues,
         ]);
     }
 
@@ -71,13 +72,13 @@ class DiscoveryController extends Controller
      */
     public function edit(Discovery $discovery): Response
     {
-        $outings = Outing::query()
-            ->orderBy('title')
-            ->get(['id', 'title']);
+        $outings = Outing::query()->orderBy('title')->get(['id', 'title']);
+        $venues = Venue::query()->orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Admin/Discoveries/Edit', [
-            'discovery' => $discovery->load('outing'),
+            'discovery' => $discovery->load('outing', 'venue'),
             'outings' => $outings,
+            'venues' => $venues,
         ]);
     }
 
