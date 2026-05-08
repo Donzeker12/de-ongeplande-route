@@ -71,6 +71,12 @@ export default function AdminLayout({ children, header }: AdminLayoutProps) {
                                     Categorieën
                                 </Link>
                                 <Link
+                                    href="/admin/media"
+                                    className="border-transparent text-sky-300 hover:text-sky-200 hover:border-sky-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                                >
+                                    🖼️ Media
+                                </Link>
+                                <Link
                                     href="/admin/users"
                                     className="border-transparent text-gray-300 hover:text-white hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                                 >

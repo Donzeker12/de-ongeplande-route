@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DiscoveryController;
 use App\Http\Controllers\Admin\ImageUploadController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OutingController;
 use App\Http\Controllers\Admin\QuickCaptureController;
 use App\Http\Controllers\Admin\SiteSettingController;
@@ -78,8 +79,12 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::resource('stories', StoryController::class);
     Route::post('stories/{story}/generate', [StoryController::class, 'generateStory'])->name('stories.generate');
 
-    // Image upload
+    // Image upload (legacy)
     Route::post('/upload-image', ImageUploadController::class)->name('upload-image');
+
+    // Media bibliotheek
+    Route::get('/media/list', [MediaController::class, 'list'])->name('media.list');
+    Route::resource('media', MediaController::class)->only(['index', 'store', 'destroy']);
 
     // Site instellingen
     Route::get('/settings', [SiteSettingController::class, 'index'])->name('settings.index');
