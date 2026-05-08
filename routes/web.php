@@ -3,6 +3,7 @@
 use App\Http\Controllers\DiscoveryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OutingController;
+use App\Http\Controllers\OutingIndexController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\VenueController;
@@ -12,6 +13,7 @@ use Inertia\Inertia;
 // Public routes
 Route::get('/', HomeController::class)->name('home');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/uitjes', OutingIndexController::class)->name('outings.index');
 Route::get('/uitjes/{outing:slug}', OutingController::class)->name('outings.show');
 Route::get('/ontdekkingen/{discovery:slug}', [DiscoveryController::class, 'show'])->name('discoveries.show');
 Route::get('/over-ons', fn () => Inertia::render('OverOns'))->name('over-ons');
