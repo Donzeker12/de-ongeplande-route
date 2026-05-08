@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Outing;
+use App\Models\Venue;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
@@ -15,7 +16,15 @@ class SitemapController extends Controller
             ->latest('published_at')
             ->get();
 
-        $content = view('sitemap', ['outings' => $outings])->render();
+        $venues = Venue::query()
+            ->select(['slug', 'updated_at'])
+            ->orderBy('name')
+            ->get();
+
+        $content = view('sitemap', [
+            'outings' => $outings,
+            'venues' => $venues,
+        ])->render();
 
         return response($content, 200, [
             'Content-Type' => 'application/xml',

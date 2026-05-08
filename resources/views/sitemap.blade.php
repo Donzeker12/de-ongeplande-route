@@ -27,6 +27,22 @@
         <priority>0.9</priority>
     </url>
 
+    <!-- Locaties -->
+    <url>
+        <loc>{{ url('/locaties') }}</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+        <lastmod>{{ now()->toAtomString() }}</lastmod>
+    </url>
+    @foreach ($venues as $venue)
+    <url>
+        <loc>{{ url('/locaties/' . $venue->slug) }}</loc>
+        <lastmod>{{ $venue->updated_at->toAtomString() }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    @endforeach
+
     <!-- Uitjes -->
     @foreach ($outings as $outing)
     <url>
