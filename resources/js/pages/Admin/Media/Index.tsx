@@ -1,7 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface MediaItem {
     id: number;
@@ -31,7 +31,25 @@ export default function MediaIndex({ media }: MediaIndexProps) {
     const [copiedId, setCopiedId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [selected, setSelected] = useState<MediaItem | null>(null);
+    const [lightbox, setLightbox] = useState<MediaItem | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+
+    useEffect(() => {
+        if (!lightbox) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setLightbox(null);
+            if (e.key === 'ArrowRight') {
+                const idx = media.findIndex((m) => m.id === lightbox.id);
+                if (idx < media.length - 1) setLightbox(media[idx + 1]);
+            }
+            if (e.key === 'ArrowLeft') {
+                const idx = media.findIndex((m) => m.id === lightbox.id);
+                if (idx > 0) setLightbox(media[idx - 1]);
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [lightbox, media]);
 
     const uploadFile = async (file: File) => {
         setUploading(true);
@@ -92,6 +110,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
     };
 
     return (
+        <>
         <AdminLayout
             header={
                 <div className="flex items-center justify-between">
@@ -175,6 +194,12 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                             {/* Hover overlay */}
                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2">
                                                 <button
+                                                    onClick={(e) => { e.stopPropagation(); setLightbox(item); }}
+                                                    className="px-2 py-1 bg-white/20 hover:bg-white/30 text-white text-xs rounded transition"
+                                                >
+                                                    🔍 Vergroot
+                                                </button>
+                                                <button
                                                     onClick={(e) => { e.stopPropagation(); copyUrl(item); }}
                                                     className="px-2 py-1 bg-white/20 hover:bg-white/30 text-white text-xs rounded transition"
                                                 >
@@ -198,8 +223,14 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                     {/* Detail panel */}
                     {selected && (
                         <div className="w-64 flex-shrink-0 bg-[#16181f] border border-gray-800 rounded-xl p-4 space-y-4 self-start sticky top-6">
-                            <div className="aspect-video rounded-lg overflow-hidden border border-gray-700">
+                            <div
+                                className="aspect-video rounded-lg overflow-hidden border border-gray-700 cursor-zoom-in group relative"
+                                onClick={() => setLightbox(selected)}
+                            >
                                 <img src={selected.url} alt={selected.alt || selected.filename} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                    <span className="text-white text-xs bg-black/60 px-2 py-1 rounded">🔍 Vergroot</span>
+                                </div>
                             </div>
                             <div className="space-y-2 text-sm">
                                 <p className="text-white font-medium break-all">{selected.filename}</p>
@@ -235,5 +266,57 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                 </div>
             </div>
         </AdminLayout>
+
+        {/* Lightbox */}
+
+        {lightbox && (
+            <div
+                className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+                onClick={() => setLightbox(null)}
+            >
+                {/* Close */}
+                <button
+                    className="absolute top-4 right-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl transition"
+                    onClick={() => setLightbox(null)}
+                >
+                    ✕
+                </button>
+
+                {/* Prev */}
+                {media.findIndex((m) => m.id === lightbox.id) > 0 && (
+                    <button
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl transition"
+                        onClick={(e) => { e.stopPropagation(); const idx = media.findIndex((m) => m.id === lightbox.id); setLightbox(media[idx - 1]); }}
+                    >
+                        ‹
+                    </button>
+                )}
+
+                {/* Next */}
+                {media.findIndex((m) => m.id === lightbox.id) < media.length - 1 && (
+                    <button
+                        className="absolute right-14 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl transition"
+                        onClick={(e) => { e.stopPropagation(); const idx = media.findIndex((m) => m.id === lightbox.id); setLightbox(media[idx + 1]); }}
+                    >
+                        ›
+                    </button>
+                )}
+
+                {/* Image */}
+                <img
+                    src={lightbox.url}
+                    alt={lightbox.alt || lightbox.filename}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                />
+
+                {/* Caption */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
+                    <p className="text-white/70 text-sm">{lightbox.filename}</p>
+                    <p className="text-white/40 text-xs mt-0.5">{media.findIndex((m) => m.id === lightbox.id) + 1} / {media.length} — ESC of klik buiten om te sluiten</p>
+                </div>
+            </div>
+        )}
+        </>
     );
 }
