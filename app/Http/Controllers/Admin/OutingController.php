@@ -62,7 +62,7 @@ class OutingController extends Controller
     {
         return Inertia::render('Admin/Outings/Create', [
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'emoji']),
-            'venues'     => Venue::orderBy('name')->get(['id', 'name', 'type', 'city']),
+            'venues' => Venue::orderBy('name')->get(['id', 'name', 'type', 'city']),
         ]);
     }
 
@@ -92,6 +92,29 @@ class OutingController extends Controller
             'price_details.discount_codes.*.expires_at' => 'nullable|date',
             'price_details.notes' => 'nullable|string|max:255',
             'mood' => 'nullable|string',
+            'featured_image' => 'nullable|url',
+            'images' => 'nullable|array',
+            'images.*' => 'url',
+            'is_recommended' => 'boolean',
+            'is_free' => 'boolean',
+            'category' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'venue_id' => 'nullable|exists:venues,id',
+            'visit_date' => 'nullable|date',
+            'published_at' => 'nullable|date',
+            'share_facebook' => 'boolean',
+            'share_instagram' => 'boolean',
+        ]);
+
+        $shareFacebook = (bool) ($validated['share_facebook'] ?? false);
+        $shareInstagram = (bool) ($validated['share_instagram'] ?? false);
+        unset($validated['share_facebook'], $validated['share_instagram']);
+
+        if (empty($validated['slug'])) {
+            $validated['slug'] = Str::slug($validated['title']);
+        }
+
+        $originalSlug = $validated['slug'];
         $count = 1;
         while (Outing::where('slug', $validated['slug'])->exists()) {
             $validated['slug'] = $originalSlug.'-'.$count++;
@@ -135,9 +158,9 @@ class OutingController extends Controller
         $outing->load(['discoveries']);
 
         return Inertia::render('Admin/Outings/Edit', [
-            'outing'     => $outing,
+            'outing' => $outing,
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'emoji']),
-            'venues'     => Venue::orderBy('name')->get(['id', 'name', 'type', 'city']),
+            'venues' => Venue::orderBy('name')->get(['id', 'name', 'type', 'city']),
         ]);
     }
 
