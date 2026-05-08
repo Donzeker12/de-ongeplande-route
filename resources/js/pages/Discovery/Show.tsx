@@ -4,10 +4,10 @@ import type { Discovery, Outing, Venue } from '@/types';
 
 interface Props {
     discovery: Discovery & {
-        outing: Outing;
+        outing: Outing | null;
     };
-    outing: Outing;
-    venue: Venue;
+    outing: Outing | null;
+    venue: Venue | null;
 }
 
 export default function DiscoveryShow({ discovery, outing, venue }: Props) {
@@ -38,12 +38,16 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                             <Link href="/" className="hover:text-warm-700 transition-colors">
                                 Home
                             </Link>
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                            </svg>
-                            <Link href={`/uitjes/${outing.slug}`} className="hover:text-warm-700 transition-colors">
-                                {outing.title}
-                            </Link>
+                            {outing && (
+                                <>
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <Link href={`/uitjes/${outing.slug}`} className="hover:text-warm-700 transition-colors">
+                                    {outing.title}
+                                </Link>
+                                </>
+                            )}
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                             </svg>
@@ -67,7 +71,9 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
-                                        Ontdekt tijdens: <Link href={`/uitjes/${outing.slug}`} className="text-warm-700 hover:underline ml-1">{outing.title}</Link>
+                                        {outing ? (
+                                            <>Ontdekt tijdens: <Link href={`/uitjes/${outing.slug}`} className="text-warm-700 hover:underline ml-1">{outing.title}</Link></>
+                                        ) : 'Standalone ontdekking'}
                                     </div>
                                 </div>
 
@@ -90,6 +96,7 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                 </div>
 
                                 {/* Related Outing Link */}
+                                {outing && (
                                 <div className="mt-8 p-6 bg-warm-50 rounded-xl">
                                     <h3 className="font-serif text-xl text-warm-700 mb-3">
                                         Meer over dit uitje
@@ -107,6 +114,7 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                         Lees het volledige verhaal
                                     </Link>
                                 </div>
+                                )}
                             </div>
                         </div>
 
@@ -184,6 +192,7 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                             )}
 
                             {/* Visit Information */}
+                            {outing && (
                             <div className="card p-6">
                                 <h3 className="font-serif text-xl text-warm-700 mb-4 flex items-center">
                                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,6 +239,7 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                     </div>
                                 </div>
                             </div>
+                            )}
 
                             {/* Tips Box */}
                             <div className="card p-6 bg-warm-50">
@@ -240,7 +250,7 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                     Tip
                                 </h3>
                                 <p className="text-warm-600 text-sm leading-relaxed">
-                                    Ga je ook naar {venue?.name || outing.location}? Lees ons volledige verhaal voor meer tips en ervaringen!
+                                    {outing ? `Ga je ook naar ${venue?.name || outing.location}? Lees ons volledige verhaal voor meer tips en ervaringen!` : 'Meer ontdekkingen vind je op de homepage!'}
                                 </p>
                             </div>
                         </div>
