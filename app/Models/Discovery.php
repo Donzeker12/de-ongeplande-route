@@ -25,7 +25,18 @@ class Discovery extends Model
         'type',
         'description',
         'image',
+        'metadata',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'metadata' => 'array',
+        ];
+    }
 
     /**
      * Boot the model.
