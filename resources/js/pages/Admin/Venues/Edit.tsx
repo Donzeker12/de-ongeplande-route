@@ -113,7 +113,17 @@ const initPrices = (raw: unknown): PriceCategories => {
     return { ...defaultPrices };
 };
 
+const STEPS = [
+    { id: 1, label: 'Basis' },
+    { id: 2, label: 'Beschrijving' },
+    { id: 3, label: 'Tijden' },
+    { id: 4, label: 'Prijzen' },
+    { id: 5, label: 'Extra' },
+    { id: 6, label: 'Locatie' },
+] as const;
+
 export default function VenuesEdit({ venue, types }: Props) {
+    const [step, setStep] = useState(1);
     const [accessibilityTab, setAccessibilityTab] = useState<'transport' | 'facilities'>('transport');
     const [priceTab, setPriceTab] = useState<PriceCategory>('entree');
 
@@ -187,159 +197,26 @@ export default function VenuesEdit({ venue, types }: Props) {
 
             <div className="p-6 lg:p-8">
                 <div className="mx-auto max-w-2xl">
-                    <form onSubmit={submit} className="space-y-6">
 
-                        {/* Naam + Type */}
-                        <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
-                            <div>
-                                <label className={labelClass}>Naam *</label>
-                                <input
-                                    type="text"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    className={inputClass}
-                                    required
-                                />
-                                {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Type *</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {Object.entries(types).map(([key, t]) => (
-                                        <button
-                                            key={key}
-                                            type="button"
-                                            onClick={() => setData('type', key)}
-                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ${
-                                                data.type === key
-                                                    ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                                                    : 'border-gray-700 bg-[#0f1117] text-gray-400 hover:border-gray-600'
-                                            }`}
-                                        >
-                                            <span>{t.emoji}</span>
-                                            <span>{t.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                                {errors.type && <p className="mt-1 text-xs text-red-400">{errors.type}</p>}
-                            </div>
-                        </div>
-
-                        {/* Beschrijving */}
-                        <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6">
-                            <label className={labelClass}>Beschrijving</label>
-                            <textarea
-                                value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
-                                rows={5}
-                                className={textareaClass}
-                                placeholder="Beschrijf de locatie voor bezoekers..."
-                            />
-                        </div>
-
-                        {/* Openingstijden */}
-                        <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-800">
-                                <h3 className="text-sm font-semibold text-gray-300">Openingstijden</h3>
-                            </div>
-                            <div className="divide-y divide-gray-800/50">
-                                {DAYS.map((day) => {
-                                    const schedule = data.opening_hours[day];
-                                    return (
-                                        <div key={day} className="flex items-center gap-3 px-6 py-3">
-                                            <span className="w-24 text-sm font-medium text-gray-300 shrink-0">
-                                                {DAY_LABELS[day]}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={() => updateDay(day, 'open', !schedule.open)}
-                                                className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition ${
-                                                    schedule.open
-                                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                                        : 'bg-gray-800 text-gray-500 border border-gray-700'
-                                                }`}
-                                            >
-                                                {schedule.open ? 'Open' : 'Gesloten'}
-                                            </button>
-                                            {schedule.open ? (
-                                                <div className="flex items-center gap-2 ml-auto">
-                                                    <input
-                                                        type="time"
-                                                        value={schedule.from}
-                                                        onChange={(e) => updateDay(day, 'from', e.target.value)}
-                                                        className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-1.5 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition"
-                                                    />
-                                                    <span className="text-gray-600 text-sm shrink-0">tot</span>
-                                                    <input
-                                                        type="time"
-                                                        value={schedule.to}
-                                                        onChange={(e) => updateDay(day, 'to', e.target.value)}
-                                                        className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-1.5 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <span className="ml-auto text-sm text-gray-700">—</span>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Prijzen */}
-                        <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
-                            <div className="flex border-b border-gray-800 overflow-x-auto">
-                                {PRICE_TABS.map((tab) => (
-                                    <button
-                                        key={tab.key}
-                                        type="button"
-                                        onClick={() => setPriceTab(tab.key)}
-                                        className={`shrink-0 flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition ${
-                                            priceTab === tab.key
-                                                ? 'text-emerald-400 border-b-2 border-emerald-500 bg-emerald-500/5'
-                                                : 'text-gray-400 hover:text-gray-200'
+                    {/* Step indicator */}
+                    <div className="flex items-start mb-8">
+                        {STEPS.map((s, i) => (
+                            <div key={s.id} className="flex items-center flex-1 last:flex-none">
+                                <button
+                                    type="button"
+                                    onClick={() => setStep(s.id)}
+                                    className="flex flex-col items-center gap-1.5 group"
+                                >
+                                    <span
+                                        className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition ${
+                                            step === s.id
+                                                ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                                                : step > s.id
+                                                  ? 'border-emerald-700 bg-emerald-700/20 text-emerald-500'
+                                                  : 'border-gray-700 bg-transparent text-gray-600'
                                         }`}
                                     >
-                                        <span>{tab.emoji}</span>
-                                        <span>{tab.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                            <div className="p-6 space-y-3">
-                                {data.prices[priceTab].length > 0 && (
-                                    <div className="grid grid-cols-[1fr_130px_32px] gap-2 mb-1">
-                                        <span className="text-xs text-gray-500 font-medium">Omschrijving</span>
-                                        <span className="text-xs text-gray-500 font-medium">Prijs</span>
-                                        <span />
-                                    </div>
-                                )}
-                                {data.prices[priceTab].map((entry, index) => (
-                                    <div key={index} className="grid grid-cols-[1fr_130px_32px] gap-2 items-center">
-                                        <input
-                                            type="text"
-                                            value={entry.label}
-                                            onChange={(e) => updatePrice(priceTab, index, 'label', e.target.value)}
-                                            className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition"
-                                            placeholder="bijv. Volwassenen"
-                                        />
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                                                €
-                                            </span>
-                                            <input
-                                                type="text"
-                                                value={entry.price}
-                                                onChange={(e) => updatePrice(priceTab, index, 'price', e.target.value)}
-                                                className="w-full bg-[#0f1117] border border-gray-700 rounded-lg pl-7 pr-3 py-2 text-gray-200 text-sm placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition"
-                                                placeholder="0,00"
-                                            />
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removePrice(priceTab, index)}
-                                            className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition"
-                                        >
+                                        {step > s.id ? (
                                             <svg
                                                 className="w-4 h-4"
                                                 fill="none"
@@ -349,167 +226,446 @@ export default function VenuesEdit({ venue, types }: Props) {
                                                 <path
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M6 18L18 6M6 6l12 12"
+                                                    strokeWidth={2.5}
+                                                    d="M5 13l4 4L19 7"
                                                 />
                                             </svg>
+                                        ) : (
+                                            s.id
+                                        )}
+                                    </span>
+                                    <span
+                                        className={`text-xs font-medium transition ${
+                                            step === s.id
+                                                ? 'text-emerald-400'
+                                                : step > s.id
+                                                  ? 'text-gray-500'
+                                                  : 'text-gray-700'
+                                        }`}
+                                    >
+                                        {s.label}
+                                    </span>
+                                </button>
+                                {i < STEPS.length - 1 && (
+                                    <div
+                                        className={`flex-1 h-px mx-2 mb-5 transition ${step > s.id ? 'bg-emerald-700/50' : 'bg-gray-800'}`}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <form onSubmit={submit} className="space-y-6">
+
+                        {/* Stap 1: Basis */}
+                        {step === 1 && (
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
+                                <div>
+                                    <label className={labelClass}>Naam *</label>
+                                    <input
+                                        type="text"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        className={inputClass}
+                                        required
+                                    />
+                                    {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">Type *</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {Object.entries(types).map(([key, t]) => (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() => setData('type', key)}
+                                                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                                                    data.type === key
+                                                        ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                                                        : 'border-gray-700 bg-[#0f1117] text-gray-400 hover:border-gray-600'
+                                                }`}
+                                            >
+                                                <span>{t.emoji}</span>
+                                                <span>{t.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {errors.type && <p className="mt-1 text-xs text-red-400">{errors.type}</p>}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Stap 2: Beschrijving */}
+                        {step === 2 && (
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6">
+                                <label className={labelClass}>Beschrijving</label>
+                                <textarea
+                                    value={data.description}
+                                    onChange={(e) => setData('description', e.target.value)}
+                                    rows={10}
+                                    className={textareaClass}
+                                    placeholder="Beschrijf de locatie voor bezoekers..."
+                                />
+                            </div>
+                        )}
+
+                        {/* Stap 3: Openingstijden */}
+                        {step === 3 && (
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-800">
+                                    <h3 className="text-sm font-semibold text-gray-300">Openingstijden</h3>
+                                </div>
+                                <div className="divide-y divide-gray-800/50">
+                                    {DAYS.map((day) => {
+                                        const schedule = data.opening_hours[day];
+                                        return (
+                                            <div key={day} className="flex items-center gap-3 px-6 py-3">
+                                                <span className="w-24 text-sm font-medium text-gray-300 shrink-0">
+                                                    {DAY_LABELS[day]}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => updateDay(day, 'open', !schedule.open)}
+                                                    className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition ${
+                                                        schedule.open
+                                                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                                            : 'bg-gray-800 text-gray-500 border border-gray-700'
+                                                    }`}
+                                                >
+                                                    {schedule.open ? 'Open' : 'Gesloten'}
+                                                </button>
+                                                {schedule.open ? (
+                                                    <div className="flex items-center gap-2 ml-auto">
+                                                        <input
+                                                            type="time"
+                                                            value={schedule.from}
+                                                            onChange={(e) => updateDay(day, 'from', e.target.value)}
+                                                            className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-1.5 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition"
+                                                        />
+                                                        <span className="text-gray-600 text-sm shrink-0">tot</span>
+                                                        <input
+                                                            type="time"
+                                                            value={schedule.to}
+                                                            onChange={(e) => updateDay(day, 'to', e.target.value)}
+                                                            className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-1.5 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <span className="ml-auto text-sm text-gray-700">—</span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Stap 4: Prijzen */}
+                        {step === 4 && (
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
+                                <div className="flex border-b border-gray-800 overflow-x-auto">
+                                    {PRICE_TABS.map((tab) => (
+                                        <button
+                                            key={tab.key}
+                                            type="button"
+                                            onClick={() => setPriceTab(tab.key)}
+                                            className={`shrink-0 flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition ${
+                                                priceTab === tab.key
+                                                    ? 'text-emerald-400 border-b-2 border-emerald-500 bg-emerald-500/5'
+                                                    : 'text-gray-400 hover:text-gray-200'
+                                            }`}
+                                        >
+                                            <span>{tab.emoji}</span>
+                                            <span>{tab.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="p-6 space-y-3">
+                                    {data.prices[priceTab].length > 0 && (
+                                        <div className="grid grid-cols-[1fr_130px_32px] gap-2 mb-1">
+                                            <span className="text-xs text-gray-500 font-medium">Omschrijving</span>
+                                            <span className="text-xs text-gray-500 font-medium">Prijs</span>
+                                            <span />
+                                        </div>
+                                    )}
+                                    {data.prices[priceTab].map((entry, index) => (
+                                        <div
+                                            key={index}
+                                            className="grid grid-cols-[1fr_130px_32px] gap-2 items-center"
+                                        >
+                                            <input
+                                                type="text"
+                                                value={entry.label}
+                                                onChange={(e) =>
+                                                    updatePrice(priceTab, index, 'label', e.target.value)
+                                                }
+                                                className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition"
+                                                placeholder="bijv. Volwassenen"
+                                            />
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                                                    €
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    value={entry.price}
+                                                    onChange={(e) =>
+                                                        updatePrice(priceTab, index, 'price', e.target.value)
+                                                    }
+                                                    className="w-full bg-[#0f1117] border border-gray-700 rounded-lg pl-7 pr-3 py-2 text-gray-200 text-sm placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition"
+                                                    placeholder="0,00"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removePrice(priceTab, index)}
+                                                className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition"
+                                            >
+                                                <svg
+                                                    className="w-4 h-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M6 18L18 6M6 6l12 12"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {data.prices[priceTab].length === 0 && (
+                                        <p className="text-sm text-gray-600 text-center py-3">
+                                            Nog geen prijzen toegevoegd voor dit tabblad
+                                        </p>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => addPrice(priceTab)}
+                                        className="mt-1 flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition"
+                                    >
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 4v16m8-8H4"
+                                            />
+                                        </svg>
+                                        Prijs toevoegen
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Stap 5: Extra */}
+                        {step === 5 && (
+                            <>
+                                <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6">
+                                    <label className={labelClass}>Wat maakt deze plek bijzonder?</label>
+                                    <textarea
+                                        value={data.highlights}
+                                        onChange={(e) => setData('highlights', e.target.value)}
+                                        rows={4}
+                                        className={textareaClass}
+                                        placeholder="Vertel wat deze locatie uniek maakt voor gezinnen of bezoekers..."
+                                    />
+                                </div>
+
+                                <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
+                                    <div className="flex border-b border-gray-800">
+                                        <button
+                                            type="button"
+                                            onClick={() => setAccessibilityTab('transport')}
+                                            className={`flex-1 px-4 py-3 text-sm font-medium transition ${
+                                                accessibilityTab === 'transport'
+                                                    ? 'text-emerald-400 border-b-2 border-emerald-500 bg-emerald-500/5'
+                                                    : 'text-gray-400 hover:text-gray-200'
+                                            }`}
+                                        >
+                                            🚌 Bereikbaarheid
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setAccessibilityTab('facilities')}
+                                            className={`flex-1 px-4 py-3 text-sm font-medium transition ${
+                                                accessibilityTab === 'facilities'
+                                                    ? 'text-emerald-400 border-b-2 border-emerald-500 bg-emerald-500/5'
+                                                    : 'text-gray-400 hover:text-gray-200'
+                                            }`}
+                                        >
+                                            ♿ Faciliteiten
                                         </button>
                                     </div>
-                                ))}
-                                {data.prices[priceTab].length === 0 && (
-                                    <p className="text-sm text-gray-600 text-center py-3">
-                                        Nog geen prijzen toegevoegd voor dit tabblad
-                                    </p>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => addPrice(priceTab)}
-                                    className="mt-1 flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M12 4v16m8-8H4"
+                                    <div className="p-6">
+                                        {accessibilityTab === 'transport' ? (
+                                            <textarea
+                                                value={data.accessibility_transport}
+                                                onChange={(e) =>
+                                                    setData('accessibility_transport', e.target.value)
+                                                }
+                                                rows={4}
+                                                className={textareaClass}
+                                                placeholder={
+                                                    'OV: Tram 9 richting Diemen, halte Artis\nParkeren: P+R IJburg, €5 per dag\nFiets: fietsstalling aanwezig bij de ingang'
+                                                }
+                                            />
+                                        ) : (
+                                            <textarea
+                                                value={data.accessibility_facilities}
+                                                onChange={(e) =>
+                                                    setData('accessibility_facilities', e.target.value)
+                                                }
+                                                rows={4}
+                                                className={textareaClass}
+                                                placeholder={
+                                                    'Rolstoeltoegankelijk: ja\nKinderwagen: ja\nLift aanwezig: nee\nVerschoontafel: ja\nHonden: niet toegestaan'
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Stap 6: Locatie */}
+                        {step === 6 && (
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className={labelClass}>Stad</label>
+                                        <input
+                                            type="text"
+                                            value={data.city}
+                                            onChange={(e) => setData('city', e.target.value)}
+                                            className={inputClass}
                                         />
-                                    </svg>
-                                    Prijs toevoegen
-                                </button>
-                            </div>
-                        </div>
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Land</label>
+                                        <input
+                                            type="text"
+                                            value={data.country}
+                                            onChange={(e) => setData('country', e.target.value)}
+                                            className={inputClass}
+                                        />
+                                    </div>
+                                </div>
 
-                        {/* Wat maakt deze plek bijzonder */}
-                        <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6">
-                            <label className={labelClass}>Wat maakt deze plek bijzonder?</label>
-                            <textarea
-                                value={data.highlights}
-                                onChange={(e) => setData('highlights', e.target.value)}
-                                rows={4}
-                                className={textareaClass}
-                                placeholder="Vertel wat deze locatie uniek maakt voor gezinnen of bezoekers..."
-                            />
-                        </div>
-
-                        {/* Toegankelijkheid (tabs) */}
-                        <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
-                            <div className="flex border-b border-gray-800">
-                                <button
-                                    type="button"
-                                    onClick={() => setAccessibilityTab('transport')}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium transition ${
-                                        accessibilityTab === 'transport'
-                                            ? 'text-emerald-400 border-b-2 border-emerald-500 bg-emerald-500/5'
-                                            : 'text-gray-400 hover:text-gray-200'
-                                    }`}
-                                >
-                                    🚌 Bereikbaarheid
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setAccessibilityTab('facilities')}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium transition ${
-                                        accessibilityTab === 'facilities'
-                                            ? 'text-emerald-400 border-b-2 border-emerald-500 bg-emerald-500/5'
-                                            : 'text-gray-400 hover:text-gray-200'
-                                    }`}
-                                >
-                                    ♿ Faciliteiten
-                                </button>
-                            </div>
-                            <div className="p-6">
-                                {accessibilityTab === 'transport' ? (
-                                    <textarea
-                                        value={data.accessibility_transport}
-                                        onChange={(e) => setData('accessibility_transport', e.target.value)}
-                                        rows={4}
-                                        className={textareaClass}
-                                        placeholder={'OV: Tram 9 richting Diemen, halte Artis\nParkeren: P+R IJburg, €5 per dag\nFiets: fietsstalling aanwezig bij de ingang'}
+                                <div>
+                                    <label className={labelClass}>Adres</label>
+                                    <input
+                                        type="text"
+                                        value={data.address}
+                                        onChange={(e) => setData('address', e.target.value)}
+                                        className={inputClass}
                                     />
+                                </div>
+
+                                <div>
+                                    <label className={labelClass}>Website</label>
+                                    <input
+                                        type="url"
+                                        value={data.website}
+                                        onChange={(e) => setData('website', e.target.value)}
+                                        className={inputClass}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className={labelClass}>Afbeelding URL</label>
+                                    <input
+                                        type="url"
+                                        value={data.featured_image}
+                                        onChange={(e) => setData('featured_image', e.target.value)}
+                                        className={inputClass}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Navigatie */}
+                        <div className="flex items-center justify-between pt-2">
+                            <div>
+                                {step > 1 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setStep(step - 1)}
+                                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-400 hover:text-gray-200 transition"
+                                    >
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M15 19l-7-7 7-7"
+                                            />
+                                        </svg>
+                                        Vorige
+                                    </button>
                                 ) : (
-                                    <textarea
-                                        value={data.accessibility_facilities}
-                                        onChange={(e) => setData('accessibility_facilities', e.target.value)}
-                                        rows={4}
-                                        className={textareaClass}
-                                        placeholder={'Rolstoeltoegankelijk: ja\nKinderwagen: ja\nLift aanwezig: nee\nVerschoontafel: ja\nHonden: niet toegestaan'}
-                                    />
+                                    <Link
+                                        href="/admin/venues"
+                                        className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-300 transition"
+                                    >
+                                        Annuleren
+                                    </Link>
                                 )}
                             </div>
-                        </div>
-
-                        {/* Locatiegegevens */}
-                        <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
-                            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-                                Locatiegegevens
-                            </h3>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className={labelClass}>Stad</label>
-                                    <input
-                                        type="text"
-                                        value={data.city}
-                                        onChange={(e) => setData('city', e.target.value)}
-                                        className={inputClass}
-                                    />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Land</label>
-                                    <input
-                                        type="text"
-                                        value={data.country}
-                                        onChange={(e) => setData('country', e.target.value)}
-                                        className={inputClass}
-                                    />
-                                </div>
+                            <div className="flex items-center gap-3">
+                                {step > 1 && (
+                                    <Link
+                                        href="/admin/venues"
+                                        className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-300 transition"
+                                    >
+                                        Annuleren
+                                    </Link>
+                                )}
+                                {step < STEPS.length ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setStep(step + 1)}
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition"
+                                    >
+                                        Volgende
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 5l7 7-7 7"
+                                            />
+                                        </svg>
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="px-6 py-2.5 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition"
+                                    >
+                                        {processing ? 'Opslaan...' : 'Wijzigingen opslaan'}
+                                    </button>
+                                )}
                             </div>
-
-                            <div>
-                                <label className={labelClass}>Adres</label>
-                                <input
-                                    type="text"
-                                    value={data.address}
-                                    onChange={(e) => setData('address', e.target.value)}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>Website</label>
-                                <input
-                                    type="url"
-                                    value={data.website}
-                                    onChange={(e) => setData('website', e.target.value)}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>Afbeelding URL</label>
-                                <input
-                                    type="url"
-                                    value={data.featured_image}
-                                    onChange={(e) => setData('featured_image', e.target.value)}
-                                    className={inputClass}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-end gap-3">
-                            <Link
-                                href="/admin/venues"
-                                className="px-5 py-2.5 text-sm font-medium text-gray-400 hover:text-gray-200 transition"
-                            >
-                                Annuleren
-                            </Link>
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="px-6 py-2.5 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition"
-                            >
-                                {processing ? 'Opslaan...' : 'Wijzigingen opslaan'}
-                            </button>
                         </div>
                     </form>
                 </div>
