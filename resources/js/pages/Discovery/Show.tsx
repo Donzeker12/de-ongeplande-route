@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Navigation from '@/Components/Navigation';
 import type { Discovery, DierMetadata, Outing, Venue } from '@/types';
 
@@ -112,9 +113,9 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                 )}
 
                                 {/* Lightbox */}
-                                {lightboxOpen && discovery.image && (
+                                {lightboxOpen && discovery.image && createPortal(
                                     <div
-                                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+                                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
                                         onClick={() => setLightboxOpen(false)}
                                     >
                                         <button
@@ -131,7 +132,8 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                             className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
                                             onClick={e => e.stopPropagation()}
                                         />
-                                    </div>
+                                    </div>,
+                                    document.body
                                 )}
 
                                 {/* Discovery Description */}
