@@ -1,4 +1,5 @@
 ﻿import AdminLayout from '@/Layouts/AdminLayout';
+import ImageUpload from '@/Components/ImageUpload';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
 import type { Discovery } from '@/types';
@@ -198,13 +199,11 @@ export default function DiscoveryEdit({ discovery, outings, venues }: DiscoveryE
                             </div>
 
                             <div>
-                                <label className={labelClass}>Afbeelding URL</label>
-                                <input type="url" value={data.image} onChange={(e) => setData('image', e.target.value)} placeholder="https://..." className={inputClass} />
-                                {data.image && (
-                                    <div className="mt-3 rounded-lg overflow-hidden w-40 h-28 border border-gray-700">
-                                        <img src={data.image} alt="Preview" className="w-full h-full object-cover" />
-                                    </div>
-                                )}
+                                <ImageUpload
+                                    value={data.image}
+                                    onChange={(url) => setData('image', url)}
+                                    label="Afbeelding"
+                                />
                             </div>
                         </div>
 

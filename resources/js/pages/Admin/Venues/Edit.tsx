@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import ImageUpload from '@/Components/ImageUpload';
 import type { Venue, VenueType } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -691,12 +692,10 @@ export default function VenuesEdit({ venue, types }: Props) {
                                 </div>
 
                                 <div>
-                                    <label className={labelClass}>Afbeelding URL</label>
-                                    <input
-                                        type="url"
+                                    <ImageUpload
                                         value={data.featured_image}
-                                        onChange={(e) => setData('featured_image', e.target.value)}
-                                        className={inputClass}
+                                        onChange={(url) => setData('featured_image', url)}
+                                        label="Afbeelding"
                                     />
                                 </div>
                             </div>
