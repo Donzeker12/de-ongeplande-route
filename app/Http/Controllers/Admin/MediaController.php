@@ -28,6 +28,10 @@ class MediaController extends Controller
     {
         $request->validate([
             'image' => ['required', 'image', 'max:10240'],
+        ], [
+            'image.required' => 'Kies een afbeelding om te uploaden.',
+            'image.image' => 'Het bestand moet een afbeelding zijn (jpg, png, gif, webp).',
+            'image.max' => 'De afbeelding mag maximaal 10 MB zijn.',
         ]);
 
         $file = $request->file('image');

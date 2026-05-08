@@ -15,6 +15,10 @@ class ImageUploadController extends Controller
     {
         $request->validate([
             'image' => ['required', 'image', 'max:5120'], // max 5MB
+        ], [
+            'image.required' => 'Kies een afbeelding om te uploaden.',
+            'image.image' => 'Het bestand moet een afbeelding zijn (jpg, png, gif, webp).',
+            'image.max' => 'De afbeelding mag maximaal 5 MB zijn.',
         ]);
 
         $path = $request->file('image')->store('uploads', 'public');
