@@ -78,7 +78,7 @@ class HomeController extends Controller
                     'type' => $discovery->type,
                     'description' => $discovery->description,
                     'image' => $discovery->image,
-                    'outing_title' => $discovery->outing->title,
+                    'outing_title' => $discovery->outing?->title,
                 ]),
 
             'categories' => $categories,
