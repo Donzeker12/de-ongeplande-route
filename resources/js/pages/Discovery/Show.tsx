@@ -308,25 +308,46 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                             {/* Venue */}
                             {venue && (
                                 <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
-                                    <div className="bg-gradient-to-r from-sky-500 to-cyan-500 px-5 py-3 flex items-center gap-2">
-                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <h3 className="font-semibold text-white text-sm">Locatie</h3>
-                                    </div>
-                                    {venue.featured_image && (
-                                        <img src={venue.featured_image} alt={venue.name} className="w-full h-36 object-cover" />
-                                    )}
-                                    <div className="p-5">
-                                        <h4 className="font-serif text-lg text-warm-700 mb-1">{venue.name}</h4>
-                                        {venue.description && (
-                                            <p className="text-warm-500 text-sm mb-4 leading-relaxed">{venue.description}</p>
+                                    {/* Header — groen voor dier, blauw voor de rest */}
+                                    <div className={`bg-gradient-to-r ${discovery.type === 'dier' ? 'from-emerald-500 to-teal-500' : 'from-sky-500 to-cyan-500'} px-5 py-3 flex items-center gap-2`}>
+                                        {discovery.type === 'dier' ? (
+                                            <span className="text-white text-base leading-none">&#x1F98E;</span>
+                                        ) : (
+                                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
                                         )}
+                                        <h3 className="font-semibold text-white text-sm">
+                                            {discovery.type === 'dier' ? 'Te zien in' : 'Locatie'}
+                                        </h3>
+                                    </div>
+
+                                    {/* Foto */}
+                                    {venue.featured_image && (
+                                        <img src={venue.featured_image} alt={venue.name} className="w-full h-44 object-cover" />
+                                    )}
+
+                                    <div className="p-5">
+                                        {/* Naam + type badge */}
+                                        <div className="flex items-start justify-between gap-2 mb-2">
+                                            <h4 className="font-serif text-lg text-warm-700 leading-tight">{venue.name}</h4>
+                                            {venue.type_label && (
+                                                <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 font-medium ${discovery.type === 'dier' ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'}`}>
+                                                    {venue.type_emoji} {venue.type_label}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {venue.description && (
+                                            <p className="text-warm-500 text-sm mb-4 leading-relaxed line-clamp-3">{venue.description}</p>
+                                        )}
+
+                                        {/* Adres info */}
                                         <div className="space-y-2 text-sm">
                                             {venue.city && (
                                                 <div className="flex items-center gap-2 text-warm-600">
-                                                    <svg className="w-4 h-4 text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className={`w-4 h-4 shrink-0 ${discovery.type === 'dier' ? 'text-emerald-400' : 'text-sky-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     </svg>
@@ -335,7 +356,7 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                             )}
                                             {venue.address && (
                                                 <div className="flex items-center gap-2 text-warm-600">
-                                                    <svg className="w-4 h-4 text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className={`w-4 h-4 shrink-0 ${discovery.type === 'dier' ? 'text-emerald-400' : 'text-sky-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                                     </svg>
                                                     {venue.address}
@@ -346,7 +367,7 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                                     href={venue.website}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center gap-2 text-sky-600 hover:text-sky-700 font-medium transition-colors"
+                                                    className={`flex items-center gap-2 font-medium transition-colors ${discovery.type === 'dier' ? 'text-emerald-600 hover:text-emerald-700' : 'text-sky-600 hover:text-sky-700'}`}
                                                 >
                                                     <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -355,6 +376,49 @@ export default function DiscoveryShow({ discovery, outing, venue }: Props) {
                                                 </a>
                                             )}
                                         </div>
+
+                                        {/* Openingstijden */}
+                                        {venue.opening_hours && Object.keys(venue.opening_hours).length > 0 && (
+                                            <div className="border-t border-warm-100 pt-4 mt-4">
+                                                <h5 className="text-xs font-bold text-warm-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Openingstijden
+                                                </h5>
+                                                <div className="space-y-1.5">
+                                                    {Object.entries(venue.opening_hours).map(([day, info]) => (
+                                                        <div key={day} className="flex justify-between items-center text-xs">
+                                                            <span className="text-warm-500 capitalize w-20">{day}</span>
+                                                            {info.open
+                                                                ? <span className="text-warm-700 font-medium">{info.from} – {info.to}</span>
+                                                                : <span className="text-warm-300 italic">Gesloten</span>
+                                                            }
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Prijzen */}
+                                        {venue.prices && Object.keys(venue.prices).length > 0 && (
+                                            <div className="border-t border-warm-100 pt-4 mt-4">
+                                                <h5 className="text-xs font-bold text-warm-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                    </svg>
+                                                    Toegangsprijzen
+                                                </h5>
+                                                <div className="space-y-1.5">
+                                                    {Object.values(venue.prices).flat().map((entry, i) => (
+                                                        <div key={i} className="flex justify-between items-center text-xs">
+                                                            <span className="text-warm-500">{entry.label}</span>
+                                                            <span className="text-warm-700 font-semibold">{entry.price}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
