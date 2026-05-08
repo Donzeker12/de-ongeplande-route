@@ -27,8 +27,8 @@ export interface Venue {
     opening_hours?: Record<string, { open: boolean; from: string; to: string }> | null;
     prices?: Record<string, { label: string; price: string }[]> | null;
     highlights?: string | null;
-    accessibility_transport?: string | null;
-    accessibility_facilities?: string | null;
+    accessibility_transport?: { type: string; info: string }[] | null;
+    accessibility_facilities?: { name: string; available: 'ja' | 'nee' | 'onbekend' }[] | null;
     seo_description?: string;
     updated_at?: string;
     outings_count?: number;

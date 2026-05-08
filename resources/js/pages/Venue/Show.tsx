@@ -28,6 +28,14 @@ export default function VenueShow({ venue }: Props) {
             ? `Ontdek ${venue.name} in ${venue.city} – een ${venue.type_label} voor het hele gezin via De Ongeplande Route.`
             : `${venue.name} – een ${venue.type_label} ontdekt via De Ongeplande Route.`);
 
+    const TRANSPORT_LABELS: Record<string, string> = {
+        ov: '🚌 OV',
+        parkeren: '🚗 Parkeren',
+        fiets: '🚲 Fiets',
+        auto: '🏎️ Auto',
+        overig: '📍 Overig',
+    };
+
     // JSON-LD structured data
     const priceRange = (() => {
         const entree = venue.prices?.entree ?? [];
@@ -287,30 +295,49 @@ export default function VenueShow({ venue }: Props) {
                     )}
 
                     {/* Toegankelijkheid */}
-                    {(venue.accessibility_transport || venue.accessibility_facilities) && (
+                    {((venue.accessibility_transport && venue.accessibility_transport.length > 0) ||
+                        (venue.accessibility_facilities && venue.accessibility_facilities.length > 0)) && (
                         <section>
                             <h2 className="text-lg font-serif font-semibold text-warm-800 mb-4 flex items-center gap-2">
                                 <span>♿</span> Bereikbaarheid & faciliteiten
                             </h2>
                             <div className="grid md:grid-cols-2 gap-4">
-                                {venue.accessibility_transport && (
-                                    <div className="bg-white rounded-xl border border-warm-200 p-5 shadow-sm">
-                                        <h3 className="text-sm font-semibold text-warm-700 mb-2 flex items-center gap-1.5">
-                                            <span>🚌</span> Bereikbaarheid
-                                        </h3>
-                                        <p className="text-sm text-warm-600 leading-relaxed whitespace-pre-line">
-                                            {venue.accessibility_transport}
-                                        </p>
+                                {venue.accessibility_transport && venue.accessibility_transport.length > 0 && (
+                                    <div className="bg-white rounded-xl border border-warm-200 overflow-hidden shadow-sm">
+                                        <div className="px-4 py-2 bg-warm-50 border-b border-warm-100">
+                                            <span className="text-xs font-semibold text-warm-600 uppercase tracking-wider">Bereikbaarheid</span>
+                                        </div>
+                                        <div className="divide-y divide-warm-100">
+                                            {venue.accessibility_transport.map((t, i) => (
+                                                <div key={i} className="flex items-start gap-3 px-4 py-3">
+                                                    <span className="text-sm text-warm-500 w-24 shrink-0 font-medium">
+                                                        {TRANSPORT_LABELS[t.type] ?? t.type}
+                                                    </span>
+                                                    <span className="text-sm text-warm-700">{t.info}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
-                                {venue.accessibility_facilities && (
-                                    <div className="bg-white rounded-xl border border-warm-200 p-5 shadow-sm">
-                                        <h3 className="text-sm font-semibold text-warm-700 mb-2 flex items-center gap-1.5">
-                                            <span>🛗</span> Faciliteiten
-                                        </h3>
-                                        <p className="text-sm text-warm-600 leading-relaxed whitespace-pre-line">
-                                            {venue.accessibility_facilities}
-                                        </p>
+                                {venue.accessibility_facilities && venue.accessibility_facilities.length > 0 && (
+                                    <div className="bg-white rounded-xl border border-warm-200 overflow-hidden shadow-sm">
+                                        <div className="px-4 py-2 bg-warm-50 border-b border-warm-100">
+                                            <span className="text-xs font-semibold text-warm-600 uppercase tracking-wider">Faciliteiten</span>
+                                        </div>
+                                        <div className="divide-y divide-warm-100">
+                                            {venue.accessibility_facilities.map((f, i) => (
+                                                <div key={i} className="flex items-center justify-between px-4 py-2.5">
+                                                    <span className="text-sm text-warm-700">{f.name}</span>
+                                                    <span className={`text-sm font-medium ${
+                                                        f.available === 'ja' ? 'text-emerald-600' :
+                                                        f.available === 'nee' ? 'text-red-500' :
+                                                        'text-warm-400'
+                                                    }`}>
+                                                        {f.available === 'ja' ? '✓ Ja' : f.available === 'nee' ? '✗ Nee' : '?'}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>

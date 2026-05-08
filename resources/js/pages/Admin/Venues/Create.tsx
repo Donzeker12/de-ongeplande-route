@@ -18,6 +18,16 @@ interface PriceEntry {
     price: string;
 }
 
+interface TransportEntry {
+    type: 'ov' | 'parkeren' | 'fiets' | 'auto' | 'overig';
+    info: string;
+}
+
+interface FacilityEntry {
+    name: string;
+    available: 'ja' | 'nee' | 'onbekend';
+}
+
 interface PriceCategories {
     entree: PriceEntry[];
     abonnementen: PriceEntry[];
@@ -36,8 +46,8 @@ interface FormData {
     opening_hours: Record<string, DaySchedule>;
     prices: PriceCategories;
     highlights: string;
-    accessibility_transport: string;
-    accessibility_facilities: string;
+    accessibility_transport: TransportEntry[];
+    accessibility_facilities: FacilityEntry[];
     city: string;
     country: string;
     address: string;
@@ -111,8 +121,8 @@ export default function VenuesCreate({ types }: Props) {
         opening_hours: { ...defaultOpeningHours },
         prices: { ...defaultPrices },
         highlights: '',
-        accessibility_transport: '',
-        accessibility_facilities: '',
+        accessibility_transport: [],
+        accessibility_facilities: [],
         city: '',
         country: 'Nederland',
         address: '',
@@ -148,6 +158,26 @@ export default function VenuesCreate({ types }: Props) {
         const updated = { ...data.prices };
         updated[category] = updated[category].filter((_, i) => i !== index);
         setData('prices', updated);
+    };
+
+    const addTransport = () => {
+        setData('accessibility_transport', [...data.accessibility_transport, { type: 'ov', info: '' }]);
+    };
+    const removeTransport = (index: number) => {
+        setData('accessibility_transport', data.accessibility_transport.filter((_, i) => i !== index));
+    };
+    const updateTransport = (index: number, field: keyof TransportEntry, value: string) => {
+        setData('accessibility_transport', data.accessibility_transport.map((e, i) => (i === index ? { ...e, [field]: value } : e)));
+    };
+
+    const addFacility = (name = '') => {
+        setData('accessibility_facilities', [...data.accessibility_facilities, { name, available: 'ja' }]);
+    };
+    const removeFacility = (index: number) => {
+        setData('accessibility_facilities', data.accessibility_facilities.filter((_, i) => i !== index));
+    };
+    const updateFacility = (index: number, field: keyof FacilityEntry, value: string) => {
+        setData('accessibility_facilities', data.accessibility_facilities.map((e, i) => (i === index ? { ...e, [field]: value } : e)));
     };
 
     const inputClass =
@@ -482,31 +512,106 @@ export default function VenuesCreate({ types }: Props) {
                                             ♿ Faciliteiten
                                         </button>
                                     </div>
-                                    <div className="p-6">
+                                    <div className="p-5 space-y-3">
                                         {accessibilityTab === 'transport' ? (
-                                            <textarea
-                                                value={data.accessibility_transport}
-                                                onChange={(e) =>
-                                                    setData('accessibility_transport', e.target.value)
-                                                }
-                                                rows={4}
-                                                className={textareaClass}
-                                                placeholder={
-                                                    'OV: Tram 9 richting Diemen, halte Artis\nParkeren: P+R IJburg, €5 per dag\nFiets: fietsstalling aanwezig bij de ingang'
-                                                }
-                                            />
+                                            <>
+                                                {data.accessibility_transport.map((entry, i) => (
+                                                    <div key={i} className="flex items-center gap-2">
+                                                        <select
+                                                            value={entry.type}
+                                                            onChange={(e) => updateTransport(i, 'type', e.target.value)}
+                                                            className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition w-36 shrink-0"
+                                                        >
+                                                            <option value="ov">🚌 OV</option>
+                                                            <option value="parkeren">🚗 Parkeren</option>
+                                                            <option value="fiets">🚲 Fiets</option>
+                                                            <option value="auto">🏎️ Auto</option>
+                                                            <option value="overig">📍 Overig</option>
+                                                        </select>
+                                                        <input
+                                                            type="text"
+                                                            value={entry.info}
+                                                            onChange={(e) => updateTransport(i, 'info', e.target.value)}
+                                                            placeholder="Bijv. Tram 9 richting Diemen, halte Artis"
+                                                            className="flex-1 bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 placeholder-gray-600 text-sm focus:outline-none focus:border-emerald-500 transition"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeTransport(i)}
+                                                            className="text-gray-600 hover:text-red-400 transition shrink-0"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={addTransport}
+                                                    className="flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 transition"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                    Optie toevoegen
+                                                </button>
+                                            </>
                                         ) : (
-                                            <textarea
-                                                value={data.accessibility_facilities}
-                                                onChange={(e) =>
-                                                    setData('accessibility_facilities', e.target.value)
-                                                }
-                                                rows={4}
-                                                className={textareaClass}
-                                                placeholder={
-                                                    'Rolstoeltoegankelijk: ja\nKinderwagen: ja\nLift aanwezig: nee\nVerschoontafel: ja\nHonden: niet toegestaan'
-                                                }
-                                            />
+                                            <>
+                                                <div className="flex flex-wrap gap-1.5 pb-1">
+                                                    {['Rolstoeltoegankelijk', 'Kinderwagen', 'Lift aanwezig', 'Verschoontafel', 'Honden toegestaan', 'WC aanwezig', 'Gratis WiFi'].map((preset) => (
+                                                        <button
+                                                            key={preset}
+                                                            type="button"
+                                                            onClick={() => addFacility(preset)}
+                                                            className="px-2.5 py-1 text-xs rounded-full bg-gray-800 text-gray-400 hover:bg-emerald-500/10 hover:text-emerald-400 border border-gray-700 hover:border-emerald-600 transition"
+                                                        >
+                                                            + {preset}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                {data.accessibility_facilities.map((entry, i) => (
+                                                    <div key={i} className="flex items-center gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={entry.name}
+                                                            onChange={(e) => updateFacility(i, 'name', e.target.value)}
+                                                            placeholder="Faciliteit"
+                                                            className="flex-1 bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 placeholder-gray-600 text-sm focus:outline-none focus:border-emerald-500 transition"
+                                                        />
+                                                        <select
+                                                            value={entry.available}
+                                                            onChange={(e) => updateFacility(i, 'available', e.target.value)}
+                                                            className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 transition w-32 shrink-0"
+                                                            style={{ color: entry.available === 'ja' ? '#34d399' : entry.available === 'nee' ? '#f87171' : '#9ca3af' }}
+                                                        >
+                                                            <option value="ja">✓ Ja</option>
+                                                            <option value="nee">✗ Nee</option>
+                                                            <option value="onbekend">? Onbekend</option>
+                                                        </select>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeFacility(i)}
+                                                            className="text-gray-600 hover:text-red-400 transition shrink-0"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addFacility()}
+                                                    className="flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 transition"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                    Faciliteit toevoegen
+                                                </button>
+                                            </>
                                         )}
                                     </div>
                                 </div>

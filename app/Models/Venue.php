@@ -34,6 +34,8 @@ class Venue extends Model
         return [
             'opening_hours' => 'array',
             'prices' => 'array',
+            'accessibility_transport' => 'array',
+            'accessibility_facilities' => 'array',
         ];
     }
 
