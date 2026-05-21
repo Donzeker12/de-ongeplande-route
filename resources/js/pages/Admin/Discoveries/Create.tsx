@@ -188,7 +188,6 @@ export default function DiscoveryCreate({ outings, venues, defaultOutingId }: Di
                                 <ImageUpload
                                     value={data.image}
                                     onChange={(url) => setData('image', url)}
-                                    label="Afbeelding"
                                 />
                             </div>
                         </div>

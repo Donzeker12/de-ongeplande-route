@@ -46,6 +46,7 @@ export default function AdminLayout({ header, children }) {
         { name: 'Dashboard',     href: '/admin/dashboard',   icon: '📊', current: route().current('admin.dashboard') },
         { name: 'Verhalen',      href: '/admin/outings',     icon: '📖', current: route().current('admin.outings.*') },
         { name: 'Stories',       href: '/admin/stories',     icon: '📝', current: route().current('admin.stories.*') },
+        { name: 'Blog',          href: '/admin/blog',        icon: '✍️', current: route().current('admin.blog.*') },
         { name: 'Categorieën',   href: '/admin/categories',  icon: '🏷️', current: route().current('admin.categories.*') },
         { name: 'Locaties',      href: '/admin/venues',      icon: '📍', current: route().current('admin.venues.*') },
         { name: 'Ontdekkingen',  href: '/admin/discoveries', icon: '✨', current: route().current('admin.discoveries.*') },

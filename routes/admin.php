@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DiscoveryController;
 use App\Http\Controllers\Admin\ImageUploadController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OutingController;
+use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\QuickCaptureController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SocialSnippetController;
@@ -78,6 +79,9 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Stories
     Route::resource('stories', StoryController::class);
     Route::post('stories/{story}/generate', [StoryController::class, 'generateStory'])->name('stories.generate');
+
+    // Blog
+    Route::resource('blog', PostController::class)->except('show');
 
     // Image upload (legacy)
     Route::post('/upload-image', ImageUploadController::class)->name('upload-image');

@@ -10,6 +10,7 @@ interface Chapter {
 interface FormData {
     title: string;
     description: string;
+    youtube_url: string;
     ai_settings: {
         tone: string;
         length: string;
@@ -22,6 +23,7 @@ export default function CreateStory() {
     const { data, setData, post, processing, errors } = useForm<FormData>({
         title: '',
         description: '',
+        youtube_url: '',
         ai_settings: {
             tone: 'vriendelijk',
             length: 'medium',
@@ -105,6 +107,20 @@ export default function CreateStory() {
                                         placeholder="Vertel AI hoe je het verhaal wilt hebben... Bijv: 'Schrijf een vrolijk verhaal over mijn avontuur in het pretpark'"
                                     />
                                     {errors.description && <p className="text-red-400 text-sm mt-1">{errors.description}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-200 mb-2">
+                                        🎬 YouTube Video (optioneel)
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={data.youtube_url}
+                                        onChange={(e) => setData('youtube_url', e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="https://www.youtube.com/watch?v=..."
+                                    />
+                                    {errors.youtube_url && <p className="text-red-400 text-sm mt-1">{errors.youtube_url}</p>}
                                 </div>
                             </div>
                         </div>

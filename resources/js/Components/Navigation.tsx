@@ -55,6 +55,13 @@ export default function Navigation({ variant = 'page', className = '' }: Navigat
                             Over Ons
                         </NavLink>
                         <NavLink 
+                            href="/blog" 
+                            isActive={url.startsWith('/blog')}
+                            variant={isHome && !isSticky ? 'light' : 'dark'}
+                        >
+                            Blog
+                        </NavLink>
+                        <NavLink 
                             href="/contact" 
                             isActive={url === '/contact'}
                             variant={isHome && !isSticky ? 'light' : 'dark'}
@@ -118,6 +125,9 @@ export default function Navigation({ variant = 'page', className = '' }: Navigat
                         <div className={`px-2 pt-2 pb-6 space-y-2 ${isHome ? 'bg-white/95 backdrop-blur-md rounded-2xl mx-4 mb-4 shadow-lg' : 'border-t border-warm-200 mt-2'}`}>
                             <MobileNavLink href="/over-ons" isActive={url === '/over-ons'}>
                                 Over Ons
+                            </MobileNavLink>
+                            <MobileNavLink href="/blog" isActive={url.startsWith('/blog')}>
+                                Blog
                             </MobileNavLink>
                             <MobileNavLink href="/contact" isActive={url === '/contact'}>
                                 Contact

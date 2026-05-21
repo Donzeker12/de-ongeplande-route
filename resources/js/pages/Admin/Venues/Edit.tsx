@@ -695,7 +695,6 @@ export default function VenuesEdit({ venue, types }: Props) {
                                     <ImageUpload
                                         value={data.featured_image}
                                         onChange={(url) => setData('featured_image', url)}
-                                        label="Afbeelding"
                                     />
                                 </div>
                             </div>

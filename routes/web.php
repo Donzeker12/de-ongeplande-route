@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\DiscoveryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OutingController;
@@ -17,6 +18,8 @@ Route::get('/uitjes', OutingIndexController::class)->name('outings.index');
 Route::get('/uitjes/{outing:slug}', OutingController::class)->name('outings.show');
 Route::get('/ontdekkingen/{discovery:slug}', [DiscoveryController::class, 'show'])->name('discoveries.show');
 Route::get('/over-ons', fn () => Inertia::render('OverOns'))->name('over-ons');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/locaties', [VenueController::class, 'index'])->name('venues.index');
 Route::get('/locaties/{venue:slug}', [VenueController::class, 'show'])->name('venues.show');
 

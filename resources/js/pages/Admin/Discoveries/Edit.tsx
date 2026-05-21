@@ -202,7 +202,6 @@ export default function DiscoveryEdit({ discovery, outings, venues }: DiscoveryE
                                 <ImageUpload
                                     value={data.image}
                                     onChange={(url) => setData('image', url)}
-                                    label="Afbeelding"
                                 />
                             </div>
                         </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Discovery;
 use App\Models\Outing;
+use App\Models\Post;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -89,6 +90,19 @@ class HomeController extends Controller
                 'subtitle' => SiteSetting::get('hero_subtitle', 'Geen plan. Wel verhalen.'),
                 'description' => SiteSetting::get('hero_description', 'Wij rijden. Jullie ontdekken mee.'),
             ],
+            'latestPosts' => Post::query()
+                ->where('status', 'published')
+                ->latest('published_at')
+                ->take(3)
+                ->get()
+                ->map(fn ($post) => [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'slug' => $post->slug,
+                    'excerpt' => $post->excerpt,
+                    'featured_image' => $post->featured_image,
+                    'published_at' => $post->published_at?->toDateString(),
+                ]),
         ]);
     }
 }

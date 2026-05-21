@@ -80,7 +80,7 @@ export default function RichTextEditor({
         },
         editorProps: {
             attributes: {
-                class: 'focus:outline-none min-h-[400px] p-5 text-gray-900 prose prose-base max-w-none prose-headings:font-bold',
+                class: 'focus:outline-none min-h-[400px] p-5 text-gray-200 prose prose-base max-w-none prose-headings:font-bold prose-headings:text-white prose-strong:text-white prose-a:text-emerald-400 prose-blockquote:border-emerald-500 prose-blockquote:text-gray-400',
             },
         },
     });
@@ -300,7 +300,7 @@ export default function RichTextEditor({
             </div>
 
             {/* Editor content */}
-            <div className="bg-white">
+            <div className="bg-[#0f1117]">
                 <EditorContent editor={editor} />
             </div>
 

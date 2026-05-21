@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Story;
 use App\Models\Chapter;
+use App\Models\Story;
 use App\Services\GeminiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +21,7 @@ class StoryController extends Controller
             ->paginate(10);
 
         return Inertia::render('Admin/Stories/Index', [
-            'stories' => $stories
+            'stories' => $stories,
         ]);
     }
 
@@ -35,6 +35,8 @@ class StoryController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'youtube_url' => 'nullable|url|max:255',
+            'featured_image' => 'nullable|string|max:500',
             'ai_settings' => 'nullable|array',
             'chapters' => 'required|array|min:1',
             'chapters.*.title' => 'required|string|max:255',
@@ -44,6 +46,8 @@ class StoryController extends Controller
         $story = Story::create([
             'title' => $validated['title'],
             'description' => $validated['description'],
+            'youtube_url' => $validated['youtube_url'] ?? null,
+            'featured_image' => $validated['featured_image'] ?? null,
             'user_id' => Auth::id(),
             'ai_settings' => $validated['ai_settings'] ?? [],
             'status' => 'draft',
@@ -65,22 +69,22 @@ class StoryController extends Controller
     public function show(Story $story)
     {
         $this->authorize('view', $story);
-        
+
         $story->load('chapters');
 
         return Inertia::render('Admin/Stories/Show', [
-            'story' => $story
+            'story' => $story,
         ]);
     }
 
     public function edit(Story $story)
     {
         $this->authorize('update', $story);
-        
+
         $story->load('chapters');
 
         return Inertia::render('Admin/Stories/Edit', [
-            'story' => $story
+            'story' => $story,
         ]);
     }
 
@@ -91,6 +95,8 @@ class StoryController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'youtube_url' => 'nullable|url|max:255',
+            'featured_image' => 'nullable|string|max:500',
             'ai_settings' => 'nullable|array',
         ]);
 
@@ -103,7 +109,7 @@ class StoryController extends Controller
     {
         $this->authorize('update', $story);
 
-        if (!$story->canGenerate()) {
+        if (! $story->canGenerate()) {
             return back()->with('error', 'Story kan niet gegenereerd worden. Voeg eerst hoofdstukken toe.');
         }
 
@@ -118,22 +124,22 @@ class StoryController extends Controller
                 // Update story with generated content
                 $story->update([
                     'generated_content' => $result['content'],
-                    'status' => 'completed'
+                    'status' => 'completed',
                 ]);
 
                 return back()->with('success', '🎉 Verhaal succesvol gegenereerd door AI!');
             } else {
                 // Reset status on failure
                 $story->update(['status' => 'draft']);
-                
-                return back()->with('error', '❌ AI generatie mislukt: ' . $result['error']);
+
+                return back()->with('error', '❌ AI generatie mislukt: '.$result['error']);
             }
 
         } catch (\Exception $e) {
             // Reset status on exception
             $story->update(['status' => 'draft']);
-            
-            return back()->with('error', '❌ Fout bij AI generatie: ' . $e->getMessage());
+
+            return back()->with('error', '❌ Fout bij AI generatie: '.$e->getMessage());
         }
     }
 

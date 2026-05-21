@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, useForm, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import ImageUpload from '@/Components/ImageUpload';
 
 interface Chapter {
     id?: number;
@@ -13,6 +14,9 @@ interface Story {
     id: number;
     title: string;
     description: string;
+    youtube_url: string | null;
+    featured_image: string | null;
+    slug: string | null;
     status: 'draft' | 'generating' | 'completed' | 'published';
     ai_settings: {
         tone: string;
@@ -31,6 +35,8 @@ export default function EditStory({ story }: Props) {
     const { data, setData, put, patch, processing, errors } = useForm({
         title: story.title,
         description: story.description || '',
+        youtube_url: story.youtube_url || '',
+        featured_image: story.featured_image || '',
         ai_settings: story.ai_settings || {
             tone: 'vriendelijk',
             length: 'medium',
@@ -38,6 +44,21 @@ export default function EditStory({ story }: Props) {
         },
         chapters: story.chapters || []
     });
+
+    const getYoutubeEmbedUrl = (url: string): string | null => {
+        try {
+            const parsed = new URL(url);
+            let videoId: string | null = null;
+            if (parsed.hostname === 'youtu.be') {
+                videoId = parsed.pathname.slice(1);
+            } else if (parsed.hostname.includes('youtube.com')) {
+                videoId = parsed.searchParams.get('v');
+            }
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+        } catch {
+            return null;
+        }
+    };
 
     const [isGenerating, setIsGenerating] = useState(story.status === 'generating');
     const [generationStatus, setGenerationStatus] = useState<'idle' | 'generating' | 'success' | 'error'>(() => {
@@ -281,6 +302,41 @@ export default function EditStory({ story }: Props) {
                                         className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="Vertel AI hoe je het verhaal wilt hebben..."
                                     />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-200 mb-2">
+                                        🎬 YouTube Video (optioneel)
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={data.youtube_url}
+                                        onChange={(e) => setData('youtube_url', e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="https://www.youtube.com/watch?v=..."
+                                    />
+                                    {errors.youtube_url && <p className="text-red-400 text-sm mt-1">{errors.youtube_url}</p>}
+                                    {data.youtube_url && getYoutubeEmbedUrl(data.youtube_url) && (
+                                        <div className="mt-4 rounded-xl overflow-hidden aspect-video">
+                                            <iframe
+                                                src={getYoutubeEmbedUrl(data.youtube_url)!}
+                                                className="w-full h-full"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-200 mb-2">
+                                        🖼️ Omslagfoto (optioneel)
+                                    </label>
+                                    <ImageUpload
+                                        value={data.featured_image}
+                                        onChange={(url) => setData('featured_image', url ?? '')}
+                                    />
+                                    {errors.featured_image && <p className="text-red-400 text-sm mt-1">{errors.featured_image}</p>}
                                 </div>
                             </div>
                         </div>
