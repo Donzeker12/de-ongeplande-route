@@ -39,9 +39,6 @@ export default function ImageUpload({ value, onChange, placeholder = 'https://..
         }
     };
 
-    const [showUrlInput, setShowUrlInput] = useState(false);
-    const [urlInput, setUrlInput] = useState('');
-
     const handleUrlSubmit = () => {
         if (urlInput.trim()) {
             onChange(urlInput.trim());
