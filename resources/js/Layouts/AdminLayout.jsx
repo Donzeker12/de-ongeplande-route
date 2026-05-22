@@ -201,6 +201,15 @@ export default function AdminLayout({ header, children }) {
 
                         <div className="flex items-center space-x-3 flex-shrink-0">
                             <Link
+                                href="/admin/blog/quick-note"
+                                title="Blog Notitie"
+                                className="flex items-center justify-center w-8 h-8 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </Link>
+                            <Link
                                 href="/"
                                 target="_blank"
                                 className="hidden sm:flex items-center space-x-2 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 transition rounded-lg hover:bg-gray-800/50"
