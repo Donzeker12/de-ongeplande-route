@@ -1,6 +1,43 @@
 import Navigation from '@/Components/Navigation';
 import Seo from '@/Components/Seo';
 import { Link } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
+
+function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.removeEventListener('keydown', handler);
+            document.body.style.overflow = '';
+        };
+    }, [onClose]);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-black/40 hover:bg-black/60 rounded-full transition z-10"
+                aria-label="Sluiten"
+            >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <img
+                src={src}
+                alt=""
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+                style={{ touchAction: 'pinch-zoom' }}
+            />
+        </div>
+    );
+}
 
 interface Post {
     id: number;
@@ -36,6 +73,23 @@ export default function BlogShow({ post }: Props) {
     const siteUrl = window.location.origin;
     const canonicalUrl = `${siteUrl}/blog/${post.slug}`;
     const description = post.excerpt ?? `Lees het verhaal "${post.title}" van De Ongeplande Route.`;
+    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+    const articleRef = useRef<HTMLElement>(null);
+
+    // Click delegation for images inside the rendered HTML content
+    useEffect(() => {
+        const el = articleRef.current;
+        if (!el) return;
+        const handler = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'IMG') {
+                const src = (target as HTMLImageElement).src;
+                if (src) setLightboxSrc(src);
+            }
+        };
+        el.addEventListener('click', handler);
+        return () => el.removeEventListener('click', handler);
+    }, [post.content]);
 
     const structuredData = [
         {
@@ -85,6 +139,8 @@ export default function BlogShow({ post }: Props) {
             <div className="min-h-screen bg-warm-bg">
                 <Navigation variant="page" />
 
+                {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+
                 {/* Hero */}
                 <div className="max-w-3xl mx-auto px-6 py-10">
                     {/* Back link */}
@@ -100,13 +156,17 @@ export default function BlogShow({ post }: Props) {
 
                     {/* Featured image */}
                     {post.featured_image && (
-                        <div className="rounded-3xl overflow-hidden shadow-xl mb-8 aspect-[16/9]">
+                        <button
+                            type="button"
+                            onClick={() => setLightboxSrc(post.featured_image!)}
+                            className="w-full rounded-3xl overflow-hidden shadow-xl mb-8 aspect-[16/9] block cursor-zoom-in"
+                        >
                             <img
                                 src={post.featured_image}
                                 alt={post.title}
                                 className="w-full h-full object-cover"
                             />
-                        </div>
+                        </button>
                     )}
 
                     {/* Title & meta */}
@@ -147,7 +207,8 @@ export default function BlogShow({ post }: Props) {
                     {/* Post content (rich HTML from RichTextEditor) */}
                     {post.content && (
                         <article
-                            className="prose prose-stone max-w-none prose-p:text-warm-700 prose-headings:text-warm-800 prose-headings:font-serif prose-a:text-amber-600 prose-strong:text-warm-800 prose-blockquote:border-amber-400 prose-blockquote:text-warm-600 leading-relaxed text-lg mb-12"
+                            ref={articleRef}
+                            className="prose prose-stone max-w-none prose-p:text-warm-700 prose-headings:text-warm-800 prose-headings:font-serif prose-a:text-amber-600 prose-strong:text-warm-800 prose-blockquote:border-amber-400 prose-blockquote:text-warm-600 leading-relaxed text-lg mb-12 [&_img]:cursor-zoom-in [&_img]:transition [&_img]:hover:opacity-90"
                             dangerouslySetInnerHTML={{ __html: post.content }}
                         />
                     )}
