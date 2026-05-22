@@ -1,0 +1,24 @@
+{
+    "name": "De Ongeplande Route",
+    "short_name": "Ongeplande Route",
+    "description": "Een familie die zonder plan op pad gaat. Geen schema, wel verhalen.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#faf6f1",
+    "theme_color": "#f59e0b",
+    "lang": "nl",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ]
+}

@@ -6,6 +6,14 @@
 
         <title inertia>{{ config('app.name', 'De Ongeplande Route') }}</title>
 
+        <!-- PWA -->
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#f59e0b">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="Ongeplande Route">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
         <!-- Default SEO -->
         <meta name="description" content="De Ongeplande Route – een familie die zonder plan op pad gaat. Geen schema, wel verhalen. Ontdek spontane uitjes, eerlijke ervaringen en onverwachte plekken in Nederland.">
         <meta name="robots" content="index, follow">
