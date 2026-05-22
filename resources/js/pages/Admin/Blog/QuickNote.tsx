@@ -1,6 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+const LS_KEY = 'quicknote_draft';
 
 interface DraftPost {
     id: number;
@@ -24,13 +26,43 @@ export default function BlogQuickNote({ draftPosts }: Props) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [previews, setPreviews] = useState<{ file: File; url: string }[]>([]);
     const [mode, setMode] = useState<'new' | 'existing'>(draftPosts.length > 0 ? 'existing' : 'new');
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [pendingOffline, setPendingOffline] = useState(false);
+    const submitRef = useRef<(() => void) | null>(null);
+
+    // Restore localStorage on mount
+    const saved = (() => { try { return JSON.parse(localStorage.getItem(LS_KEY) ?? 'null'); } catch { return null; } })();
 
     const { data, setData, post, processing, errors, reset } = useForm<FormData>({
-        note: '',
+        note: saved?.note ?? '',
         post_id: draftPosts[0]?.id?.toString() ?? '',
-        new_post_title: '',
+        new_post_title: saved?.new_post_title ?? '',
         images: [],
     });
+
+    // Auto-save note + title to localStorage while typing
+    useEffect(() => {
+        if (data.note || data.new_post_title) {
+            localStorage.setItem(LS_KEY, JSON.stringify({ note: data.note, new_post_title: data.new_post_title }));
+        }
+    }, [data.note, data.new_post_title]);
+
+    // Online / offline listeners
+    useEffect(() => {
+        const goOnline = () => {
+            setIsOnline(true);
+            // If there was a pending submission, fire it now
+            if (submitRef.current) {
+                submitRef.current();
+                submitRef.current = null;
+                setPendingOffline(false);
+            }
+        };
+        const goOffline = () => setIsOnline(false);
+        window.addEventListener('online', goOnline);
+        window.addEventListener('offline', goOffline);
+        return () => { window.removeEventListener('online', goOnline); window.removeEventListener('offline', goOffline); };
+    }, []);
 
     const handleImages = (files: FileList | null) => {
         if (!files) return;
@@ -51,10 +83,10 @@ export default function BlogQuickNote({ draftPosts }: Props) {
         setData('images', updated.map((p) => p.file));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const doSubmit = () => {
         post('/admin/blog/quick-note', {
             onSuccess: () => {
+                localStorage.removeItem(LS_KEY);
                 reset('note', 'new_post_title');
                 previews.forEach((p) => URL.revokeObjectURL(p.url));
                 setPreviews([]);
@@ -64,6 +96,17 @@ export default function BlogQuickNote({ draftPosts }: Props) {
         });
     };
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!isOnline) {
+            // Queue for when connection returns
+            submitRef.current = doSubmit;
+            setPendingOffline(true);
+            return;
+        }
+        doSubmit();
+    };
+
     return (
         <AdminLayout
             header={<h2 className="text-xl font-semibold">✍️ Blog Notitie</h2>}
@@ -71,6 +114,33 @@ export default function BlogQuickNote({ draftPosts }: Props) {
             <Head title="Blog Notitie – Snel opschrijven" />
 
             <div className="max-w-lg mx-auto p-4 space-y-5">
+                {/* Offline banner */}
+                {!isOnline && (
+                    <div className="bg-orange-900/50 border border-orange-700 text-orange-300 px-4 py-3 rounded-xl flex items-center gap-2">
+                        <span className="text-lg">📡</span>
+                        <div>
+                            <p className="font-medium text-sm">Je bent offline</p>
+                            <p className="text-xs text-orange-400">Je notitie wordt bewaard. Zodra je weer verbinding hebt, wordt hij automatisch verstuurd.</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Pending offline submit banner */}
+                {isOnline && pendingOffline && (
+                    <div className="bg-blue-900/50 border border-blue-700 text-blue-300 px-4 py-3 rounded-xl flex items-center gap-2">
+                        <span className="animate-spin text-lg">⏳</span>
+                        <span className="text-sm">Verbinding hersteld — notitie wordt nu verstuurd...</span>
+                    </div>
+                )}
+
+                {/* Restored from localStorage */}
+                {saved?.note && (
+                    <div className="bg-amber-900/30 border border-amber-700/50 text-amber-300 px-4 py-2.5 rounded-xl flex items-center gap-2">
+                        <span>💾</span>
+                        <span className="text-sm">Vorige notitie hersteld — nog niet opgeslagen geweest.</span>
+                    </div>
+                )}
+
                 {/* Top row: subtitle + link */}
                 <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-400">Snel een notitie opschrijven</p>
