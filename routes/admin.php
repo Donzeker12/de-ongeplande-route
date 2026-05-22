@@ -81,6 +81,8 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::post('stories/{story}/generate', [StoryController::class, 'generateStory'])->name('stories.generate');
 
     // Blog
+    Route::get('/blog/quick-note', [PostController::class, 'quickNote'])->name('blog.quick-note');
+    Route::post('/blog/quick-note', [PostController::class, 'storeQuickNote'])->name('blog.quick-note.store');
     Route::resource('blog', PostController::class)->except('show')->parameters(['blog' => 'post']);
 
     // Image upload (legacy)

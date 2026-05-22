@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -84,11 +86,67 @@ class PostController extends Controller
         return back()->with('success', 'Blogpost opgeslagen!');
     }
 
-    public function destroy(Post $post)
+    public function destroy(Post $post): RedirectResponse
     {
         $post->delete();
 
         return redirect()->route('admin.blog.index')
             ->with('success', 'Blogpost verwijderd!');
+    }
+
+    public function quickNote(): Response
+    {
+        $draftPosts = Post::query()
+            ->where('status', 'draft')
+            ->latest()
+            ->limit(30)
+            ->get(['id', 'title']);
+
+        return Inertia::render('Admin/Blog/QuickNote', [
+            'draftPosts' => $draftPosts,
+        ]);
+    }
+
+    public function storeQuickNote(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'note' => 'required|string|max:10000',
+            'images' => 'nullable|array|max:10',
+            'images.*' => 'image|max:20480',
+            'post_id' => 'nullable|exists:posts,id',
+            'new_post_title' => 'nullable|string|max:255',
+        ]);
+
+        if (empty($validated['post_id']) && empty($validated['new_post_title'])) {
+            return back()->withErrors(['new_post_title' => 'Vul een titel in voor de nieuwe post.']);
+        }
+
+        // Build HTML from note text
+        $lines = array_filter(array_map('trim', explode("\n", $validated['note'])));
+        $contentHtml = implode('', array_map(fn (string $line) => '<p>'.e($line).'</p>', $lines));
+
+        // Upload images and append as figures
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('blog', 'public');
+                $url = Storage::url($path);
+                $contentHtml .= '<figure><img src="'.e($url).'" alt="" class="rounded-lg max-w-full my-4 mx-auto block shadow-md" /></figure>';
+            }
+        }
+
+        if (! empty($validated['post_id'])) {
+            $post = Post::findOrFail($validated['post_id']);
+            $post->content = ($post->content ?? '').$contentHtml;
+            $post->save();
+        } else {
+            Post::create([
+                'user_id' => Auth::id(),
+                'title' => $validated['new_post_title'],
+                'content' => $contentHtml,
+                'status' => 'draft',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Notitie opgeslagen! ✅');
     }
 }
