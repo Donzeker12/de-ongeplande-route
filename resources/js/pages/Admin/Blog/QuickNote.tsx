@@ -7,10 +7,19 @@ const LS_KEY = 'quicknote_draft';
 interface DraftPost {
     id: number;
     title: string;
+    avontuur_id: number | null;
+}
+
+interface Avontuur {
+    id: number;
+    title: string;
+    location: string | null;
+    start_date: string | null;
 }
 
 interface Props {
     draftPosts: DraftPost[];
+    avonturen: Avontuur[];
 }
 
 interface FormData {
@@ -18,16 +27,21 @@ interface FormData {
     post_id: string;
     new_post_title: string;
     images: File[];
+    avontuur_id: string;
+    new_avontuur_title: string;
+    new_avontuur_location: string;
+    new_avontuur_start_date: string;
     [key: string]: string | File[];
 }
 
-export default function BlogQuickNote({ draftPosts }: Props) {
+export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
     const { props } = usePage<{ flash?: { success?: string } }>();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [previews, setPreviews] = useState<{ file: File; url: string }[]>([]);
     const [mode, setMode] = useState<'new' | 'existing'>(draftPosts.length > 0 ? 'existing' : 'new');
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [pendingOffline, setPendingOffline] = useState(false);
+    const [avontuurMode, setAvontuurMode] = useState<'none' | 'existing' | 'new'>('none');
     const submitRef = useRef<(() => void) | null>(null);
 
     // Restore localStorage on mount
@@ -38,6 +52,10 @@ export default function BlogQuickNote({ draftPosts }: Props) {
         post_id: draftPosts[0]?.id?.toString() ?? '',
         new_post_title: saved?.new_post_title ?? '',
         images: [],
+        avontuur_id: avonturen[0]?.id?.toString() ?? '',
+        new_avontuur_title: '',
+        new_avontuur_location: '',
+        new_avontuur_start_date: '',
     });
 
     // Auto-save note + title to localStorage while typing
@@ -87,10 +105,11 @@ export default function BlogQuickNote({ draftPosts }: Props) {
         post('/admin/blog/quick-note', {
             onSuccess: () => {
                 localStorage.removeItem(LS_KEY);
-                reset('note', 'new_post_title');
+                reset('note', 'new_post_title', 'new_avontuur_title', 'new_avontuur_location', 'new_avontuur_start_date');
                 previews.forEach((p) => URL.revokeObjectURL(p.url));
                 setPreviews([]);
                 setData('images', []);
+                setAvontuurMode('none');
             },
             forceFormData: true,
         });
@@ -298,6 +317,88 @@ export default function BlogQuickNote({ draftPosts }: Props) {
                                     </option>
                                 ))}
                             </select>
+                        )}
+                    </div>
+
+                    {/* Avontuur koppeling */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                            🗺️ Avontuur
+                        </label>
+                        <div className="flex gap-2 mb-3">
+                            <button
+                                type="button"
+                                onClick={() => setAvontuurMode('none')}
+                                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition ${
+                                    avontuurMode === 'none'
+                                        ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                }`}
+                            >
+                                Geen
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setAvontuurMode('existing')}
+                                disabled={avonturen.length === 0}
+                                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition ${
+                                    avontuurMode === 'existing'
+                                        ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                } disabled:opacity-40 disabled:cursor-not-allowed`}
+                            >
+                                Bestaand
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setAvontuurMode('new')}
+                                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition ${
+                                    avontuurMode === 'new'
+                                        ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                }`}
+                            >
+                                + Nieuw
+                            </button>
+                        </div>
+
+                        {avontuurMode === 'existing' && (
+                            <select
+                                value={data.avontuur_id}
+                                onChange={(e) => setData('avontuur_id', e.target.value)}
+                                className="w-full bg-[#1a1d27] border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-base"
+                            >
+                                {avonturen.map((a) => (
+                                    <option key={a.id} value={a.id.toString()}>
+                                        {a.title}{a.location ? ` – ${a.location}` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+
+                        {avontuurMode === 'new' && (
+                            <div className="space-y-2">
+                                <input
+                                    type="text"
+                                    value={data.new_avontuur_title}
+                                    onChange={(e) => setData('new_avontuur_title', e.target.value)}
+                                    placeholder="Naam van het avontuur (bijv. Ardennen weekend)"
+                                    className="w-full bg-[#1a1d27] border border-gray-700 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-base"
+                                />
+                                <input
+                                    type="text"
+                                    value={data.new_avontuur_location}
+                                    onChange={(e) => setData('new_avontuur_location', e.target.value)}
+                                    placeholder="Locatie (bijv. Durbuy, België)"
+                                    className="w-full bg-[#1a1d27] border border-gray-700 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-base"
+                                />
+                                <input
+                                    type="date"
+                                    value={data.new_avontuur_start_date}
+                                    onChange={(e) => setData('new_avontuur_start_date', e.target.value)}
+                                    className="w-full bg-[#1a1d27] border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-base"
+                                />
+                            </div>
                         )}
                     </div>
 

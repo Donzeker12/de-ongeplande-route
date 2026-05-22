@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AvontuurController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DiscoveryController;
 use App\Http\Controllers\Admin\ImageUploadController;
@@ -84,6 +85,12 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::get('/blog/quick-note', [PostController::class, 'quickNote'])->name('blog.quick-note');
     Route::post('/blog/quick-note', [PostController::class, 'storeQuickNote'])->name('blog.quick-note.store');
     Route::resource('blog', PostController::class)->except('show')->parameters(['blog' => 'post']);
+
+    // Avonturen
+    Route::get('/avonturen', [AvontuurController::class, 'index'])->name('avonturen.index');
+    Route::post('/avonturen', [AvontuurController::class, 'store'])->name('avonturen.store');
+    Route::patch('/avonturen/{avontuur}', [AvontuurController::class, 'update'])->name('avonturen.update');
+    Route::delete('/avonturen/{avontuur}', [AvontuurController::class, 'destroy'])->name('avonturen.destroy');
 
     // Image upload (legacy)
     Route::post('/upload-image', ImageUploadController::class)->name('upload-image');

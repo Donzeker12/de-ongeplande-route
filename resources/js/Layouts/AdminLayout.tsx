@@ -26,6 +26,7 @@ const navItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: '🎛️', color: 'text-gray-300' },
     { href: '/admin/quick-capture', label: 'Quick Capture', icon: '📸', color: 'text-green-400' },
     { href: '/admin/blog/quick-note', label: 'Blog Notitie', icon: '✍️', color: 'text-amber-400' },
+    { href: '/admin/avonturen', label: 'Avonturen', icon: '🗺️', color: 'text-amber-400' },
     { href: '/admin/blog', label: 'Blog', icon: '📖', color: 'text-gray-300' },
     { href: '/admin/outings', label: 'Uitjes', icon: '🗺️', color: 'text-gray-300' },
     { href: '/admin/discoveries', label: 'Ontdekkingen', icon: '🔍', color: 'text-gray-300' },

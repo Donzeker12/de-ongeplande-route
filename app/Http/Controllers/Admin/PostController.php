@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Avontuur;
 use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -100,10 +101,16 @@ class PostController extends Controller
             ->where('status', 'draft')
             ->latest()
             ->limit(30)
-            ->get(['id', 'title']);
+            ->get(['id', 'title', 'avontuur_id']);
+
+        $avonturen = Avontuur::query()
+            ->latest()
+            ->limit(50)
+            ->get(['id', 'title', 'location', 'start_date']);
 
         return Inertia::render('Admin/Blog/QuickNote', [
             'draftPosts' => $draftPosts,
+            'avonturen' => $avonturen,
         ]);
     }
 
@@ -115,10 +122,26 @@ class PostController extends Controller
             'images.*' => 'image|max:20480',
             'post_id' => 'nullable|exists:posts,id',
             'new_post_title' => 'nullable|string|max:255',
+            'avontuur_id' => 'nullable|exists:avonturen,id',
+            'new_avontuur_title' => 'nullable|string|max:255',
+            'new_avontuur_location' => 'nullable|string|max:255',
+            'new_avontuur_start_date' => 'nullable|date',
         ]);
 
         if (empty($validated['post_id']) && empty($validated['new_post_title'])) {
             return back()->withErrors(['new_post_title' => 'Vul een titel in voor de nieuwe post.']);
+        }
+
+        // Create new avontuur inline if requested
+        $avontuurId = $validated['avontuur_id'] ?? null;
+        if (empty($avontuurId) && ! empty($validated['new_avontuur_title'])) {
+            $avontuur = Avontuur::create([
+                'user_id' => Auth::id(),
+                'title' => $validated['new_avontuur_title'],
+                'location' => $validated['new_avontuur_location'] ?? null,
+                'start_date' => $validated['new_avontuur_start_date'] ?? null,
+            ]);
+            $avontuurId = $avontuur->id;
         }
 
         // Build HTML from note text
@@ -137,10 +160,14 @@ class PostController extends Controller
         if (! empty($validated['post_id'])) {
             $post = Post::findOrFail($validated['post_id']);
             $post->content = ($post->content ?? '').$contentHtml;
+            if ($avontuurId !== null) {
+                $post->avontuur_id = $avontuurId;
+            }
             $post->save();
         } else {
             Post::create([
                 'user_id' => Auth::id(),
+                'avontuur_id' => $avontuurId,
                 'title' => $validated['new_post_title'],
                 'content' => $contentHtml,
                 'status' => 'draft',

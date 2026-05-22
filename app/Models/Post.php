@@ -14,6 +14,7 @@ class Post extends Model
 
     protected $fillable = [
         'user_id',
+        'avontuur_id',
         'title',
         'slug',
         'excerpt',
@@ -45,6 +46,11 @@ class Post extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function avontuur(): BelongsTo
+    {
+        return $this->belongsTo(Avontuur::class);
     }
 
     public function isPublished(): bool
