@@ -13,7 +13,7 @@ interface MediaItem {
     created_at: string;
 }
 
-interface MediaIndexProps {
+interface Props {
     media: MediaItem[];
 }
 
@@ -29,7 +29,7 @@ function totalSize(items: MediaItem[]): string {
     return formatBytes(total);
 }
 
-export default function MediaIndex({ media }: MediaIndexProps) {
+export default function VideosIndex({ media }: Props) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
@@ -67,7 +67,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
             });
             router.reload({ only: ['media'] });
         } catch {
-            setUploadError('Upload mislukt. Probeer het opnieuw (max 200 MB, afbeeldingen of video\'s).');
+            setUploadError('Upload mislukt. Probeer het opnieuw (max 200 MB, mp4/mov/webm).');
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -88,10 +88,10 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         const files = e.dataTransfer.files;
         if (!files?.length) return;
         for (const file of Array.from(files)) {
-                if (file.type.startsWith('image/')) {
+            if (file.type.startsWith('video/')) {
                 await uploadFile(file);
-                }
             }
+        }
     };
 
     const copyUrl = (item: MediaItem) => {
@@ -120,11 +120,11 @@ export default function MediaIndex({ media }: MediaIndexProps) {
             header={
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
-                        <h2 className="text-lg font-semibold text-white">Foto’s</h2>
+                        <h2 className="text-lg font-semibold text-white">Video's</h2>
                         {media.length > 0 && (
                             <div className="hidden sm:flex items-center gap-2">
                                 <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-full text-xs text-gray-400">
-                                    {media.length} bestand{media.length !== 1 ? 'en' : ''}
+                                    {media.length} video{media.length !== 1 ? "'s" : ''}
                                 </span>
                                 <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-full text-xs text-gray-400">
                                     {totalSize(media)}
@@ -147,17 +147,17 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                             </svg>
                         )}
-                        <span className="hidden sm:inline">{uploading ? 'Uploaden...' : 'Upload'}</span>
+                        <span className="hidden sm:inline">{uploading ? 'Uploaden...' : 'Upload video'}</span>
                     </button>
                 </div>
             }
         >
-            <Head title="Foto's" />
+            <Head title="Video's" />
 
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="video/*"
                 multiple
                 className="hidden"
                 onChange={handleFileChange}
@@ -171,12 +171,12 @@ export default function MediaIndex({ media }: MediaIndexProps) {
             >
                 {/* Drag overlay */}
                 {isDragging && (
-                    <div className="fixed inset-0 z-40 bg-emerald-500/10 border-2 border-emerald-500 border-dashed pointer-events-none flex items-center justify-center">
-                        <div className="bg-[#0f1117] border border-emerald-500/50 rounded-2xl px-10 py-8 text-center shadow-2xl">
-                            <svg className="w-12 h-12 mx-auto mb-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    <div className="fixed inset-0 z-40 bg-sky-500/10 border-2 border-sky-500 border-dashed pointer-events-none flex items-center justify-center">
+                        <div className="bg-[#0f1117] border border-sky-500/50 rounded-2xl px-10 py-8 text-center shadow-2xl">
+                            <svg className="w-12 h-12 mx-auto mb-3 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.893L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
-                            <p className="text-emerald-400 font-semibold text-lg">Loslaten om te uploaden</p>
+                            <p className="text-sky-400 font-semibold text-lg">Loslaten om te uploaden</p>
                         </div>
                     </div>
                 )}
@@ -193,18 +193,17 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                     )}
 
                     {media.length === 0 ? (
-                        /* Empty state */
                         <div
                             onClick={() => fileInputRef.current?.click()}
                             className="flex flex-col items-center justify-center border-2 border-dashed border-gray-800 rounded-2xl p-16 cursor-pointer hover:border-gray-600 transition group"
                         >
                             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4 group-hover:bg-white/10 transition">
                                 <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.893L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
                             </div>
-                            <p className="text-gray-300 font-medium mb-1">Sleep bestanden hierheen</p>
-                            <p className="text-gray-600 text-sm">of <span className="text-emerald-400">klik om te uploaden</span> · Afbeeldingen &amp; video's · max 200 MB</p>
+                            <p className="text-gray-300 font-medium mb-1">Sleep video's hierheen</p>
+                            <p className="text-gray-600 text-sm">of <span className="text-sky-400">klik om te uploaden</span> · mp4, mov, webm · max 200 MB</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
@@ -225,42 +224,33 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                 <div
                                     key={item.id}
                                     onClick={() => setSelected(selected?.id === item.id ? null : item)}
-                                    className={`group relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${
+                                    className={`group relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all duration-200 bg-gray-900 ${
                                         selected?.id === item.id
-                                            ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-[#0f1117] scale-[0.97]'
+                                            ? 'ring-2 ring-sky-400/80 ring-offset-2 ring-offset-[#0f1117] scale-[0.97]'
                                             : 'hover:scale-[0.97] hover:ring-2 hover:ring-white/20 hover:ring-offset-2 hover:ring-offset-[#0f1117]'
                                     }`}
                                 >
-                                    {item.mime_type?.startsWith('video/') ? (
-                                        <>
-                                            <video
-                                                src={item.url}
-                                                className="w-full h-full object-cover"
-                                                preload="metadata"
-                                                muted
-                                            />
-                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                <div className="w-9 h-9 rounded-full bg-black/60 backdrop-blur flex items-center justify-center">
-                                                    <svg className="w-5 h-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
-                                                        <path d="M8 5v14l11-7z" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <img
-                                            src={item.url}
-                                            alt={item.alt || item.filename}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    )}
+                                    <video
+                                        src={item.url}
+                                        className="w-full h-full object-cover"
+                                        preload="metadata"
+                                        muted
+                                    />
+                                    {/* Play overlay */}
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="w-9 h-9 rounded-full bg-black/60 backdrop-blur flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M8 5v14l11-7z" />
+                                            </svg>
+                                        </div>
+                                    </div>
                                     {/* Hover actions */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 gap-1">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setLightbox(item); }}
                                             className="w-full py-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs rounded-lg transition font-medium"
                                         >
-                                            {item.mime_type?.startsWith('video/') ? 'Afspelen' : 'Vergroot'}
+                                            Afspelen
                                         </button>
                                         <div className="flex gap-1">
                                             <button
@@ -287,36 +277,13 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                 {/* Detail panel */}
                 {selected && (
                     <div className="w-full md:w-72 md:flex-shrink-0 border-t border-gray-800/60 md:border-t-0 md:border-l bg-[#0d0f14] flex flex-col">
-                        {/* Preview */}
-                        <div
-                            className="relative cursor-zoom-in group overflow-hidden bg-black/40"
-                            style={{ aspectRatio: '4/3' }}
-                            onClick={() => setLightbox(selected)}
-                        >
-                            {selected.mime_type?.startsWith('video/') ? (
-                                <video
-                                    src={selected.url}
-                                    controls
-                                    className="w-full h-full object-contain"
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            ) : (
-                                <>
-                                    <img
-                                        src={selected.url}
-                                        alt={selected.alt || selected.filename}
-                                        className="w-full h-full object-contain"
-                                    />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                            {/* Close button */}
+                        {/* Video preview */}
+                        <div className="relative bg-black" style={{ aspectRatio: '16/9' }}>
+                            <video
+                                src={selected.url}
+                                controls
+                                className="w-full h-full object-contain"
+                            />
                             <button
                                 onClick={(e) => { e.stopPropagation(); setSelected(null); }}
                                 className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white/70 hover:text-white flex items-center justify-center text-sm transition"
@@ -334,13 +301,14 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                         <span className="text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">{formatBytes(selected.size)}</span>
                                     )}
                                     {selected.mime_type && (
-                                        <span className="text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">{selected.mime_type.replace('image/', '')}</span>
+                                        <span className="text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">{selected.mime_type.replace('video/', '')}</span>
                                     )}
                                 </div>
-                                <p className="text-gray-600 text-xs mt-2">{new Date(selected.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                <p className="text-gray-600 text-xs mt-2">
+                                    {new Date(selected.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </p>
                             </div>
 
-                            {/* URL */}
                             <div className="space-y-2">
                                 <p className="text-xs text-gray-600 font-medium uppercase tracking-wider">Bestand URL</p>
                                 <div className="flex gap-1.5">
@@ -351,7 +319,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                     />
                                     <button
                                         onClick={() => copyUrl(selected)}
-                                        className={`px-3 py-2 rounded-lg text-xs font-medium transition whitespace-nowrap ${copiedId === selected.id ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/8 hover:bg-white/12 text-gray-300 border border-white/10'}`}
+                                        className={`px-3 py-2 rounded-lg text-xs font-medium transition whitespace-nowrap ${copiedId === selected.id ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'}`}
                                     >
                                         {copiedId === selected.id ? '✓ Klaar' : 'Kopieer'}
                                     </button>
@@ -363,7 +331,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                 disabled={deletingId === selected.id}
                                 className="w-full py-2.5 rounded-xl text-sm font-medium text-red-400 border border-red-500/20 hover:bg-red-500/10 transition disabled:opacity-50"
                             >
-                                {deletingId === selected.id ? 'Verwijderen...' : 'Verwijder bestand'}
+                                {deletingId === selected.id ? 'Verwijderen...' : 'Verwijder video'}
                             </button>
                         </div>
                     </div>
@@ -371,11 +339,11 @@ export default function MediaIndex({ media }: MediaIndexProps) {
             </div>
         </AdminLayout>
 
-        {/* Lightbox */}
+        {/* Video lightbox */}
         {lightbox && (
             <div
                 className="fixed inset-0 z-50 flex items-center justify-center p-6"
-                style={{ backgroundColor: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)' }}
+                style={{ backgroundColor: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(8px)' }}
                 onClick={() => setLightbox(null)}
             >
                 {/* Top bar */}
@@ -402,6 +370,17 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                     </button>
                 )}
 
+                {/* Video player */}
+                <div className="max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+                    <video
+                        key={lightbox.id}
+                        src={lightbox.url}
+                        controls
+                        autoPlay
+                        className="w-full rounded-xl shadow-2xl max-h-[80vh]"
+                    />
+                </div>
+
                 {/* Next */}
                 {lightboxIdx < media.length - 1 && (
                     <button
@@ -411,31 +390,6 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                         ›
                     </button>
                 )}
-
-                {/* Image / Video */}
-                {lightbox.mime_type?.startsWith('video/') ? (
-                    <video
-                        src={lightbox.url}
-                        controls
-                        autoPlay
-                        className="max-w-full rounded-xl shadow-2xl"
-                        style={{ maxHeight: 'calc(100vh - 120px)' }}
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <img
-                        src={lightbox.url}
-                        alt={lightbox.alt || lightbox.filename}
-                        className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-                        style={{ maxHeight: 'calc(100vh - 120px)' }}
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                )}
-
-                {/* Bottom hint */}
-                <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/25 text-xs">
-                    ← → navigeren · ESC sluiten
-                </p>
             </div>
         )}
         </>

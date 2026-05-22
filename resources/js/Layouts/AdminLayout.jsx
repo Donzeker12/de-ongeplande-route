@@ -8,6 +8,7 @@ export default function AdminLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const { flash } = usePage().props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [mediaOpen, setMediaOpen] = useState(() => route().current('admin.media.*'));
     const [flashVisible, setFlashVisible] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(null);
@@ -54,7 +55,16 @@ export default function AdminLayout({ header, children }) {
         { name: 'Social',        href: '/admin/snippets',    icon: '📱', current: route().current('admin.snippets.*') },
         { name: 'Gebruikers',    href: '/admin/users',       icon: '👥', current: route().current('admin.users.*') },
         { name: 'Instellingen',  href: '/admin/settings',    icon: '⚙️', current: route().current('admin.settings.*') },
-        { name: '🖼️ Media',     href: '/admin/media',       icon: '', current: route().current('admin.media.*'), media: true },
+        {
+            name: 'Media',
+            icon: '🖼️',
+            current: route().current('admin.media.*'),
+            media: true,
+            children: [
+                { name: "Foto's",  href: '/admin/media',         icon: '📷', current: route().current('admin.media.index') },
+                { name: "Video's", href: '/admin/media/videos',  icon: '🎬', current: route().current('admin.media.videos') },
+            ],
+        },
         { name: 'Website',       href: '/',                  icon: '🌐', current: false, external: true },
     ];
 
@@ -86,24 +96,64 @@ export default function AdminLayout({ header, children }) {
 
                     {/* Navigation */}
                     <nav className="flex-1 px-3 pb-4 space-y-1 overflow-y-auto">
-                        {navigation.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                target={item.external ? '_blank' : undefined}
-                                className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all ${
-                                    item.current
-                                        ? item.media ? 'bg-sky-500/10 text-sky-400' : 'bg-emerald-500/10 text-emerald-400'
-                                        : item.media ? 'text-sky-400 hover:bg-sky-900/30 hover:text-sky-300' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
-                                }`}
-                            >
-                                <span className="text-lg">{item.icon}</span>
-                                <span className="font-medium text-sm">{item.name}</span>
-                                {item.current && (
-                                    <div className={`ml-auto w-1 h-1 rounded-full ${item.media ? 'bg-sky-400' : 'bg-emerald-400'}`}></div>
-                                )}
-                            </Link>
-                        ))}
+                        {navigation.map((item) => {
+                            if (item.children) {
+                                return (
+                                    <div key={item.name}>
+                                        <button
+                                            onClick={() => setMediaOpen((o) => !o)}
+                                            className={`w-full group flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all ${
+                                                item.current ? 'bg-sky-500/10 text-sky-400' : 'text-sky-400 hover:bg-sky-900/30 hover:text-sky-300'
+                                            }`}
+                                        >
+                                            <span className="text-lg">{item.icon}</span>
+                                            <span className="font-medium text-sm flex-1 text-left">{item.name}</span>
+                                            <svg
+                                                className={`w-3.5 h-3.5 transition-transform duration-200 ${mediaOpen ? 'rotate-180' : ''}`}
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        {mediaOpen && (
+                                            <div className="ml-3 mt-0.5 space-y-0.5 border-l border-gray-800 pl-3">
+                                                {item.children.map((child) => (
+                                                    <Link
+                                                        key={child.name}
+                                                        href={child.href}
+                                                        className={`flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all ${
+                                                            child.current ? 'bg-sky-500/10 text-sky-400' : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
+                                                        }`}
+                                                    >
+                                                        <span className="text-sm">{child.icon}</span>
+                                                        <span className="font-medium text-sm">{child.name}</span>
+                                                        {child.current && <div className="ml-auto w-1 h-1 rounded-full bg-sky-400"></div>}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    target={item.external ? '_blank' : undefined}
+                                    className={`group flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all ${
+                                        item.current
+                                            ? 'bg-emerald-500/10 text-emerald-400'
+                                            : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
+                                    }`}
+                                >
+                                    <span className="text-lg">{item.icon}</span>
+                                    <span className="font-medium text-sm">{item.name}</span>
+                                    {item.current && (
+                                        <div className="ml-auto w-1 h-1 rounded-full bg-emerald-400"></div>
+                                    )}
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     {/* Quick Upload */}

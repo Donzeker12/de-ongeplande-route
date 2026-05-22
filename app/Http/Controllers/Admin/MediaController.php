@@ -15,7 +15,14 @@ class MediaController extends Controller
     public function index(): Response
     {
         return Inertia::render('Admin/Media/Index', [
-            'media' => Media::query()->latest()->get(),
+            'media' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(),
+        ]);
+    }
+
+    public function videos(): Response
+    {
+        return Inertia::render('Admin/Media/Videos', [
+            'media' => Media::query()->where('mime_type', 'LIKE', 'video/%')->latest()->get(),
         ]);
     }
 
