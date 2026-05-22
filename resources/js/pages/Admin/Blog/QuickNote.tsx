@@ -66,24 +66,19 @@ export default function BlogQuickNote({ draftPosts }: Props) {
 
     return (
         <AdminLayout
-            header={
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                        ✍️ Blog Notitie
-                        <span className="text-sm font-normal text-gray-400">Snel opschrijven</span>
-                    </h2>
-                    <Link
-                        href="/admin/blog"
-                        className="text-sm text-gray-400 hover:text-white transition"
-                    >
-                        Alle posts →
-                    </Link>
-                </div>
-            }
+            header={<h2 className="text-xl font-semibold">✍️ Blog Notitie</h2>}
         >
             <Head title="Blog Notitie – Snel opschrijven" />
 
             <div className="max-w-lg mx-auto p-4 space-y-5">
+                {/* Top row: subtitle + link */}
+                <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-400">Snel een notitie opschrijven</p>
+                    <Link href="/admin/blog" className="text-sm text-gray-400 hover:text-white transition">
+                        Alle posts →
+                    </Link>
+                </div>
+
                 {/* Success flash */}
                 {props.flash?.success && (
                     <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-xl flex items-center gap-2">
