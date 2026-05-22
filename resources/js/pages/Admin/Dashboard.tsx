@@ -49,7 +49,7 @@ export default function AdminDashboard({ stats, recent_outings, recent_discoveri
                         <div className="w-1 h-8 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full"></div>
                         <h3 className="text-xl font-bold text-white">Statistieken Overzicht</h3>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
                         <div className="bg-gradient-to-br from-[#232734] to-[#1e2330] p-6 rounded-xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-3xl shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
@@ -128,7 +128,7 @@ export default function AdminDashboard({ stats, recent_outings, recent_discoveri
                         <div className="w-1 h-8 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full"></div>
                         <h3 className="text-xl font-bold text-white">Snelle Acties</h3>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                         <Link
                             href="/admin/outings"
                             className="block bg-gradient-to-br from-[#232734] to-[#1e2330] border border-gray-700/30 rounded-xl p-6 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 group"

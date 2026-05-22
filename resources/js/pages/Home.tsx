@@ -97,7 +97,7 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                 </section>
 
                 {/* Main Content */}
-                <div className="max-w-7xl mx-auto px-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     {/* Stats Section */}
                     <section className="py-20 -mt-16 relative z-10">
                         <div className="glass rounded-3xl p-8 shadow-warm">
@@ -352,7 +352,7 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
 
                 {/* Footer */}
                 <footer className="bg-warm-800 text-warm-200 py-16">
-                    <div className="max-w-7xl mx-auto px-6">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
                             <div>
                                 <h3 className="font-serif text-2xl text-white mb-4">de ongeplande route</h3>

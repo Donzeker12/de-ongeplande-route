@@ -241,7 +241,7 @@ export default function VenuesCreate({ types }: Props) {
                                         )}
                                     </span>
                                     <span
-                                        className={`text-xs font-medium transition ${
+                                        className={`text-xs font-medium transition hidden sm:block ${
                                             step === s.id
                                                 ? 'text-emerald-400'
                                                 : step > s.id
@@ -327,7 +327,7 @@ export default function VenuesCreate({ types }: Props) {
                                     {DAYS.map((day) => {
                                         const schedule = data.opening_hours[day];
                                         return (
-                                            <div key={day} className="flex items-center gap-3 px-6 py-3">
+                                            <div key={day} className="flex flex-wrap items-center gap-2 px-4 py-3 sm:px-6">
                                                 <span className="w-24 text-sm font-medium text-gray-300 shrink-0">
                                                     {DAY_LABELS[day]}
                                                 </span>
@@ -343,7 +343,7 @@ export default function VenuesCreate({ types }: Props) {
                                                     {schedule.open ? 'Open' : 'Gesloten'}
                                                 </button>
                                                 {schedule.open ? (
-                                                    <div className="flex items-center gap-2 ml-auto">
+                                                    <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
                                                         <input
                                                             type="time"
                                                             value={schedule.from}

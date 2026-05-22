@@ -52,7 +52,7 @@ export default function Register() {
                         </div>
 
                         {/* Register Card */}
-                        <div className="bg-white rounded-2xl shadow-xl p-8">
+                        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
                             <div className="text-center mb-8">
                                 <h2 className="text-3xl font-serif text-warm-brown mb-2">Account Aanmaken</h2>
                                 <p className="text-sm text-warm-brown/60">Begin met het delen van je verhalen</p>

@@ -142,7 +142,7 @@ export default function BlogShow({ post }: Props) {
                 {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
 
                 {/* Hero */}
-                <div className="max-w-3xl mx-auto px-6 py-10">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
                     {/* Back link */}
                     <Link
                         href="/blog"

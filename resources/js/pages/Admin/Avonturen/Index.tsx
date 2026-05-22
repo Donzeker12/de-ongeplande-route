@@ -67,7 +67,7 @@ export default function AvonturenIndex({ avonturen }: Props) {
                             className="w-full bg-[#0f1117] border border-gray-700 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
                         />
                         {createForm.errors.title && <p className="text-red-400 text-xs">{createForm.errors.title}</p>}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input
                                 type="text"
                                 value={createForm.data.location}

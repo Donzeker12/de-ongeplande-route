@@ -164,7 +164,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
             />
 
             <div
-                className="flex h-full"
+                className="flex flex-col md:flex-row h-full"
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
                 onDrop={handleDrop}
@@ -268,7 +268,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
 
                 {/* Detail panel */}
                 {selected && (
-                    <div className="w-72 flex-shrink-0 border-l border-gray-800/60 bg-[#0d0f14] flex flex-col">
+                    <div className="w-full md:w-72 md:flex-shrink-0 border-t border-gray-800/60 md:border-t-0 md:border-l bg-[#0d0f14] flex flex-col">
                         {/* Preview */}
                         <div
                             className="relative cursor-zoom-in group overflow-hidden bg-black/40"

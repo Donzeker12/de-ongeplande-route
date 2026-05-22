@@ -37,7 +37,7 @@ export default function OutingIndex({ outings }: Props) {
             <main className="min-h-screen bg-warm-50">
                 {/* Header */}
                 <div className="bg-white border-b border-warm-200">
-                    <div className="max-w-5xl mx-auto px-6 py-10">
+                    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
                         <h1 className="text-4xl font-serif font-bold text-warm-800">Alle uitjes</h1>
                         <p className="mt-2 text-warm-500 text-lg">
                             {outings.length} avonturen gedeeld op De Ongeplande Route

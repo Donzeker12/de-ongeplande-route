@@ -79,6 +79,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
                         </div>
                     ) : (
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
+                            <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b border-gray-800">
@@ -142,6 +143,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
                                     ))}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     )}
 

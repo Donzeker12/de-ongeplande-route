@@ -45,7 +45,7 @@ export default function BlogIndex({ posts }: Props) {
             <main className="min-h-screen bg-warm-50">
                 {/* Header */}
                 <div className="bg-white border-b border-warm-200">
-                    <div className="max-w-5xl mx-auto px-6 py-10">
+                    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
                         <h1 className="text-4xl font-serif font-bold text-warm-800">Blog</h1>
                         <p className="mt-2 text-warm-500 text-lg">
                             {posts.length === 1
@@ -56,7 +56,7 @@ export default function BlogIndex({ posts }: Props) {
                 </div>
 
                 {/* Grid */}
-                <div className="max-w-5xl mx-auto px-6 py-10">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
                     {posts.length === 0 ? (
                         <div className="text-center py-20">
                             <span className="text-6xl block mb-4">✍️</span>

@@ -52,7 +52,7 @@ export default function Login({ status, canResetPassword }) {
                         </div>
 
                         {/* Login Card */}
-                        <div className="bg-white rounded-2xl shadow-xl p-8">
+                        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
                             <div className="text-center mb-8">
                                 <h2 className="text-3xl font-serif text-warm-brown mb-2">Welkom terug</h2>
                                 <p className="text-sm text-warm-brown/60">Log in om je content te beheren</p>

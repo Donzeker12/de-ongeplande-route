@@ -111,7 +111,7 @@ export default function StoriesIndex({ stories }: Props) {
                                             href={route('admin.stories.destroy', story.id)}
                                             method="delete"
                                             as="button"
-                                            className="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm transition-colors"
+                                            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg text-sm transition-colors"
                                             onBefore={() => confirm('Weet je zeker dat je deze story wilt verwijderen?')}
                                         >
                                             🗑️

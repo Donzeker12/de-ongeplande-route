@@ -104,11 +104,11 @@ export default function Show({ outing }: OutingShowProps) {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                                 
                                 {/* Title Overlay */}
-                                <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 text-white">
+                                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 lg:p-12 text-white">
                                     <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight">
                                         {outing.title}
                                     </h1>
-                                    <div className="flex flex-wrap items-center gap-6 text-sm lg:text-base">
+                                    <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm lg:text-base">
                                         {outing.city && (
                                             <span className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

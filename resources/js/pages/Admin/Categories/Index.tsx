@@ -65,6 +65,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                         </div>
                     ) : (
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
+                            <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b border-gray-800">
@@ -116,6 +117,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                                     ))}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     )}
                 </div>
