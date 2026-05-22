@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import ImageEditorModal from '@/Components/ImageEditorModal';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -43,6 +44,7 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
     const recorderRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const [previews, setPreviews] = useState<{ file: File; url: string }[]>([]);
+    const [editingPreviewIdx, setEditingPreviewIdx] = useState<number | null>(null);
     const [videoPreviews, setVideoPreviews] = useState<{ file: File; url: string }[]>([]);
     const [recording, setRecording] = useState(false);
     const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -108,6 +110,16 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
         URL.revokeObjectURL(previews[index].url);
         setPreviews(updated);
         setData('images', updated.map((p) => p.file));
+    };
+
+    const handleEditSave = (editedFile: File) => {
+        if (editingPreviewIdx === null) return;
+        const updated = [...previews];
+        URL.revokeObjectURL(updated[editingPreviewIdx].url);
+        updated[editingPreviewIdx] = { file: editedFile, url: URL.createObjectURL(editedFile) };
+        setPreviews(updated);
+        setData('images', updated.map((p) => p.file));
+        setEditingPreviewIdx(null);
     };
 
     const handleVideos = (files: FileList | null) => {
@@ -195,6 +207,14 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
     };
 
     return (
+        <>
+        {editingPreviewIdx !== null && (
+            <ImageEditorModal
+                file={previews[editingPreviewIdx]?.file}
+                onSave={handleEditSave}
+                onCancel={() => setEditingPreviewIdx(null)}
+            />
+        )}
         <AdminLayout
             header={<h2 className="text-xl font-semibold">✍️ Blog Notitie</h2>}
         >
@@ -279,6 +299,14 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
                                             alt=""
                                             className="w-full h-full object-cover"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditingPreviewIdx(index)}
+                                            className="absolute top-1 left-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-emerald-600 transition"
+                                            title="Bijsnijden / verkleinen"
+                                        >
+                                            ✏️
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={() => removeImage(index)}
@@ -594,5 +622,6 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
                 )}
             </div>
         </AdminLayout>
+        </>
     );
 }

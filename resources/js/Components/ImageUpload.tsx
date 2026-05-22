@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import axios from 'axios';
 import MediaPicker from '@/Components/MediaPicker';
+import ImageEditorModal from '@/Components/ImageEditorModal';
 
 interface ImageUploadProps {
     value: string;
@@ -15,17 +16,14 @@ export default function ImageUpload({ value, onChange, placeholder = 'https://..
     const [pickerOpen, setPickerOpen] = useState(false);
     const [showUrlInput, setShowUrlInput] = useState(false);
     const [urlInput, setUrlInput] = useState('');
+    const [pendingFile, setPendingFile] = useState<File | null>(null);
+    const [editingCurrent, setEditingCurrent] = useState(false);
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
+    const uploadAndSet = async (file: File) => {
         setUploading(true);
         setUploadError(null);
-
         const formData = new FormData();
         formData.append('image', file);
-
         try {
             const response = await axios.post('/admin/upload-image', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -39,6 +37,13 @@ export default function ImageUpload({ value, onChange, placeholder = 'https://..
         }
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setPendingFile(file);
+        e.target.value = '';
+    };
+
     const handleUrlSubmit = () => {
         if (urlInput.trim()) {
             onChange(urlInput.trim());
@@ -49,6 +54,20 @@ export default function ImageUpload({ value, onChange, placeholder = 'https://..
 
     return (
         <div>
+            {pendingFile && (
+                <ImageEditorModal
+                    file={pendingFile}
+                    onSave={(f) => { setPendingFile(null); uploadAndSet(f); }}
+                    onCancel={() => setPendingFile(null)}
+                />
+            )}
+            {editingCurrent && value && (
+                <ImageEditorModal
+                    src={value}
+                    onSave={(f) => { setEditingCurrent(false); uploadAndSet(f); }}
+                    onCancel={() => setEditingCurrent(false)}
+                />
+            )}
             <input
                 ref={fileInputRef}
                 type="file"
@@ -67,6 +86,14 @@ export default function ImageUpload({ value, onChange, placeholder = 'https://..
                     />
                     {/* Overlay actions */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setEditingCurrent(true)}
+                            disabled={uploading}
+                            className="px-3 py-2 bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 rounded-lg text-xs font-medium backdrop-blur-sm transition flex items-center gap-1.5"
+                        >
+                            ✏️ Bewerken
+                        </button>
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}

@@ -1,4 +1,4 @@
-import { EditorContent, useEditor } from '@tiptap/react';
+import { BubbleMenu, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import LinkExtension from '@tiptap/extension-link';
 import ImageExtension from '@tiptap/extension-image';
@@ -6,6 +6,7 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Node, mergeAttributes } from '@tiptap/core';
+import ImageEditorModal from '@/Components/ImageEditorModal';
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -81,7 +82,10 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
+    const replaceInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
+    const [pendingFile, setPendingFile] = useState<File | null>(null);
+    const [editingImageSrc, setEditingImageSrc] = useState<string | null>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [showUrlInput, setShowUrlInput] = useState(false);
     const [urlValue, setUrlValue] = useState('');
@@ -185,7 +189,21 @@ export default function RichTextEditor({
                 className="hidden"
                 onChange={(e) => {
                     if (e.target.files?.[0]) {
-                        handleFileUpload(e.target.files[0]);
+                        setPendingFile(e.target.files[0]);
+                        e.target.value = '';
+                    }
+                }}
+            />
+            {/* Hidden replace input — for BubbleMenu "Vervangen" */}
+            <input
+                ref={replaceInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                        setPendingFile(e.target.files[0]);
+                        e.target.value = '';
                     }
                 }}
             />
@@ -388,6 +406,79 @@ export default function RichTextEditor({
                     </svg>
                     Bestand uploaden...
                 </div>
+            )}
+
+            {/* BubbleMenu for selected images */}
+            {editor && (
+                <BubbleMenu
+                    editor={editor}
+                    shouldShow={({ editor: e }) => e.isActive('image')}
+                    tippyOptions={{ duration: 100, placement: 'top' }}
+                >
+                    <div className="flex items-center gap-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-1">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const src = editor.getAttributes('image').src as string | undefined;
+                                if (src) setEditingImageSrc(src);
+                            }}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-300 hover:bg-gray-700 rounded-md transition"
+                        >
+                            ✏️ Bewerken
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => replaceInputRef.current?.click()}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-300 hover:bg-gray-700 rounded-md transition"
+                        >
+                            🔄 Vervangen
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => editor.chain().focus().deleteSelection().run()}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-red-400 hover:bg-red-900/30 rounded-md transition"
+                        >
+                            🗑️
+                        </button>
+                    </div>
+                </BubbleMenu>
+            )}
+
+            {/* Editor modal — new image before upload */}
+            {pendingFile && (
+                <ImageEditorModal
+                    file={pendingFile}
+                    onSave={(f) => {
+                        setPendingFile(null);
+                        handleFileUpload(f);
+                    }}
+                    onCancel={() => setPendingFile(null)}
+                />
+            )}
+
+            {/* Editor modal — edit existing image in editor */}
+            {editingImageSrc && (
+                <ImageEditorModal
+                    src={editingImageSrc}
+                    onSave={async (f) => {
+                        setEditingImageSrc(null);
+                        setUploading(true);
+                        setUploadError(null);
+                        try {
+                            const formData = new FormData();
+                            formData.append('image', f);
+                            const { data } = await axios.post('/admin/upload-image', formData, {
+                                headers: { 'Content-Type': 'multipart/form-data' },
+                            });
+                            editor?.chain().focus().updateAttributes('image', { src: data.url }).run();
+                        } catch {
+                            setUploadError('Upload mislukt.');
+                        } finally {
+                            setUploading(false);
+                        }
+                    }}
+                    onCancel={() => setEditingImageSrc(null)}
+                />
             )}
         </div>
     );
