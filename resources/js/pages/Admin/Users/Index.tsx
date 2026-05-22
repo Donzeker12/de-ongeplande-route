@@ -38,12 +38,12 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
                     <h2 className="text-lg font-semibold text-white">Gebruikersbeheer</h2>
                     <Link
                         href="/admin/users/create"
-                        className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition shadow-lg hover:shadow-emerald-500/20"
+                        className="flex items-center space-x-2 p-2 sm:px-4 sm:py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition shadow-lg hover:shadow-emerald-500/20"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        <span>Nieuwe Gebruiker</span>
+                        <span className="hidden sm:inline">Nieuwe Gebruiker</span>
                     </Link>
                 </div>
             }

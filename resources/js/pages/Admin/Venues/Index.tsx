@@ -39,12 +39,12 @@ export default function VenuesIndex({ venues, types, filters }: Props) {
                     <h2 className="text-lg font-semibold text-white">Locaties & Plekken</h2>
                     <Link
                         href="/admin/venues/create"
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition"
+                        className="flex items-center gap-2 p-2 sm:px-4 sm:py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        Nieuwe Locatie
+                        <span className="hidden sm:inline">Nieuwe Locatie</span>
                     </Link>
                 </div>
             }
