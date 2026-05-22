@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Intervention\Image\Laravel\Facades\Image;
 
 class MediaController extends Controller
 {
@@ -46,12 +47,16 @@ class MediaController extends Controller
         $directory = $isVideo ? 'uploads/videos' : 'uploads';
         $path = $file->store($directory, 'public');
 
+        if (! $isVideo) {
+            $this->optimizeImage(Storage::disk('public')->path($path));
+        }
+
         $media = Media::create([
             'filename' => $file->getClientOriginalName(),
             'path' => $path,
             'url' => asset('storage/'.$path),
             'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize(),
+            'size' => Storage::disk('public')->size($path),
         ]);
 
         return response()->json($media, 201);
@@ -90,5 +95,23 @@ class MediaController extends Controller
         $medium->delete();
 
         return response()->json(['deleted' => true]);
+    }
+
+    private function optimizeImage(string $fullPath): void
+    {
+        $image = Image::read($fullPath);
+
+        if ($image->width() > 2048) {
+            $image->scaleDown(width: 2048);
+        }
+
+        $mime = mime_content_type($fullPath);
+
+        match (true) {
+            in_array($mime, ['image/jpeg', 'image/jpg']) => $image->toJpeg(85)->save($fullPath),
+            $mime === 'image/webp' => $image->toWebp(85)->save($fullPath),
+            $mime === 'image/png' => $image->toPng()->save($fullPath),
+            default => $image->save($fullPath),
+        };
     }
 }
