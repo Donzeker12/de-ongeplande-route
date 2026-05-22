@@ -75,9 +75,13 @@ export default function BlogCreate() {
                     <h2 className="text-lg font-semibold text-white">Nieuw Blogpost</h2>
                     <Link
                         href="/admin/blog"
-                        className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition text-sm"
+                        className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition text-sm"
+                        title="Terug"
                     >
-                        ← Terug
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span className="hidden sm:inline">Terug</span>
                     </Link>
                 </div>
             }
