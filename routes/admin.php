@@ -95,6 +95,9 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Image upload (legacy)
     Route::post('/upload-image', ImageUploadController::class)->name('upload-image');
 
+    // Video upload (for blog editor)
+    Route::post('/upload-video', [MediaController::class, 'storeVideo'])->name('upload-video');
+
     // Media bibliotheek
     Route::get('/media/list', [MediaController::class, 'list'])->name('media.list');
     Route::resource('media', MediaController::class)->only(['index', 'store', 'destroy']);

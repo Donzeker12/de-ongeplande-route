@@ -120,6 +120,8 @@ class PostController extends Controller
             'note' => 'required|string|max:10000',
             'images' => 'nullable|array|max:10',
             'images.*' => 'image|max:20480',
+            'videos' => 'nullable|array|max:5',
+            'videos.*' => 'file|mimes:mp4,mov,webm,ogg|max:204800',
             'post_id' => 'nullable|exists:posts,id',
             'new_post_title' => 'nullable|string|max:255',
             'avontuur_id' => 'nullable|exists:avonturen,id',
@@ -154,6 +156,15 @@ class PostController extends Controller
                 $path = $image->store('blog', 'public');
                 $url = Storage::url($path);
                 $contentHtml .= '<figure><img src="'.e($url).'" alt="" class="rounded-lg max-w-full my-4 mx-auto block shadow-md" /></figure>';
+            }
+        }
+
+        // Upload videos and append as video elements
+        if ($request->hasFile('videos')) {
+            foreach ($request->file('videos') as $video) {
+                $path = $video->store('blog/videos', 'public');
+                $url = Storage::url($path);
+                $contentHtml .= '<figure><video src="'.e($url).'" controls class="w-full rounded-lg max-w-full my-4 mx-auto block shadow-md"></video></figure>';
             }
         }
 

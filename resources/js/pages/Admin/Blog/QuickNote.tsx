@@ -27,6 +27,7 @@ interface FormData {
     post_id: string;
     new_post_title: string;
     images: File[];
+    videos: File[];
     avontuur_id: string;
     new_avontuur_title: string;
     new_avontuur_location: string;
@@ -37,7 +38,14 @@ interface FormData {
 export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
     const { props } = usePage<{ flash?: { success?: string } }>();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
+    const liveVideoRef = useRef<HTMLVideoElement>(null);
+    const recorderRef = useRef<MediaRecorder | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const [previews, setPreviews] = useState<{ file: File; url: string }[]>([]);
+    const [videoPreviews, setVideoPreviews] = useState<{ file: File; url: string }[]>([]);
+    const [recording, setRecording] = useState(false);
+    const [recordingError, setRecordingError] = useState<string | null>(null);
     const [mode, setMode] = useState<'new' | 'existing'>(draftPosts.length > 0 ? 'existing' : 'new');
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [pendingOffline, setPendingOffline] = useState(false);
@@ -52,6 +60,7 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
         post_id: draftPosts[0]?.id?.toString() ?? '',
         new_post_title: saved?.new_post_title ?? '',
         images: [],
+        videos: [],
         avontuur_id: avonturen[0]?.id?.toString() ?? '',
         new_avontuur_title: '',
         new_avontuur_location: '',
@@ -101,6 +110,62 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
         setData('images', updated.map((p) => p.file));
     };
 
+    const handleVideos = (files: FileList | null) => {
+        if (!files) return;
+        const newFiles = Array.from(files);
+        const newPreviews = newFiles.map((file) => ({ file, url: URL.createObjectURL(file) }));
+        const merged = [...videoPreviews, ...newPreviews];
+        setVideoPreviews(merged);
+        setData('videos', merged.map((p) => p.file));
+    };
+
+    const removeVideo = (index: number) => {
+        const updated = videoPreviews.filter((_, i) => i !== index);
+        URL.revokeObjectURL(videoPreviews[index].url);
+        setVideoPreviews(updated);
+        setData('videos', updated.map((p) => p.file));
+    };
+
+    const startRecording = async () => {
+        setRecordingError(null);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
+            streamRef.current = stream;
+            if (liveVideoRef.current) {
+                liveVideoRef.current.srcObject = stream;
+            }
+            const recorder = new MediaRecorder(stream);
+            const chunks: Blob[] = [];
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+            recorder.onstop = () => {
+                stream.getTracks().forEach((t) => t.stop());
+                const type = recorder.mimeType || 'video/webm';
+                const ext = type.includes('mp4') ? 'mp4' : 'webm';
+                const blob = new Blob(chunks, { type });
+                const file = new File([blob], `opname-${Date.now()}.${ext}`, { type });
+                const url = URL.createObjectURL(blob);
+                setVideoPreviews((prev) => {
+                    const updated = [...prev, { file, url }];
+                    setData('videos', updated.map((p) => p.file));
+                    return updated;
+                });
+                setRecording(false);
+            };
+            recorder.start();
+            recorderRef.current = recorder;
+            setRecording(true);
+        } catch {
+            setRecordingError('Camera toegang geweigerd. Controleer de browser-instellingen.');
+        }
+    };
+
+    const stopRecording = () => {
+        recorderRef.current?.stop();
+        recorderRef.current = null;
+    };
+
     const doSubmit = () => {
         post('/admin/blog/quick-note', {
             onSuccess: () => {
@@ -109,6 +174,9 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
                 previews.forEach((p) => URL.revokeObjectURL(p.url));
                 setPreviews([]);
                 setData('images', []);
+                videoPreviews.forEach((p) => URL.revokeObjectURL(p.url));
+                setVideoPreviews([]);
+                setData('videos', []);
                 setAvontuurMode('none');
             },
             forceFormData: true,
@@ -261,7 +329,91 @@ export default function BlogQuickNote({ draftPosts, avonturen }: Props) {
                         />
                     </div>
 
-                    {/* Post selector */}
+                    {/* Video section */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                            🎥 Video's toevoegen
+                        </label>
+
+                        {/* Recording live preview */}
+                        {recording && (
+                            <div className="mb-3 relative rounded-xl overflow-hidden bg-black aspect-video">
+                                <video
+                                    ref={liveVideoRef}
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-red-600 text-white text-xs font-medium px-2.5 py-1 rounded-full">
+                                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                                    REC
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={stopRecording}
+                                    className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition"
+                                >
+                                    ⏹ Stop opname
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Video previews */}
+                        {videoPreviews.length > 0 && (
+                            <div className="space-y-2 mb-3">
+                                {videoPreviews.map((preview, index) => (
+                                    <div key={index} className="relative rounded-xl overflow-hidden bg-black">
+                                        <video
+                                            src={preview.url}
+                                            controls
+                                            className="w-full rounded-xl max-h-48"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeVideo(index)}
+                                            className="absolute top-2 right-2 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {recordingError && (
+                            <p className="text-red-400 text-sm mb-2">{recordingError}</p>
+                        )}
+
+                        {/* Video action buttons */}
+                        {!recording && (
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => videoInputRef.current?.click()}
+                                    className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl py-3 text-sm font-medium transition"
+                                >
+                                    <span>🎞️</span> Galerij
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={startRecording}
+                                    className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-xl py-3 text-sm font-medium transition"
+                                >
+                                    <span>🔴</span> Opnemen
+                                </button>
+                            </div>
+                        )}
+
+                        <input
+                            ref={videoInputRef}
+                            type="file"
+                            accept="video/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleVideos(e.target.files)}
+                        />
+                    </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
                             📌 Koppelen aan

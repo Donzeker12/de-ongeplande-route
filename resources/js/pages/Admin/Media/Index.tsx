@@ -67,7 +67,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
             });
             router.reload({ only: ['media'] });
         } catch {
-            setUploadError('Upload mislukt. Probeer het opnieuw (max 10 MB, alleen afbeeldingen).');
+            setUploadError('Upload mislukt. Probeer het opnieuw (max 200 MB, afbeeldingen of video\'s).');
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -88,7 +88,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         const files = e.dataTransfer.files;
         if (!files?.length) return;
         for (const file of Array.from(files)) {
-            if (file.type.startsWith('image/')) {
+            if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
                 await uploadFile(file);
             }
         }
@@ -157,7 +157,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 multiple
                 className="hidden"
                 onChange={handleFileChange}
@@ -203,8 +203,8 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                             </div>
-                            <p className="text-gray-300 font-medium mb-1">Sleep foto's hierheen</p>
-                            <p className="text-gray-600 text-sm">of <span className="text-emerald-400">klik om te uploaden</span> · JPG, PNG, WebP · max 10 MB</p>
+                            <p className="text-gray-300 font-medium mb-1">Sleep bestanden hierheen</p>
+                            <p className="text-gray-600 text-sm">of <span className="text-emerald-400">klik om te uploaden</span> · Afbeeldingen &amp; video's · max 200 MB</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
@@ -231,18 +231,36 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                             : 'hover:scale-[0.97] hover:ring-2 hover:ring-white/20 hover:ring-offset-2 hover:ring-offset-[#0f1117]'
                                     }`}
                                 >
-                                    <img
-                                        src={item.url}
-                                        alt={item.alt || item.filename}
-                                        className="w-full h-full object-cover"
-                                    />
+                                    {item.mime_type?.startsWith('video/') ? (
+                                        <>
+                                            <video
+                                                src={item.url}
+                                                className="w-full h-full object-cover"
+                                                preload="metadata"
+                                                muted
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                <div className="w-9 h-9 rounded-full bg-black/60 backdrop-blur flex items-center justify-center">
+                                                    <svg className="w-5 h-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M8 5v14l11-7z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <img
+                                            src={item.url}
+                                            alt={item.alt || item.filename}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    )}
                                     {/* Hover actions */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 gap-1">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setLightbox(item); }}
                                             className="w-full py-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs rounded-lg transition font-medium"
                                         >
-                                            Vergroot
+                                            {item.mime_type?.startsWith('video/') ? 'Afspelen' : 'Vergroot'}
                                         </button>
                                         <div className="flex gap-1">
                                             <button
@@ -275,18 +293,29 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                             style={{ aspectRatio: '4/3' }}
                             onClick={() => setLightbox(selected)}
                         >
-                            <img
-                                src={selected.url}
-                                alt={selected.alt || selected.filename}
-                                className="w-full h-full object-contain"
-                            />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                    </svg>
-                                </div>
-                            </div>
+                            {selected.mime_type?.startsWith('video/') ? (
+                                <video
+                                    src={selected.url}
+                                    controls
+                                    className="w-full h-full object-contain"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            ) : (
+                                <>
+                                    <img
+                                        src={selected.url}
+                                        alt={selected.alt || selected.filename}
+                                        className="w-full h-full object-contain"
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             {/* Close button */}
                             <button
                                 onClick={(e) => { e.stopPropagation(); setSelected(null); }}
@@ -313,7 +342,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
 
                             {/* URL */}
                             <div className="space-y-2">
-                                <p className="text-xs text-gray-600 font-medium uppercase tracking-wider">Afbeelding URL</p>
+                                <p className="text-xs text-gray-600 font-medium uppercase tracking-wider">Bestand URL</p>
                                 <div className="flex gap-1.5">
                                     <input
                                         readOnly
@@ -383,14 +412,25 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                     </button>
                 )}
 
-                {/* Image */}
-                <img
-                    src={lightbox.url}
-                    alt={lightbox.alt || lightbox.filename}
-                    className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-                    style={{ maxHeight: 'calc(100vh - 120px)' }}
-                    onClick={(e) => e.stopPropagation()}
-                />
+                {/* Image / Video */}
+                {lightbox.mime_type?.startsWith('video/') ? (
+                    <video
+                        src={lightbox.url}
+                        controls
+                        autoPlay
+                        className="max-w-full rounded-xl shadow-2xl"
+                        style={{ maxHeight: 'calc(100vh - 120px)' }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                ) : (
+                    <img
+                        src={lightbox.url}
+                        alt={lightbox.alt || lightbox.filename}
+                        className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+                        style={{ maxHeight: 'calc(100vh - 120px)' }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                )}
 
                 {/* Bottom hint */}
                 <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/25 text-xs">

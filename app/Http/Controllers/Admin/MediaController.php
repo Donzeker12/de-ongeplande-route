@@ -27,15 +27,17 @@ class MediaController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'image' => ['required', 'image', 'max:10240'],
+            'image' => ['required', 'file', 'mimes:jpg,jpeg,png,gif,webp,mp4,mov,webm,ogg', 'max:204800'],
         ], [
-            'image.required' => 'Kies een afbeelding om te uploaden.',
-            'image.image' => 'Het bestand moet een afbeelding zijn (jpg, png, gif, webp).',
-            'image.max' => 'De afbeelding mag maximaal 10 MB zijn.',
+            'image.required' => 'Kies een bestand om te uploaden.',
+            'image.mimes' => 'Alleen afbeeldingen (jpg, png, gif, webp) en video\'s (mp4, mov, webm) zijn toegestaan.',
+            'image.max' => 'Het bestand mag maximaal 200 MB zijn.',
         ]);
 
         $file = $request->file('image');
-        $path = $file->store('uploads', 'public');
+        $isVideo = str_starts_with($file->getMimeType() ?? '', 'video/');
+        $directory = $isVideo ? 'uploads/videos' : 'uploads';
+        $path = $file->store($directory, 'public');
 
         $media = Media::create([
             'filename' => $file->getClientOriginalName(),
@@ -46,6 +48,33 @@ class MediaController extends Controller
         ]);
 
         return response()->json($media, 201);
+    }
+
+    public function storeVideo(Request $request): JsonResponse
+    {
+        $request->validate([
+            'video' => ['required', 'file', 'mimes:mp4,mov,webm,ogg', 'max:204800'],
+        ], [
+            'video.required' => 'Kies een video om te uploaden.',
+            'video.mimes' => 'Alleen mp4, mov, webm en ogg bestanden zijn toegestaan.',
+            'video.max' => 'De video mag maximaal 200 MB zijn.',
+        ]);
+
+        $file = $request->file('video');
+        $path = $file->store('uploads/videos', 'public');
+
+        $media = Media::create([
+            'filename' => $file->getClientOriginalName(),
+            'path' => $path,
+            'url' => asset('storage/'.$path),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+        ]);
+
+        return response()->json([
+            'url' => $media->url,
+            'id' => $media->id,
+        ], 201);
     }
 
     public function destroy(Media $medium): JsonResponse

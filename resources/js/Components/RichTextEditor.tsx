@@ -5,8 +5,33 @@ import ImageExtension from '@tiptap/extension-image';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
+import { Node, mergeAttributes } from '@tiptap/core';
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+// Custom Video node extension
+const VideoExtension = Node.create({
+    name: 'video',
+    group: 'block',
+    atom: true,
+    addAttributes() {
+        return {
+            src: { default: null },
+        };
+    },
+    parseHTML() {
+        return [{ tag: 'video[src]' }];
+    },
+    renderHTML({ HTMLAttributes }) {
+        return [
+            'video',
+            mergeAttributes(HTMLAttributes, {
+                controls: '',
+                class: 'w-full rounded-lg max-h-[500px] my-4 mx-auto block shadow-md',
+            }),
+        ];
+    },
+});
 
 interface RichTextEditorProps {
     value: string;
@@ -55,6 +80,7 @@ export default function RichTextEditor({
     placeholder = 'Schrijf jullie verhaal hier...',
 }: RichTextEditorProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [showUrlInput, setShowUrlInput] = useState(false);
@@ -72,6 +98,7 @@ export default function RichTextEditor({
                     class: 'rounded-lg max-w-full my-4 mx-auto block shadow-md',
                 },
             }),
+            VideoExtension,
             Placeholder.configure({ placeholder }),
         ],
         content: value,
@@ -122,6 +149,30 @@ export default function RichTextEditor({
         setShowUrlInput(false);
     }, [editor, urlValue]);
 
+    const handleVideoUpload = useCallback(
+        async (file: File) => {
+            if (!editor) return;
+            setUploading(true);
+            setUploadError(null);
+            try {
+                const formData = new FormData();
+                formData.append('video', file);
+                const { data } = await axios.post('/admin/upload-video', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                editor.chain().focus().insertContent({ type: 'video', attrs: { src: data.url } }).run();
+            } catch {
+                setUploadError('Video upload mislukt. Probeer het opnieuw (max 200 MB, mp4/webm/mov).');
+            } finally {
+                setUploading(false);
+                if (videoInputRef.current) {
+                    videoInputRef.current.value = '';
+                }
+            }
+        },
+        [editor],
+    );
+
     if (!editor) return null;
 
     return (
@@ -135,6 +186,18 @@ export default function RichTextEditor({
                 onChange={(e) => {
                     if (e.target.files?.[0]) {
                         handleFileUpload(e.target.files[0]);
+                    }
+                }}
+            />
+            {/* Hidden video input */}
+            <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                        handleVideoUpload(e.target.files[0]);
                     }
                 }}
             />
@@ -254,6 +317,18 @@ export default function RichTextEditor({
                             <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
                         </svg>
                     </ToolbarButton>
+
+                    {/* 🎥 Upload video */}
+                    <ToolbarButton
+                        onClick={() => videoInputRef.current?.click()}
+                        title="Video uploaden (mp4, webm, mov)"
+                        disabled={uploading}
+                        active={false}
+                    >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+                        </svg>
+                    </ToolbarButton>
                 </div>
 
                 {/* URL image input */}
@@ -311,7 +386,7 @@ export default function RichTextEditor({
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
-                    Foto uploaden...
+                    Bestand uploaden...
                 </div>
             )}
         </div>
