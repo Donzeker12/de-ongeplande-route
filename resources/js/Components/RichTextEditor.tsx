@@ -125,7 +125,7 @@ export default function RichTextEditor({
     if (!editor) return null;
 
     return (
-        <div className="border border-gray-700 rounded-xl overflow-hidden">
+        <div className="border border-gray-700 rounded-xl [overflow:clip]">
             {/* Hidden file input — shows gallery + camera on mobile */}
             <input
                 ref={fileInputRef}
@@ -140,7 +140,7 @@ export default function RichTextEditor({
             />
 
             {/* Toolbar */}
-            <div className="bg-[#1a1d27] border-b border-gray-700 p-2 space-y-2">
+            <div className="bg-[#1a1d27] border-b border-gray-700 p-2 space-y-2 sticky top-0 z-10">
                 <div className="flex flex-wrap items-center gap-0.5">
                     {/* Text formatting */}
                     <ToolbarButton
