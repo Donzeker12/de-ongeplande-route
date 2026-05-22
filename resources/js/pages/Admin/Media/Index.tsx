@@ -118,11 +118,11 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         <>
         <AdminLayout
             header={
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
                         <h2 className="text-lg font-semibold text-white">Media Bibliotheek</h2>
                         {media.length > 0 && (
-                            <div className="flex items-center gap-2">
+                            <div className="hidden sm:flex items-center gap-2">
                                 <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-full text-xs text-gray-400">
                                     {media.length} bestand{media.length !== 1 ? 'en' : ''}
                                 </span>
@@ -135,7 +135,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="flex items-center gap-2 px-4 py-2 bg-white text-gray-900 text-sm font-semibold rounded-lg hover:bg-gray-100 disabled:opacity-50 transition shadow-sm"
+                        className="flex items-center gap-2 p-2 sm:px-4 sm:py-2 bg-white text-gray-900 text-sm font-semibold rounded-lg hover:bg-gray-100 disabled:opacity-50 transition shadow-sm"
                     >
                         {uploading ? (
                             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -147,7 +147,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                             </svg>
                         )}
-                        {uploading ? 'Uploaden...' : 'Upload'}
+                        <span className="hidden sm:inline">{uploading ? 'Uploaden...' : 'Upload'}</span>
                     </button>
                 </div>
             }
@@ -182,7 +182,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                 )}
 
                 {/* Main content */}
-                <div className="flex-1 p-6 lg:p-8 min-w-0">
+                <div className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0">
                     {uploadError && (
                         <div className="mb-5 flex items-center gap-3 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
                             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

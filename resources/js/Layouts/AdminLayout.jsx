@@ -186,7 +186,7 @@ export default function AdminLayout({ header, children }) {
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Top Bar */}
                 <header className="bg-[#16181f] border-b border-gray-800 sticky top-0 z-30">
-                    <div className="flex items-center justify-between h-14 px-6 gap-6">
+                    <div className="flex items-center justify-between h-14 px-4 sm:px-6 gap-3 sm:gap-6">
                         {/* Mobile menu button */}
                         <button
                             onClick={() => setSidebarOpen(true)}

@@ -40,7 +40,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
         >
             <Head title="Categorieën" />
 
-            <div className="p-6 lg:p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
                 <div className="mx-auto max-w-4xl space-y-6">
                     <div className="relative max-w-sm">
                         <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,7 +66,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                     ) : (
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
                             <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full min-w-[520px]">
                                 <thead>
                                     <tr className="border-b border-gray-800">
                                         <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Categorie</th>

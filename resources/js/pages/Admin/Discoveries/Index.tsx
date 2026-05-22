@@ -53,7 +53,7 @@ export default function DiscoveriesIndex({ discoveries, filters }: DiscoveriesIn
         >
             <Head title="Ontdekkingen Beheren" />
 
-            <div className="p-6 lg:p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
                 <div className="mx-auto max-w-7xl">
                     {/* Search bar */}
                     <div className="mb-6">
@@ -91,10 +91,10 @@ export default function DiscoveriesIndex({ discoveries, filters }: DiscoveriesIn
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {discoveries.data.map((discovery) => (
                                 <div key={discovery.id} className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden hover:border-gray-700 transition group">
-                                    <div className="flex">
+                                    <div className="flex flex-col sm:flex-row">
                                         {/* Image */}
                                         {discovery.image && (
-                                            <div className="flex-shrink-0 w-32 h-32">
+                                            <div className="flex-shrink-0 w-full h-36 sm:w-32 sm:h-auto">
                                                 <img
                                                     src={discovery.image}
                                                     alt={discovery.title}
@@ -104,7 +104,7 @@ export default function DiscoveriesIndex({ discoveries, filters }: DiscoveriesIn
                                         )}
 
                                         {/* Content */}
-                                        <div className="flex-1 p-5 flex flex-col">
+                                        <div className="flex-1 p-4 sm:p-5 flex flex-col">
                                             <div className="flex-1 mb-3">
                                                 <h3 className="text-base font-semibold text-white mb-2 group-hover:text-emerald-400 transition">
                                                     {discovery.title}

@@ -51,7 +51,7 @@ export default function VenuesIndex({ venues, types, filters }: Props) {
         >
             <Head title="Locaties" />
 
-            <div className="p-6 lg:p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
                 <div className="mx-auto max-w-7xl space-y-6">
                     <div className="flex flex-wrap gap-3">
                         <div className="relative flex-1 min-w-48">
@@ -93,7 +93,7 @@ export default function VenuesIndex({ venues, types, filters }: Props) {
                     ) : (
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
                             <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full min-w-[660px]">
                                 <thead>
                                     <tr className="border-b border-gray-800">
                                         <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Naam</th>

@@ -50,7 +50,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
         >
             <Head title="Gebruikers" />
 
-            <div className="p-6 lg:p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
                 <div className="mx-auto max-w-7xl">
                     <div className="mb-6">
                         <div className="relative max-w-sm">
@@ -80,7 +80,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
                     ) : (
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl overflow-hidden">
                             <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full min-w-[640px]">
                                 <thead>
                                     <tr className="border-b border-gray-800">
                                         <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Naam</th>

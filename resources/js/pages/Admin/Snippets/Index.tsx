@@ -55,7 +55,7 @@ export default function SnippetsIndex({ snippets, filters }: SnippetsIndexProps)
         >
             <Head title="Social Snippets" />
 
-            <div className="p-6 lg:p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
                 <div className="mx-auto max-w-7xl">
                     <div className="mb-6">
                         <div className="relative max-w-sm">
