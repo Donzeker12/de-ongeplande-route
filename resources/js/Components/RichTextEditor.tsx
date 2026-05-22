@@ -1,4 +1,4 @@
-import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
+import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import LinkExtension from '@tiptap/extension-link';
 import ImageExtension from '@tiptap/extension-image';
@@ -86,15 +86,9 @@ export default function RichTextEditor({
     const [uploading, setUploading] = useState(false);
     const [pendingFile, setPendingFile] = useState<File | null>(null);
     const [editingImageSrc, setEditingImageSrc] = useState<string | null>(null);
-
-    const imageState = useEditorState({
-        editor,
-        selector: ({ editor: e }) => ({
-            isActive: e?.isActive('image') ?? false,
-            src: (e?.getAttributes('image')?.src as string | undefined) ?? null,
-        }),
-    });
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [isImageActive, setIsImageActive] = useState(false);
+    const [activeImageSrc, setActiveImageSrc] = useState<string | null>(null);
     const [showUrlInput, setShowUrlInput] = useState(false);
     const [urlValue, setUrlValue] = useState('');
 
@@ -129,6 +123,20 @@ export default function RichTextEditor({
             editor.commands.setContent(value);
         }
     }, [value]);
+
+    useEffect(() => {
+        if (!editor) return;
+        const update = () => {
+            setIsImageActive(editor.isActive('image'));
+            setActiveImageSrc((editor.getAttributes('image')?.src as string | undefined) ?? null);
+        };
+        editor.on('selectionUpdate', update);
+        editor.on('transaction', update);
+        return () => {
+            editor.off('selectionUpdate', update);
+            editor.off('transaction', update);
+        };
+    }, [editor]);
 
     const handleFileUpload = useCallback(
         async (file: File) => {
@@ -417,12 +425,12 @@ export default function RichTextEditor({
             )}
 
             {/* Inline image action bar — shown when an image is selected */}
-            {imageState?.isActive && (
+            {isImageActive && (
                 <div className="border-t border-gray-700 px-3 py-2 flex items-center gap-2 bg-gray-800/40 shrink-0">
                     <span className="text-xs text-gray-500 mr-1">Afbeelding:</span>
                     <button
                         type="button"
-                        onClick={() => { if (imageState.src) setEditingImageSrc(imageState.src); }}
+                        onClick={() => { if (activeImageSrc) setEditingImageSrc(activeImageSrc); }}
                         className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-300 hover:bg-gray-700 rounded-md transition"
                     >
                         ✏️ Bewerken
