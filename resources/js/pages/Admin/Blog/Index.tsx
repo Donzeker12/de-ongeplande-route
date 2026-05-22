@@ -42,22 +42,23 @@ export default function BlogIndex({ posts }: Props) {
         <AdminLayout
             header={
                 <div className="flex items-center justify-between w-full">
-                    <h2 className="text-lg font-semibold text-white">Blog Beheren</h2>
+                    <h2 className="text-lg font-semibold text-white">Blog</h2>
                     <Link
                         href="/admin/blog/create"
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition shadow-lg"
+                        className="flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition shadow-lg"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        Nieuw Blogpost
+                        <span className="hidden sm:inline">Nieuw blogpost</span>
+                        <span className="sm:hidden">Nieuw</span>
                     </Link>
                 </div>
             }
         >
             <Head title="Blog Beheren" />
 
-            <div className="p-6 lg:p-8">
+            <div className="p-4 lg:p-8">
                 <div className="mx-auto max-w-5xl">
                     {posts.data.length === 0 ? (
                         <div className="text-center py-20 text-gray-400">
@@ -75,47 +76,44 @@ export default function BlogIndex({ posts }: Props) {
                             {posts.data.map((post) => (
                                 <div
                                     key={post.id}
-                                    className="flex items-center gap-4 bg-gray-800 rounded-xl px-5 py-4 border border-gray-700"
+                                    className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden"
                                 >
-                                    {/* Thumbnail */}
-                                    <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-700 shrink-0">
-                                        {post.featured_image ? (
-                                            <img
-                                                src={post.featured_image}
-                                                alt={post.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-2xl">
-                                                📝
+                                    {/* Main row: thumbnail + info */}
+                                    <div className="flex items-center gap-3 px-4 py-3">
+                                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-700 shrink-0">
+                                            {post.featured_image ? (
+                                                <img
+                                                    src={post.featured_image}
+                                                    alt={post.title}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-xl">
+                                                    📝
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-white font-medium text-sm leading-snug line-clamp-2">
+                                                {post.title || <span className="text-gray-500 italic">Geen titel</span>}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                <span
+                                                    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                                        post.status === 'published'
+                                                            ? 'bg-emerald-500/20 text-emerald-400'
+                                                            : 'bg-gray-600/60 text-gray-300'
+                                                    }`}
+                                                >
+                                                    {post.status === 'published' ? '🟢 Gepubliceerd' : '⚪ Concept'}
+                                                </span>
+                                                <span className="text-gray-500 text-xs">{formatDate(post.created_at)}</span>
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
 
-                                    {/* Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-white font-medium truncate">{post.title}</p>
-                                        {post.excerpt && (
-                                            <p className="text-gray-400 text-sm truncate mt-0.5">{post.excerpt}</p>
-                                        )}
-                                        <p className="text-gray-500 text-xs mt-1">
-                                            {formatDate(post.created_at)}
-                                        </p>
-                                    </div>
-
-                                    {/* Status */}
-                                    <span
-                                        className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                            post.status === 'published'
-                                                ? 'bg-emerald-500/20 text-emerald-400'
-                                                : 'bg-gray-600 text-gray-300'
-                                        }`}
-                                    >
-                                        {post.status === 'published' ? '🟢 Gepubliceerd' : '⚪ Concept'}
-                                    </span>
-
-                                    {/* Actions */}
-                                    <div className="shrink-0 flex items-center gap-2">
+                                    {/* Actions row */}
+                                    <div className="border-t border-gray-700/50 flex items-center justify-end gap-1 px-3 py-2">
                                         {post.status === 'published' && (
                                             <a
                                                 href={`/blog/${post.slug}`}
