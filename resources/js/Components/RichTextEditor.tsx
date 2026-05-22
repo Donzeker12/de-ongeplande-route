@@ -1,4 +1,4 @@
-import { BubbleMenu, EditorContent, useEditor } from '@tiptap/react';
+import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import LinkExtension from '@tiptap/extension-link';
 import ImageExtension from '@tiptap/extension-image';
@@ -86,6 +86,14 @@ export default function RichTextEditor({
     const [uploading, setUploading] = useState(false);
     const [pendingFile, setPendingFile] = useState<File | null>(null);
     const [editingImageSrc, setEditingImageSrc] = useState<string | null>(null);
+
+    const imageState = useEditorState({
+        editor,
+        selector: ({ editor: e }) => ({
+            isActive: e?.isActive('image') ?? false,
+            src: (e?.getAttributes('image')?.src as string | undefined) ?? null,
+        }),
+    });
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [showUrlInput, setShowUrlInput] = useState(false);
     const [urlValue, setUrlValue] = useState('');
@@ -408,40 +416,32 @@ export default function RichTextEditor({
                 </div>
             )}
 
-            {/* BubbleMenu for selected images */}
-            {editor && (
-                <BubbleMenu
-                    editor={editor}
-                    shouldShow={({ editor: e }) => e.isActive('image')}
-                    tippyOptions={{ duration: 100, placement: 'top' }}
-                >
-                    <div className="flex items-center gap-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-1">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const src = editor.getAttributes('image').src as string | undefined;
-                                if (src) setEditingImageSrc(src);
-                            }}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-300 hover:bg-gray-700 rounded-md transition"
-                        >
-                            ✏️ Bewerken
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => replaceInputRef.current?.click()}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-300 hover:bg-gray-700 rounded-md transition"
-                        >
-                            🔄 Vervangen
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => editor.chain().focus().deleteSelection().run()}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-red-400 hover:bg-red-900/30 rounded-md transition"
-                        >
-                            🗑️
-                        </button>
-                    </div>
-                </BubbleMenu>
+            {/* Inline image action bar — shown when an image is selected */}
+            {imageState?.isActive && (
+                <div className="border-t border-gray-700 px-3 py-2 flex items-center gap-2 bg-gray-800/40 shrink-0">
+                    <span className="text-xs text-gray-500 mr-1">Afbeelding:</span>
+                    <button
+                        type="button"
+                        onClick={() => { if (imageState.src) setEditingImageSrc(imageState.src); }}
+                        className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-300 hover:bg-gray-700 rounded-md transition"
+                    >
+                        ✏️ Bewerken
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => replaceInputRef.current?.click()}
+                        className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-300 hover:bg-gray-700 rounded-md transition"
+                    >
+                        🔄 Vervangen
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().deleteSelection().run()}
+                        className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-red-400 hover:bg-red-900/30 rounded-md transition"
+                    >
+                        🗑️ Verwijderen
+                    </button>
+                </div>
             )}
 
             {/* Editor modal — new image before upload */}
