@@ -59,7 +59,12 @@ class MediaController extends Controller
             'url' => asset('storage/'.$path),
             'mime_type' => $file->getMimeType(),
             'size' => Storage::disk('public')->size($path),
+            'processing' => $isVideo,
         ]);
+
+        if ($isVideo) {
+            CompressMedia::dispatch($media);
+        }
 
         return response()->json($media, 201);
     }
@@ -83,7 +88,10 @@ class MediaController extends Controller
             'url' => asset('storage/'.$path),
             'mime_type' => $file->getMimeType(),
             'size' => $file->getSize(),
+            'processing' => true,
         ]);
+
+        CompressMedia::dispatch($media);
 
         return response()->json([
             'url' => $media->url,
