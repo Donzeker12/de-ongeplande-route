@@ -13,7 +13,6 @@ interface Props {
 }
 
 export default function QuickNote({ recentStories }: Props) {
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [videoPreview, setVideoPreview] = useState<string | null>(null);
@@ -97,15 +96,6 @@ export default function QuickNote({ recentStories }: Props) {
                     <div className="bg-[#16181f] rounded-2xl p-5 border border-gray-800">
                         <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">📷 Foto</h3>
 
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={handleImageChange}
-                            className="hidden"
-                        />
-
                         {imagePreview ? (
                             <div className="relative">
                                 <img
@@ -122,16 +112,16 @@ export default function QuickNote({ recentStories }: Props) {
                                 </button>
                             </div>
                         ) : (
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="flex-1 h-32 border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:border-amber-500 hover:text-amber-400 transition"
-                                >
-                                    <span className="text-3xl mb-1">📸</span>
-                                    <span className="text-xs font-medium">Camera / Gallerij</span>
-                                </button>
-                            </div>
+                            <label className="flex-1 h-32 border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:border-amber-500 hover:text-amber-400 transition cursor-pointer">
+                                <span className="text-3xl mb-1">📸</span>
+                                <span className="text-xs font-medium">Camera / Gallerij</span>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                />
+                            </label>
                         )}
                     </div>
 
@@ -170,15 +160,6 @@ export default function QuickNote({ recentStories }: Props) {
                     <div className="bg-[#16181f] rounded-2xl p-5 border border-gray-800 space-y-3">
                         <h3 className="text-base font-semibold text-white flex items-center gap-2">🎬 Video (optioneel)</h3>
 
-                        <input
-                            ref={videoInputRef}
-                            type="file"
-                            accept="video/*"
-                            capture="environment"
-                            onChange={handleVideoChange}
-                            className="hidden"
-                        />
-
                         {/* Eigen video */}
                         {videoMode !== 'youtube' && (
                             <>
@@ -198,14 +179,17 @@ export default function QuickNote({ recentStories }: Props) {
                                         </button>
                                     </div>
                                 ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => videoInputRef.current?.click()}
-                                        className="w-full h-20 border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:border-amber-500 hover:text-amber-400 transition"
-                                    >
+                                    <label className="w-full h-20 border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:border-amber-500 hover:text-amber-400 transition cursor-pointer">
                                         <span className="text-2xl mb-1">🎥</span>
                                         <span className="text-xs font-medium">Camera / Gallerij</span>
-                                    </button>
+                                        <input
+                                            ref={videoInputRef}
+                                            type="file"
+                                            accept="video/*"
+                                            onChange={handleVideoChange}
+                                            className="hidden"
+                                        />
+                                    </label>
                                 )}
                             </>
                         )}
