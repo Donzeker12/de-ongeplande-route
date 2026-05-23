@@ -55,11 +55,11 @@ export default function Navigation({ variant = 'page', className = '' }: Navigat
                             Over Ons
                         </NavLink>
                         <NavLink 
-                            href="/blog" 
-                            isActive={url.startsWith('/blog')}
+                            href="/verhalen" 
+                            isActive={url.startsWith('/verhalen')}
                             variant={isHome && !isSticky ? 'light' : 'dark'}
                         >
-                            Blog
+                            Verhalen
                         </NavLink>
                         <NavLink 
                             href="/contact" 
@@ -126,8 +126,8 @@ export default function Navigation({ variant = 'page', className = '' }: Navigat
                             <MobileNavLink href="/over-ons" isActive={url === '/over-ons'}>
                                 Over Ons
                             </MobileNavLink>
-                            <MobileNavLink href="/blog" isActive={url.startsWith('/blog')}>
-                                Blog
+                            <MobileNavLink href="/verhalen" isActive={url.startsWith('/verhalen')}>
+                                Verhalen
                             </MobileNavLink>
                             <MobileNavLink href="/contact" isActive={url === '/contact'}>
                                 Contact

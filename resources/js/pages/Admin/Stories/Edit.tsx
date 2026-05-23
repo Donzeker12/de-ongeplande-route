@@ -1,527 +1,316 @@
-import React, { useState } from 'react';
-import { Head, useForm, Link, router } from '@inertiajs/react';
-import AdminLayout from '@/Layouts/AdminLayout';
+﻿import AdminLayout from '@/Layouts/AdminLayout';
+import GalleryPicker from '@/Components/GalleryPicker';
+import VideoPicker from '@/Components/VideoPicker';
 import ImageUpload from '@/Components/ImageUpload';
+import RichTextEditor from '@/Components/RichTextEditor';
+import { Head, Link, useForm, router } from '@inertiajs/react';
+import { FormEvent, useState } from 'react';
 
-interface Chapter {
-    id?: number;
-    title: string;
-    content: string;
-    order: number;
-}
+interface MediaImage { id: number; url: string; filename: string; }
+interface MediaVideo { id: number; url: string; filename: string; }
+interface Chapter { id?: number; title: string; content: string; order: number; }
 
 interface Story {
     id: number;
     title: string;
-    description: string;
-    youtube_url: string | null;
+    slug: string;
+    description: string | null;
+    content: string | null;
     featured_image: string | null;
-    slug: string | null;
+    gallery_images: string[] | null;
+    youtube_url: string | null;
+    library_video_url: string | null;
     status: 'draft' | 'generating' | 'completed' | 'published';
-    ai_settings: {
-        tone: string;
-        length: string;
-        style: string;
-    };
-    chapters: Chapter[];
+    published_at: string | null;
+    ai_settings: { tone: string; length: string; style: string } | null;
     generated_content: string | null;
+    chapters: Chapter[];
+}
+
+interface FormData {
+    title: string;
+    slug: string;
+    description: string;
+    content: string;
+    featured_image: string;
+    gallery_images: string[];
+    youtube_url: string;
+    library_video_url: string;
+    status: 'draft' | 'published';
+    ai_settings: { tone: string; length: string; style: string };
+    chapters: Chapter[];
+    [key: string]: unknown;
 }
 
 interface Props {
     story: Story;
+    mediaImages: MediaImage[];
+    mediaVideos: MediaVideo[];
 }
 
-export default function EditStory({ story }: Props) {
-    const { data, setData, put, patch, processing, errors } = useForm({
+function getYoutubeEmbedUrl(url: string): string | null {
+    try {
+        const parsed = new URL(url);
+        let videoId: string | null = null;
+        if (parsed.hostname === 'youtu.be') { videoId = parsed.pathname.slice(1); }
+        else if (parsed.hostname.includes('youtube.com')) { videoId = parsed.searchParams.get('v'); }
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    } catch { return null; }
+}
+
+export default function StoryEdit({ story, mediaImages, mediaVideos }: Props) {
+    const publishedStatus = (story.status === 'published') ? 'published' : 'draft';
+
+    const { data, setData, put, processing, errors } = useForm<FormData>({
         title: story.title,
-        description: story.description || '',
-        youtube_url: story.youtube_url || '',
-        featured_image: story.featured_image || '',
-        ai_settings: story.ai_settings || {
-            tone: 'vriendelijk',
-            length: 'medium',
-            style: 'verhaal'
-        },
-        chapters: story.chapters || []
+        slug: story.slug ?? '',
+        description: story.description ?? '',
+        content: story.content ?? '',
+        featured_image: story.featured_image ?? '',
+        gallery_images: story.gallery_images ?? [],
+        youtube_url: story.youtube_url ?? '',
+        library_video_url: story.library_video_url ?? '',
+        status: publishedStatus,
+        ai_settings: story.ai_settings ?? { tone: 'vriendelijk', length: 'medium', style: 'verhaal' },
+        chapters: story.chapters ?? [],
     });
 
-    const getYoutubeEmbedUrl = (url: string): string | null => {
-        try {
-            const parsed = new URL(url);
-            let videoId: string | null = null;
-            if (parsed.hostname === 'youtu.be') {
-                videoId = parsed.pathname.slice(1);
-            } else if (parsed.hostname.includes('youtube.com')) {
-                videoId = parsed.searchParams.get('v');
-            }
-            return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-        } catch {
-            return null;
-        }
-    };
-
+    const [showAI, setShowAI] = useState(story.chapters.length > 0 || !!story.generated_content);
     const [isGenerating, setIsGenerating] = useState(story.status === 'generating');
     const [generationStatus, setGenerationStatus] = useState<'idle' | 'generating' | 'success' | 'error'>(() => {
         if (story.status === 'generating') return 'generating';
         if (story.status === 'completed') return 'success';
         return 'idle';
     });
-    const [generationMessage, setGenerationMessage] = useState('');
 
     const addChapter = () => {
-        const newOrder = Math.max(...data.chapters.map(c => c.order || 0), 0) + 1;
-        setData('chapters', [...data.chapters, { title: '', content: '', order: newOrder }]);
+        const maxOrder = Math.max(...data.chapters.map((c) => c.order ?? 0), 0) + 1;
+        setData('chapters', [...data.chapters, { title: '', content: '', order: maxOrder }]);
+    };
+    const removeChapter = (i: number) => setData('chapters', data.chapters.filter((_, idx) => idx !== i));
+    const updateChapter = (i: number, field: keyof Chapter, value: string) => {
+        const updated = [...data.chapters];
+        updated[i] = { ...updated[i], [field]: value };
+        setData('chapters', updated);
     };
 
-    const removeChapter = (index: number) => {
-        const newChapters = data.chapters.filter((_, i) => i !== index);
-        setData('chapters', newChapters);
-    };
-
-    const updateChapter = (index: number, field: keyof Chapter, value: string) => {
-        const newChapters = [...data.chapters];
-        newChapters[index] = { ...newChapters[index], [field]: value };
-        setData('chapters', newChapters);
-    };
-
-    const handleUpdate = (e: React.FormEvent) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         put(route('admin.stories.update', story.id));
+    };
+
+    const handleDelete = () => {
+        if (confirm(`Weet je zeker dat je "${story.title}" wilt verwijderen?`)) {
+            router.delete(route('admin.stories.destroy', story.id));
+        }
     };
 
     const handleGenerateStory = () => {
         setIsGenerating(true);
         setGenerationStatus('generating');
-        setGenerationMessage('AI begint met verhaal schrijven...');
-
-        // Use router.post since the route is defined as POST
         router.post(route('admin.stories.generate', story.id), {}, {
             onSuccess: () => {
                 setGenerationStatus('success');
-                setGenerationMessage('🎉 Verhaal succesvol gegenereerd!');
-                
-                // Visit the current page again to refresh the story data
-                setTimeout(() => {
-                    router.visit(route('admin.stories.edit', story.id), {
-                        preserveScroll: true,
-                        replace: true
-                    });
-                }, 1000);
+                setTimeout(() => router.visit(route('admin.stories.edit', story.id), { preserveScroll: true, replace: true }), 1000);
             },
-            onError: (errors) => {
-                setGenerationStatus('error');
-                setGenerationMessage('❌ Er ging iets mis bij het genereren. Probeer het opnieuw.');
-                console.error('Generation error:', errors);
-            },
-            onFinish: () => setIsGenerating(false)
+            onError: () => { setGenerationStatus('error'); },
+            onFinish: () => setIsGenerating(false),
         });
     };
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'draft':
-                return <span className="px-3 py-1 bg-gray-600 text-gray-200 rounded-lg text-sm">📝 Concept</span>;
-            case 'generating':
-                return <span className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm">🤖 Genereren...</span>;
-            case 'completed':
-                return <span className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm">✅ Voltooid</span>;
-            case 'published':
-                return <span className="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm">🚀 Gepubliceerd</span>;
-            default:
-                return <span className="px-3 py-1 bg-gray-500 text-white rounded-lg text-sm">{status}</span>;
-        }
-    };
+    const embedUrl = data.youtube_url ? getYoutubeEmbedUrl(data.youtube_url) : null;
 
     return (
-        <AdminLayout>
-            <Head title={`Bewerk Story: ${story.title}`} />
-
-            <div className="py-8">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                                <Link
-                                    href="/admin/stories"
-                                    className="text-gray-400 hover:text-white"
-                                >
-                                    ← Terug naar Stories
-                                </Link>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                {getStatusBadge(story.status)}
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="text-4xl">✍️</span>
-                            <h1 className="text-3xl font-bold text-white">
-                                Story Bewerken
-                            </h1>
-                        </div>
-                        <p className="text-gray-300 text-lg">
-                            Bewerk je story en laat AI er een compleet verhaal van maken!
-                        </p>
-                    </div>
-
-                    {/* Generation Status Bar */}
-                    {generationStatus !== 'idle' && (
-                        <div className={`rounded-2xl p-6 mb-8 border-2 ${
-                            generationStatus === 'generating' 
-                                ? 'bg-blue-900/20 border-blue-500 text-blue-200' 
-                                : generationStatus === 'success'
-                                ? 'bg-green-900/20 border-green-500 text-green-200'
-                                : 'bg-red-900/20 border-red-500 text-red-200'
-                        }`}>
-                            <div className="flex items-center gap-4">
-                                {generationStatus === 'generating' && (
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 border-4 border-blue-300/30 border-t-blue-300 rounded-full animate-spin"></div>
-                                        <div>
-                                            <h3 className="font-bold text-lg">🤖 AI aan het werk...</h3>
-                                            <p className="text-sm opacity-90">Gemini Flash schrijft jouw verhaal</p>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {generationStatus === 'success' && (
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                                            ✓
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg">✅ Verhaal voltooid!</h3>
-                                            <p className="text-sm opacity-90">Je story is succesvol gegenereerd</p>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {generationStatus === 'error' && (
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold">
-                                            !
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg">❌ Generatie mislukt</h3>
-                                            <p className="text-sm opacity-90">Er ging iets mis, probeer het opnieuw</p>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                <div className="ml-auto">
-                                    {generationStatus !== 'generating' && (
-                                        <button
-                                            onClick={() => setGenerationStatus('idle')}
-                                            className="text-current opacity-60 hover:opacity-100 p-1"
-                                        >
-                                            ✕
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            {generationStatus === 'generating' && (
-                                <div className="mt-4">
-                                    <div className="w-full bg-blue-800/30 rounded-full h-2">
-                                        <div className="bg-blue-400 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
-                                    </div>
-                                    <p className="text-xs mt-2 opacity-75">Dit kan 1-2 minuten duren...</p>
-                                </div>
-                            )}
-                            
-                            {generationStatus === 'success' && (
-                                <div className="mt-3 space-y-2">
-                                    <div className="text-sm opacity-90">
-                                        Data wordt bijgewerkt...
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => router.visit(route('admin.stories.edit', story.id), {preserveScroll: true, replace: true})}
-                                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                                        >
-                                            🔄 Refresh Data
-                                        </button>
-                                        <button
-                                            onClick={() => window.location.reload()}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                                        >
-                                            🔄 Hard Reload
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+        <AdminLayout header={
+            <div className="flex items-center justify-between w-full">
+                <h2 className="text-lg font-semibold text-white">Verhaal bewerken</h2>
+                <div className="flex items-center gap-2">
+                    {story.status === 'published' && story.slug && (
+                        <a href={`/verhalen/${story.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition text-sm">
+                            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            <span className="hidden sm:inline">Bekijken</span>
+                        </a>
                     )}
+                    <Link href="/admin/stories" className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition text-sm">
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                        <span className="hidden sm:inline">Terug</span>
+                    </Link>
+                </div>
+            </div>
+        }>
+            <Head title={`Bewerken: ${story.title}`} />
 
-                    {/* Generated Content Preview */}
-                    {story.status === 'completed' && story.generated_content && (
-                        <div className="bg-green-900/20 border border-green-600 rounded-2xl p-8 mb-8">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-2xl">🤖</span>
-                                <h2 className="text-xl font-semibold text-green-300">AI Generated Story</h2>
-                            </div>
-                            <div className="bg-gray-800 rounded-xl p-6 max-h-96 overflow-y-auto">
-                                <div className="text-gray-200 whitespace-pre-wrap">
-                                    {story.generated_content}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+            <div className="p-6 lg:p-8">
+                <div className="mx-auto max-w-7xl">
+                    <form onSubmit={handleSubmit}>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    <form onSubmit={handleUpdate} className="space-y-8">
-                        {/* Story Info Card */}
-                        <div className="bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700">
-                            <div className="flex items-center gap-2 mb-6">
-                                <span className="text-2xl">📖</span>
-                                <h2 className="text-xl font-semibold text-white">Story Informatie</h2>
-                            </div>
+                            {/* Left */}
+                            <div className="lg:col-span-2 space-y-6">
 
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-200 mb-2">
-                                        Story Titel *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.title}
-                                        onChange={(e) => setData('title', e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-200 mb-2">
-                                        Beschrijving / AI Prompt
-                                    </label>
-                                    <textarea
-                                        value={data.description}
-                                        onChange={(e) => setData('description', e.target.value)}
-                                        rows={3}
-                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Vertel AI hoe je het verhaal wilt hebben..."
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-200 mb-2">
-                                        🎬 YouTube Video (optioneel)
-                                    </label>
-                                    <input
-                                        type="url"
-                                        value={data.youtube_url}
-                                        onChange={(e) => setData('youtube_url', e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="https://www.youtube.com/watch?v=..."
-                                    />
-                                    {errors.youtube_url && <p className="text-red-400 text-sm mt-1">{errors.youtube_url}</p>}
-                                    {data.youtube_url && getYoutubeEmbedUrl(data.youtube_url) && (
-                                        <div className="mt-4 rounded-xl overflow-hidden aspect-video">
-                                            <iframe
-                                                src={getYoutubeEmbedUrl(data.youtube_url)!}
-                                                className="w-full h-full"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                allowFullScreen
-                                            />
+                                {/* Algemeen */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-5">Algemeen</h3>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Titel *</label>
+                                            <input type="text" value={data.title} onChange={(e) => setData('title', e.target.value)} className="w-full bg-[#0f1117] border border-gray-700 rounded-lg px-4 py-2.5 text-gray-200 placeholder-gray-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition" required />
+                                            {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title}</p>}
                                         </div>
-                                    )}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">URL Slug</label>
+                                            <div className="flex items-center rounded-lg overflow-hidden border border-gray-700 bg-[#0f1117] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition">
+                                                <span className="px-3 py-2.5 text-gray-500 text-sm border-r border-gray-700 shrink-0 select-none">/verhalen/</span>
+                                                <input type="text" value={data.slug} onChange={(e) => setData('slug', e.target.value)} className="flex-1 bg-transparent px-3 py-2.5 text-gray-200 placeholder-gray-600 focus:outline-none text-sm" />
+                                            </div>
+                                            {errors.slug && <p className="text-red-400 text-xs mt-1">{errors.slug}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Samenvatting</label>
+                                            <textarea value={data.description} onChange={(e) => setData('description', e.target.value)} rows={3} className="w-full bg-[#0f1117] border border-gray-700 rounded-lg px-4 py-2.5 text-gray-200 placeholder-gray-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition resize-none" placeholder="Korte samenvatting..." />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-200 mb-2">
-                                        🖼️ Omslagfoto (optioneel)
-                                    </label>
-                                    <ImageUpload
-                                        value={data.featured_image}
-                                        onChange={(url) => setData('featured_image', url ?? '')}
-                                    />
-                                    {errors.featured_image && <p className="text-red-400 text-sm mt-1">{errors.featured_image}</p>}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* AI Settings Card */}
-                        <div className="bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700">
-                            <div className="flex items-center gap-2 mb-6">
-                                <span className="text-2xl">🤖</span>
-                                <h2 className="text-xl font-semibold text-white">AI Instellingen</h2>
-                            </div>
-
-                            <div className="grid md:grid-cols-3 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-200 mb-2">Toon</label>
-                                    <select
-                                        value={data.ai_settings?.tone}
-                                        onChange={(e) => setData('ai_settings', { ...data.ai_settings, tone: e.target.value })}
-                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                        <option value="vriendelijk">Vriendelijk</option>
-                                        <option value="avontuurlijk">Avontuurlijk</option>
-                                        <option value="grappig">Grappig</option>
-                                        <option value="nostalgisch">Nostalgisch</option>
-                                        <option value="informatief">Informatief</option>
-                                    </select>
+                                {/* Inhoud */}
+                                <div className="bg-[#16181f] rounded-xl border border-gray-800 overflow-hidden">
+                                    <div className="px-6 py-4 border-b border-gray-800">
+                                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Inhoud</h3>
+                                    </div>
+                                    <RichTextEditor value={data.content} onChange={(v) => setData('content', v)} placeholder="Schrijf je verhaal hier..." />
+                                    {errors.content && <p className="text-red-400 text-xs px-6 pb-3">{errors.content}</p>}
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-200 mb-2">Lengte</label>
-                                    <select
-                                        value={data.ai_settings?.length}
-                                        onChange={(e) => setData('ai_settings', { ...data.ai_settings, length: e.target.value })}
-                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                        <option value="kort">Kort (2-3 alinea's)</option>
-                                        <option value="medium">Medium (5-7 alinea's)</option>
-                                        <option value="lang">Lang (10+ alinea's)</option>
-                                    </select>
+                                {/* YouTube */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">YouTube Video</h3>
+                                    <input type="url" value={data.youtube_url} onChange={(e) => setData('youtube_url', e.target.value)} className="w-full bg-[#0f1117] border border-gray-700 rounded-lg px-4 py-2.5 text-gray-200 placeholder-gray-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition" placeholder="https://www.youtube.com/watch?v=..." />
+                                    {embedUrl && <div className="mt-4 aspect-video rounded-lg overflow-hidden"><iframe src={embedUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title="YouTube preview" /></div>}
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-200 mb-2">Stijl</label>
-                                    <select
-                                        value={data.ai_settings?.style}
-                                        onChange={(e) => setData('ai_settings', { ...data.ai_settings, style: e.target.value })}
-                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                        <option value="verhaal">Verhaal</option>
-                                        <option value="dagboek">Dagboek</option>
-                                        <option value="blog">Blog Post</option>
-                                        <option value="gids">Reisgids</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                                {/* AI Sectie */}
+                                <div className="bg-[#16181f] rounded-xl border border-gray-800 overflow-hidden">
+                                    <button type="button" onClick={() => setShowAI(!showAI)} className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/5 transition">
+                                        <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider">🤖 AI Verhaal Genereren</h3>
+                                        <svg className={`w-4 h-4 text-gray-500 transition-transform ${showAI ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </button>
+                                    {showAI && (
+                                        <div className="px-6 pb-6 space-y-5 border-t border-gray-800">
+                                            {/* Generation status banner */}
+                                            {generationStatus !== 'idle' && (
+                                                <div className={`mt-4 rounded-lg px-4 py-3 flex items-center justify-between ${generationStatus === 'generating' ? 'bg-blue-900/40 border border-blue-700' : generationStatus === 'success' ? 'bg-green-900/40 border border-green-700' : 'bg-red-900/40 border border-red-700'}`}>
+                                                    <span className="text-sm text-white">
+                                                        {generationStatus === 'generating' && '🤖 AI schrijft jouw verhaal...'}
+                                                        {generationStatus === 'success' && '✅ Verhaal gegenereerd! Pagina wordt vernieuwd...'}
+                                                        {generationStatus === 'error' && '❌ Er ging iets mis. Probeer opnieuw.'}
+                                                    </span>
+                                                    {generationStatus !== 'generating' && <button type="button" onClick={() => setGenerationStatus('idle')} className="text-white/60 hover:text-white">✕</button>}
+                                                </div>
+                                            )}
 
-                        {/* Chapters Card */}
-                        <div className="bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-2xl">📝</span>
-                                    <h2 className="text-xl font-semibold text-white">Hoofdstukken</h2>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={addChapter}
-                                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105"
-                                >
-                                    + Hoofdstuk
-                                </button>
-                            </div>
+                                            {/* AI generated content preview */}
+                                            {story.generated_content && (
+                                                <div className="bg-green-900/20 border border-green-800/50 rounded-lg p-4">
+                                                    <p className="text-xs text-green-400 font-semibold uppercase mb-2">AI Gegenereerde inhoud</p>
+                                                    <div className="text-gray-300 text-sm whitespace-pre-wrap max-h-48 overflow-y-auto">{story.generated_content}</div>
+                                                </div>
+                                            )}
 
-                            <div className="space-y-6">
-                                {data.chapters.map((chapter, index) => (
-                                    <div key={index} className="bg-gray-700 rounded-xl p-6 border border-gray-600">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <span className="text-white font-medium">Hoofdstuk {index + 1}</span>
-                                            {data.chapters.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeChapter(index)}
-                                                    className="text-red-400 hover:text-red-300 text-sm"
-                                                >
-                                                    ❌ Verwijderen
+                                            {/* AI Settings */}
+                                            <div className="grid grid-cols-3 gap-3 pt-2">
+                                                {([['tone', 'Toon', [['vriendelijk','Vriendelijk'],['avontuurlijk','Avontuurlijk'],['grappig','Grappig'],['nostalgisch','Nostalgisch'],['informatief','Informatief']]], ['length', 'Lengte', [['kort','Kort'],['medium','Medium'],['lang','Lang']]], ['style', 'Stijl', [['verhaal','Verhaal'],['dagboek','Dagboek'],['blog','Blog Post'],['gids','Reisgids']]]] as const).map(([key, label, options]) => (
+                                                    <div key={key}>
+                                                        <label className="block text-xs font-medium text-gray-400 mb-1.5">{label}</label>
+                                                        <select value={(data.ai_settings as Record<string, string>)[key]} onChange={(e) => setData('ai_settings', { ...data.ai_settings, [key]: e.target.value })} className="w-full bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition">
+                                                            {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                                                        </select>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Chapters */}
+                                            <div>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <label className="text-sm font-medium text-gray-300">Hoofdstukken</label>
+                                                    <button type="button" onClick={addChapter} className="text-xs px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 rounded-lg transition border border-purple-600/30">+ Hoofdstuk</button>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {data.chapters.map((ch, i) => (
+                                                        <div key={i} className="bg-[#0f1117] rounded-lg p-4 border border-gray-800">
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <span className="text-xs text-gray-500 font-medium">Hoofdstuk {i + 1}</span>
+                                                                <button type="button" onClick={() => removeChapter(i)} className="text-red-500 hover:text-red-400 text-xs">Verwijderen</button>
+                                                            </div>
+                                                            <input type="text" value={ch.title} onChange={(e) => updateChapter(i, 'title', e.target.value)} placeholder="Titel..." className="w-full bg-[#16181f] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm mb-2 focus:border-purple-500 focus:outline-none" />
+                                                            <textarea value={ch.content} onChange={(e) => updateChapter(i, 'content', e.target.value)} placeholder="Notities..." rows={2} className="w-full bg-[#16181f] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm resize-none focus:border-purple-500 focus:outline-none" />
+                                                        </div>
+                                                    ))}
+                                                    {data.chapters.length === 0 && <p className="text-xs text-gray-600 text-center py-4">Nog geen hoofdstukken.</p>}
+                                                </div>
+                                            </div>
+
+                                            {/* Generate button */}
+                                            {data.chapters.length > 0 && (
+                                                <button type="button" onClick={handleGenerateStory} disabled={isGenerating || generationStatus === 'generating'} className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition text-sm flex items-center justify-center gap-2">
+                                                    {isGenerating ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> AI Werkt...</> : story.generated_content ? '🔄 Opnieuw genereren' : '🤖 AI Verhaal Genereren'}
                                                 </button>
                                             )}
                                         </div>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                    Hoofdstuk Titel *
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={chapter.title}
-                                                    onChange={(e) => updateChapter(index, 'title', e.target.value)}
-                                                    className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                    Notities / Content
-                                                </label>
-                                                <textarea
-                                                    value={chapter.content}
-                                                    onChange={(e) => updateChapter(index, 'content', e.target.value)}
-                                                    rows={3}
-                                                    className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                    placeholder="Korte notities over wat er gebeurde..."
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                    )}
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Actions */}
-                        <div className="flex justify-between items-center">
-                            <div className="flex gap-3">
-                                {story.status !== 'generating' && data.chapters.length > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={handleGenerateStory}
-                                        disabled={isGenerating || generationStatus === 'generating'}
-                                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-4 px-8 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                                    >
-                                        {isGenerating || generationStatus === 'generating' ? (
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                                AI Werkt...
-                                            </div>
-                                        ) : generationStatus === 'success' ? (
-                                            <div className="flex items-center gap-2">
-                                                <span>✅</span>
-                                                Opnieuw Genereren
-                                            </div>
-                                        ) : generationStatus === 'error' ? (
-                                            <div className="flex items-center gap-2">
-                                                <span>🔄</span>
-                                                Probeer Opnieuw
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-2">
-                                                <span>🤖</span>
-                                                AI Verhaal Genereren
-                                            </div>
-                                        )}
+                            {/* Right — sidebar */}
+                            <div className="space-y-6">
+                                {/* Publiceren */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Publiceren</h3>
+                                    <div className="space-y-2">
+                                        {(['draft', 'published'] as const).map((s) => (
+                                            <label key={s} className={`flex items-center gap-3 cursor-pointer rounded-lg px-3 py-2.5 transition ${data.status === s ? 'bg-gray-800' : 'hover:bg-gray-800/50'}`}>
+                                                <input type="radio" name="status" value={s} checked={data.status === s} onChange={() => setData('status', s)} className="text-emerald-500 focus:ring-emerald-500" />
+                                                <div>
+                                                    <span className="text-gray-200 text-sm font-medium block">{s === 'draft' ? 'Concept' : 'Gepubliceerd'}</span>
+                                                    <span className="text-gray-500 text-xs">{s === 'draft' ? 'Niet zichtbaar op de site' : 'Zichtbaar op de site'}</span>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    {story.published_at && <p className="text-gray-600 text-xs mt-3 px-3">Gepubliceerd op: {new Date(story.published_at).toLocaleDateString('nl-NL')}</p>}
+                                    <button type="submit" disabled={processing} className="mt-5 w-full px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-semibold rounded-lg transition text-sm">
+                                        {processing ? 'Opslaan...' : '💾 Wijzigingen opslaan'}
                                     </button>
-                                )}
+                                </div>
 
-                                <Link
-                                    href={route('admin.stories.destroy', story.id)}
-                                    method="delete"
-                                    as="button"
-                                    className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                                    onBefore={() => confirm('Weet je zeker dat je deze story permanent wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.')}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <span>🗑️</span>
-                                        Story Verwijderen
-                                    </div>
-                                </Link>
+                                {/* Featured image */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Uitgelichte afbeelding</h3>
+                                    <ImageUpload value={data.featured_image} onChange={(url) => setData('featured_image', url ?? '')} />
+                                    {errors.featured_image && <p className="text-red-400 text-xs mt-2">{errors.featured_image}</p>}
+                                </div>
+
+                                {/* Gallery */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Fotogalerij</h3>
+                                    <p className="text-xs text-gray-500 mb-4">Meerdere foto&apos;s worden als slider getoond.</p>
+                                    <GalleryPicker value={data.gallery_images as string[]} onChange={(urls) => setData('gallery_images', urls)} mediaImages={mediaImages} />
+                                </div>
+
+                                {/* Video */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Video</h3>
+                                    <p className="text-xs text-gray-500 mb-4">Kies een video uit de mediabibliotheek.</p>
+                                    <VideoPicker value={data.library_video_url || null} onChange={(url) => setData('library_video_url', url ?? '')} mediaVideos={mediaVideos} />
+                                </div>
+
+                                {/* Danger zone */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-red-900/30">
+                                    <h3 className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-4">Gevaarzone</h3>
+                                    <button type="button" onClick={handleDelete} className="w-full px-4 py-2.5 bg-transparent hover:bg-red-500/10 text-red-400 font-medium rounded-lg transition text-sm border border-red-500/20 hover:border-red-500/40">
+                                        Verhaal verwijderen
+                                    </button>
+                                </div>
                             </div>
-
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                            >
-                                {processing ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        Bijwerken...
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <span>💾</span>
-                                        Story Bijwerken
-                                    </div>
-                                )}
-                            </button>
                         </div>
                     </form>
                 </div>

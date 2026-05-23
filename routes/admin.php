@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\DiscoveryController;
 use App\Http\Controllers\Admin\ImageUploadController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OutingController;
-use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\QuickCaptureController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SocialSnippetController;
@@ -77,14 +76,9 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Venues
     Route::resource('venues', VenueController::class)->except('show');
 
-    // Stories
+    // Stories (Verhalen)
     Route::resource('stories', StoryController::class);
     Route::post('stories/{story}/generate', [StoryController::class, 'generateStory'])->name('stories.generate');
-
-    // Blog
-    Route::get('/blog/quick-note', [PostController::class, 'quickNote'])->name('blog.quick-note');
-    Route::post('/blog/quick-note', [PostController::class, 'storeQuickNote'])->name('blog.quick-note.store');
-    Route::resource('blog', PostController::class)->except('show')->parameters(['blog' => 'post']);
 
     // Avonturen
     Route::get('/avonturen', [AvontuurController::class, 'index'])->name('avonturen.index');

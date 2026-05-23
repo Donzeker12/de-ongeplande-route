@@ -17,9 +17,12 @@ class Story extends Model
         'title',
         'slug',
         'description',
+        'content',
         'generated_content',
         'youtube_url',
+        'library_video_url',
         'featured_image',
+        'gallery_images',
         'status',
         'user_id',
         'ai_settings',
@@ -28,6 +31,7 @@ class Story extends Model
 
     protected $casts = [
         'ai_settings' => 'array',
+        'gallery_images' => 'array',
         'published_at' => 'datetime',
     ];
 
