@@ -86,11 +86,11 @@ export interface HomePageProps {
     categories: string[];
     activeCategory: string | null;
     heroSettings: HeroSettings;
-    latestPosts: {
+    latestStories: {
         id: number;
         title: string;
         slug: string;
-        excerpt: string | null;
+        description: string | null;
         featured_image: string | null;
         published_at: string | null;
     }[];

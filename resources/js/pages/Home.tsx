@@ -4,7 +4,7 @@ import OutingCard from '@/Components/OutingCard';
 import Seo from '@/Components/Seo';
 import type { HomePageProps } from '@/types';
 
-export default function Home({ latestOutings, recommendedOutings, newDiscoveries, categories, activeCategory, heroSettings, latestPosts }: HomePageProps) {
+export default function Home({ latestOutings, recommendedOutings, newDiscoveries, categories, activeCategory, heroSettings, latestStories }: HomePageProps) {
     const siteUrl = window.location.origin;
 
     const websiteSchema = {
@@ -221,31 +221,31 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                         )}
                     </section>
 
-                    {/* Blog Section */}
-                    {latestPosts.length > 0 && (
+                    {/* Verhalen Section */}
+                    {latestStories.length > 0 && (
                         <section className="py-20">
                             <div className="text-center mb-16 animate-fade-in-up">
                                 <h2 className="text-4xl md:text-5xl font-serif mb-6 text-warm-700 tracking-tight">
-                                    Van de Blog
+                                    Onze Verhalen
                                 </h2>
                                 <p className="text-lg text-warm-600 max-w-2xl mx-auto leading-relaxed">
-                                    Verhalen, tips en gedachten uit ons gezinsleven onderweg
+                                    Verhalen, herinneringen en belevenissen uit ons gezinsleven onderweg
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {latestPosts.map((post, index) => (
+                                {latestStories.map((story, index) => (
                                     <Link
-                                        key={post.id}
-                                        href={`/blog/${post.slug}`}
+                                        key={story.id}
+                                        href={`/verhalen/${story.slug}`}
                                         className="card group overflow-hidden hover:shadow-warm-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in-up"
                                         style={{ animationDelay: `${index * 0.1}s` }}
                                     >
-                                        {post.featured_image ? (
+                                        {story.featured_image ? (
                                             <div className="aspect-video overflow-hidden">
                                                 <img
-                                                    src={post.featured_image}
-                                                    alt={post.title}
+                                                    src={story.featured_image}
+                                                    alt={story.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
                                             </div>
@@ -257,16 +257,16 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                                             </div>
                                         )}
                                         <div className="p-6">
-                                            {post.published_at && (
+                                            {story.published_at && (
                                                 <p className="text-xs text-warm-500 uppercase tracking-wider mb-2">
-                                                    {new Date(post.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                    {new Date(story.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                 </p>
                                             )}
                                             <h3 className="font-serif text-xl text-warm-700 mb-3 group-hover:text-warm-800 transition-colors leading-snug">
-                                                {post.title}
+                                                {story.title}
                                             </h3>
-                                            {post.excerpt && (
-                                                <p className="text-warm-600 text-sm leading-relaxed line-clamp-3">{post.excerpt}</p>
+                                            {story.description && (
+                                                <p className="text-warm-600 text-sm leading-relaxed line-clamp-3">{story.description}</p>
                                             )}
                                             <span className="inline-block mt-4 text-sm font-medium text-warm-700 group-hover:text-warm-800 transition-colors">
                                                 Lees meer →
@@ -278,10 +278,10 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
 
                             <div className="text-center mt-10 animate-fade-in-up">
                                 <Link
-                                    href="/blog"
+                                    href="/verhalen"
                                     className="px-8 py-3 border-2 border-warm-400 text-warm-700 rounded-full font-medium hover:bg-warm-700 hover:text-white hover:border-warm-700 transition-all duration-300 hover:-translate-y-0.5"
                                 >
-                                    Alle blogs bekijken
+                                    Alle verhalen bekijken
                                 </Link>
                             </div>
                         </section>
