@@ -39,6 +39,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
     const [copiedId, setCopiedId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [optimizingId, setOptimizingId] = useState<number | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
     const [selected, setSelected] = useState<MediaItem | null>(null);
     const [lightbox, setLightbox] = useState<MediaItem | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -121,11 +122,15 @@ export default function MediaIndex({ media }: MediaIndexProps) {
 
     const optimizeImage = async (item: MediaItem) => {
         setOptimizingId(item.id);
+        setActionError(null);
         try {
             await axios.post(`/admin/media/${item.id}/optimize`);
             router.reload({ only: ['media'] });
-        } catch {
-            // silently fail
+        } catch (err: unknown) {
+            const msg = (err as { response?: { data?: { error?: string }; status?: number } })?.response?.data?.error
+                ?? `Fout ${(err as { response?: { status?: number } })?.response?.status ?? ''}: kon bestand niet verkleinen.`;
+            setActionError(msg);
+            setTimeout(() => setActionError(null), 5000);
         } finally {
             setOptimizingId(null);
         }
@@ -239,6 +244,15 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             {uploadError}
+                        </div>
+                    )}
+
+                    {actionError && (
+                        <div className="mb-5 flex items-center gap-3 p-3.5 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400 text-sm">
+                            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Verkleinen mislukt: {actionError}
                         </div>
                     )}
 
