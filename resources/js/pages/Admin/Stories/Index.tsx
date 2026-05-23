@@ -5,7 +5,9 @@ import AdminLayout from '@/Layouts/AdminLayout';
 interface Story {
     id: number;
     title: string;
+    slug: string;
     description: string;
+    featured_image: string | null;
     status: 'draft' | 'generating' | 'completed' | 'published';
     created_at: string;
     chapters_count: number;
@@ -61,50 +63,80 @@ export default function StoriesIndex({ stories }: Props) {
                             {stories.data.map((story) => (
                                 <div
                                     key={story.id}
-                                    className="bg-gray-800 rounded-2xl p-6 shadow-2xl border border-gray-700 hover:border-gray-600 transition-all"
+                                    className="bg-[#16181f] rounded-2xl overflow-hidden shadow-2xl border border-gray-800 hover:border-gray-700 transition-all group"
                                 >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <h3 className="text-lg font-semibold text-white line-clamp-2">
-                                            {story.title}
-                                        </h3>
-                                        {getStatusBadge(story.status)}
-                                    </div>
-
-                                    {story.description && (
-                                        <p className="text-gray-400 text-sm mb-4 line-clamp-3">
-                                            {story.description}
-                                        </p>
+                                    {/* Featured image */}
+                                    {story.featured_image ? (
+                                        <a href={`/verhalen/${story.slug}`} target="_blank" rel="noopener noreferrer" className="block overflow-hidden aspect-video">
+                                            <img
+                                                src={story.featured_image}
+                                                alt={story.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        </a>
+                                    ) : (
+                                        <a href={`/verhalen/${story.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center aspect-video bg-gray-800 text-gray-600 hover:text-gray-500 transition">
+                                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                            </svg>
+                                        </a>
                                     )}
 
-                                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                                        <span>{story.chapters_count || 0} hoofdstukken</span>
-                                        <span>{new Date(story.created_at).toLocaleDateString('nl-NL')}</span>
-                                    </div>
+                                    <div className="p-5">
+                                        <div className="flex items-start justify-between gap-2 mb-2">
+                                            <h3 className="text-base font-semibold text-white line-clamp-2 group-hover:text-purple-400 transition">
+                                                {story.title}
+                                            </h3>
+                                            {getStatusBadge(story.status)}
+                                        </div>
 
-                                    <div className="flex gap-2">
-                                        <Link
-                                            href={`/admin/stories/${story.id}/edit`}
-                                            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm text-center transition-colors"
-                                        >
-                                            ✏️ Bewerken
-                                        </Link>
-                                        {story.status === 'completed' && (
-                                            <Link
-                                                href={`/admin/stories/${story.id}`}
-                                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm text-center transition-colors"
-                                            >
-                                                👁️ Bekijken
-                                            </Link>
+                                        {story.description && (
+                                            <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                                                {story.description}
+                                            </p>
                                         )}
-                                        <Link
-                                            href={route('admin.stories.destroy', story.id)}
-                                            method="delete"
-                                            as="button"
-                                            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg text-sm transition-colors"
-                                            onBefore={() => confirm('Weet je zeker dat je deze story wilt verwijderen?')}
-                                        >
-                                            🗑️
-                                        </Link>
+
+                                        <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                                            <span>{story.chapters_count || 0} hoofdstukken</span>
+                                            <span>{new Date(story.created_at).toLocaleDateString('nl-NL')}</span>
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex items-center gap-1 pt-3 border-t border-gray-800">
+                                            <Link
+                                                href={`/admin/stories/${story.id}/edit`}
+                                                className="flex items-center gap-1 px-3 py-1.5 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded transition"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                                Bewerken
+                                            </Link>
+                                            <a
+                                                href={`/verhalen/${story.slug}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-1 px-3 py-1.5 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                Bekijk
+                                            </a>
+                                            <Link
+                                                href={route('admin.stories.destroy', story.id)}
+                                                method="delete"
+                                                as="button"
+                                                className="ml-auto flex items-center gap-1 px-3 py-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition"
+                                                onBefore={() => confirm('Weet je zeker dat je dit verhaal wilt verwijderen?')}
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Verwijder
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
