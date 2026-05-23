@@ -40,7 +40,7 @@ export default function OutingsIndex({ outings, filters }: OutingsIndexProps) {
             header={
                 <div className="flex items-center justify-between w-full">
                     <h2 className="text-lg font-semibold text-white">
-                        Verhalen Beheren
+                        Uitjes Beheren
                     </h2>
                     <Link
                         href="/admin/outings/create"
@@ -49,12 +49,12 @@ export default function OutingsIndex({ outings, filters }: OutingsIndexProps) {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        <span className="hidden sm:inline">Nieuw Verhaal</span>
+                        <span className="hidden sm:inline">Nieuw Uitje</span>
                     </Link>
                 </div>
             }
         >
-            <Head title="Verhalen Beheren" />
+            <Head title="Uitjes Beheren" />
 
             <div className="p-6 lg:p-8">
                 <div className="mx-auto max-w-7xl">
@@ -77,7 +77,7 @@ export default function OutingsIndex({ outings, filters }: OutingsIndexProps) {
                     {outings.data.length === 0 ? (
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl p-12 text-center">
                             <div className="text-5xl mb-4">📖</div>
-                            <p className="text-gray-400 mb-6 text-lg">{search ? `Geen resultaten voor "${search}".` : 'Nog geen verhalen toegevoegd.'}</p>
+                            <p className="text-gray-400 mb-6 text-lg">{search ? `Geen resultaten voor "${search}".` : 'Nog geen uitjes toegevoegd.'}</p>
                             {!search && (
                                 <Link
                                     href="/admin/outings/create"
@@ -86,7 +86,7 @@ export default function OutingsIndex({ outings, filters }: OutingsIndexProps) {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
-                                    <span>Maak je eerste verhaal</span>
+                                    <span>Maak je eerste uitje</span>
                                 </Link>
                             )}
                         </div>

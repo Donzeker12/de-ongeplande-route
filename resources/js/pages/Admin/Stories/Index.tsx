@@ -36,37 +36,26 @@ export default function StoriesIndex({ stories }: Props) {
     };
 
     return (
-        <AdminLayout>
-            <Head title="AI Stories" />
+        <AdminLayout
+            header={
+                <div className="flex items-center justify-between w-full">
+                    <h2 className="text-lg font-semibold text-white">Verhalen</h2>
+                    <Link
+                        href="/admin/stories/create"
+                        className="flex items-center space-x-2 p-2 sm:px-4 sm:py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                        <span className="hidden sm:inline">Nieuw Verhaal</span>
+                    </Link>
+                </div>
+            }
+        >
+            <Head title="Verhalen" />
 
-            <div className="py-8">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-4xl">📚</span>
-                                    <h1 className="text-3xl font-bold text-white">AI Stories</h1>
-                                </div>
-                                <p className="text-gray-300">
-                                    Beheer je AI-gegenereerde verhalen en maak nieuwe stories met Gemini Flash
-                                </p>
-                            </div>
+            <div className="p-6 lg:p-8">
+                <div className="max-w-6xl mx-auto">
 
-                            <Link
-                                href="/admin/stories/create"
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <span>✍️</span>
-                                    Nieuwe Story
-                                </div>
-                            </Link>
-                        </div>
-                    </div>
-
-                    {/* Stories Grid */}
+                    {/* Verhalen Grid */}
                     {stories.data.length > 0 ? (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {stories.data.map((story) => (
@@ -127,17 +116,17 @@ export default function StoriesIndex({ stories }: Props) {
                                 <span className="text-8xl">📝</span>
                             </div>
                             <h2 className="text-2xl font-semibold text-white mb-4">
-                                Nog geen verhalen
+                                Nog geen verhalen gepubliceerd
                             </h2>
                             <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                                Maak je eerste AI-verhaal door hoofdstukken toe te voegen en laat Gemini Flash er een mooi verhaal van maken!
+                                Maak je eerste verhaal. Je kunt zelf schrijven of AI inschakelen om een verhaal te laten genereren op basis van hoofdstukken.
                             </p>
                             <Link
                                 href="/admin/stories/create"
                                 className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02]"
                             >
                                 <span>✍️</span>
-                                Eerste Story Maken
+                                + Nieuw Verhaal
                             </Link>
                         </div>
                     )}
