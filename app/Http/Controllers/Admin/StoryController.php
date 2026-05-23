@@ -20,7 +20,6 @@ class StoryController extends Controller
     {
         $stories = Story::with(['user'])
             ->withCount('chapters')
-            ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
