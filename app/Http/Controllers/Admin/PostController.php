@@ -32,6 +32,7 @@ class PostController extends Controller
     {
         return Inertia::render('Admin/Blog/Create', [
             'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename']),
+            'mediaVideos' => Media::query()->where('mime_type', 'LIKE', 'video/%')->latest()->get(['id', 'url', 'filename']),
         ]);
     }
 
@@ -46,6 +47,7 @@ class PostController extends Controller
             'gallery_images' => 'nullable|array|max:50',
             'gallery_images.*' => 'nullable|string|max:500',
             'youtube_url' => 'nullable|url|max:255',
+            'library_video_url' => 'nullable|string|max:500',
             'status' => 'required|in:draft,published',
         ]);
 
@@ -68,6 +70,7 @@ class PostController extends Controller
         return Inertia::render('Admin/Blog/Edit', [
             'post' => $post,
             'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename']),
+            'mediaVideos' => Media::query()->where('mime_type', 'LIKE', 'video/%')->latest()->get(['id', 'url', 'filename']),
         ]);
     }
 
@@ -82,6 +85,7 @@ class PostController extends Controller
             'gallery_images' => 'nullable|array|max:50',
             'gallery_images.*' => 'nullable|string|max:500',
             'youtube_url' => 'nullable|url|max:255',
+            'library_video_url' => 'nullable|string|max:500',
             'status' => 'required|in:draft,published',
         ]);
 

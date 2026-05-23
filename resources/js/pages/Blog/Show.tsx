@@ -150,6 +150,7 @@ interface Post {
     excerpt: string | null;
     content: string | null;
     youtube_url: string | null;
+    library_video_url: string | null;
     featured_image: string | null;
     gallery_images: string[] | null;
     published_at: string | null;
@@ -295,6 +296,18 @@ export default function BlogShow({ post }: Props) {
                             </p>
                         )}
                     </header>
+
+                    {/* Library video */}
+                    {post.library_video_url && (
+                        <div className="mb-10 rounded-2xl overflow-hidden shadow-lg">
+                            <video
+                                src={post.library_video_url}
+                                controls
+                                className="w-full rounded-2xl bg-black"
+                                preload="metadata"
+                            />
+                        </div>
+                    )}
 
                     {/* YouTube embed */}
                     {embedUrl && (

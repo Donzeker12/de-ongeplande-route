@@ -1,11 +1,18 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import GalleryPicker from '@/Components/GalleryPicker';
+import VideoPicker from '@/Components/VideoPicker';
 import ImageUpload from '@/Components/ImageUpload';
 import RichTextEditor from '@/Components/RichTextEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
 
 interface MediaImage {
+    id: number;
+    url: string;
+    filename: string;
+}
+
+interface MediaVideo {
     id: number;
     url: string;
     filename: string;
@@ -19,12 +26,14 @@ interface FormData {
     featured_image: string;
     gallery_images: string[];
     youtube_url: string;
+    library_video_url: string;
     status: 'draft' | 'published';
     [key: string]: string | string[];
 }
 
 interface Props {
     mediaImages: MediaImage[];
+    mediaVideos: MediaVideo[];
 }
 
 function getYoutubeEmbedUrl(url: string): string | null {
@@ -42,7 +51,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
     }
 }
 
-export default function BlogCreate({ mediaImages }: Props) {
+export default function BlogCreate({ mediaImages, mediaVideos }: Props) {
     const { data, setData, post, processing, errors } = useForm<FormData>({
         title: '',
         slug: '',
@@ -51,6 +60,7 @@ export default function BlogCreate({ mediaImages }: Props) {
         featured_image: '',
         gallery_images: [],
         youtube_url: '',
+        library_video_url: '',
         status: 'draft',
     });
 
@@ -258,6 +268,17 @@ export default function BlogCreate({ mediaImages }: Props) {
                                         value={data.gallery_images as string[]}
                                         onChange={(urls) => setData('gallery_images', urls)}
                                         mediaImages={mediaImages}
+                                    />
+                                </div>
+
+                                {/* Video uit bibliotheek */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Video</h3>
+                                    <p className="text-xs text-gray-500 mb-4">Kies een video uit de mediabiblioteek om boven de tekst te tonen.</p>
+                                    <VideoPicker
+                                        value={data.library_video_url || null}
+                                        onChange={(url) => setData('library_video_url', url ?? '')}
+                                        mediaVideos={mediaVideos}
                                     />
                                 </div>
                             </div>

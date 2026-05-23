@@ -1,11 +1,18 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import GalleryPicker from '@/Components/GalleryPicker';
+import VideoPicker from '@/Components/VideoPicker';
 import ImageUpload from '@/Components/ImageUpload';
 import RichTextEditor from '@/Components/RichTextEditor';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
 
 interface MediaImage {
+    id: number;
+    url: string;
+    filename: string;
+}
+
+interface MediaVideo {
     id: number;
     url: string;
     filename: string;
@@ -20,6 +27,7 @@ interface Post {
     featured_image: string | null;
     gallery_images: string[] | null;
     youtube_url: string | null;
+    library_video_url: string | null;
     status: 'draft' | 'published';
     published_at: string | null;
 }
@@ -27,6 +35,7 @@ interface Post {
 interface Props {
     post: Post;
     mediaImages: MediaImage[];
+    mediaVideos: MediaVideo[];
 }
 
 interface FormData {
@@ -37,6 +46,7 @@ interface FormData {
     featured_image: string;
     gallery_images: string[];
     youtube_url: string;
+    library_video_url: string;
     status: 'draft' | 'published';
     [key: string]: string | string[];
 }
@@ -56,7 +66,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
     }
 }
 
-export default function BlogEdit({ post, mediaImages }: Props) {
+export default function BlogEdit({ post, mediaImages, mediaVideos }: Props) {
     const { data, setData, put, processing, errors } = useForm<FormData>({
         title: post.title,
         slug: post.slug,
@@ -65,6 +75,7 @@ export default function BlogEdit({ post, mediaImages }: Props) {
         featured_image: post.featured_image ?? '',
         gallery_images: post.gallery_images ?? [],
         youtube_url: post.youtube_url ?? '',
+        library_video_url: post.library_video_url ?? '',
         status: post.status,
     });
 
@@ -299,6 +310,17 @@ export default function BlogEdit({ post, mediaImages }: Props) {
                                         value={data.gallery_images as string[]}
                                         onChange={(urls) => setData('gallery_images', urls)}
                                         mediaImages={mediaImages}
+                                    />
+                                </div>
+
+                                {/* Video uit bibliotheek */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Video</h3>
+                                    <p className="text-xs text-gray-500 mb-4">Kies een video uit de mediabiblioteek om boven de tekst te tonen.</p>
+                                    <VideoPicker
+                                        value={data.library_video_url || null}
+                                        onChange={(url) => setData('library_video_url', url ?? '')}
+                                        mediaVideos={mediaVideos}
                                     />
                                 </div>
 

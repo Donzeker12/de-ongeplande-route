@@ -22,6 +22,7 @@ class Post extends Model
         'featured_image',
         'gallery_images',
         'youtube_url',
+        'library_video_url',
         'status',
         'published_at',
     ];
