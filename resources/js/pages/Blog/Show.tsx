@@ -3,22 +3,42 @@ import Seo from '@/Components/Seo';
 import { Link } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
+function Lightbox({
+    images,
+    index,
+    onClose,
+    onNavigate,
+}: {
+    images: string[];
+    index: number;
+    onClose: () => void;
+    onNavigate: (index: number) => void;
+}) {
+    const src = images[index];
+    const hasMultiple = images.length > 1;
+    const prev = useCallback(() => onNavigate(index === 0 ? images.length - 1 : index - 1), [index, images.length, onNavigate]);
+    const next = useCallback(() => onNavigate(index === images.length - 1 ? 0 : index + 1), [index, images.length, onNavigate]);
+
     useEffect(() => {
-        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+            if (e.key === 'ArrowLeft' && hasMultiple) prev();
+            if (e.key === 'ArrowRight' && hasMultiple) next();
+        };
         document.addEventListener('keydown', handler);
         document.body.style.overflow = 'hidden';
         return () => {
             document.removeEventListener('keydown', handler);
             document.body.style.overflow = '';
         };
-    }, [onClose]);
+    }, [onClose, prev, next, hasMultiple]);
 
     return (
         <div
             className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
             onClick={onClose}
         >
+            {/* Close */}
             <button
                 onClick={onClose}
                 className="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-black/40 hover:bg-black/60 rounded-full transition z-10"
@@ -28,6 +48,21 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
+
+            {/* Prev arrow */}
+            {hasMultiple && (
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); prev(); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/40 hover:bg-black/70 text-white rounded-full transition backdrop-blur-sm z-10"
+                    aria-label="Vorige foto"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+            )}
+
             <img
                 src={src}
                 alt=""
@@ -35,11 +70,32 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
                 onClick={(e) => e.stopPropagation()}
                 style={{ touchAction: 'pinch-zoom' }}
             />
+
+            {/* Next arrow */}
+            {hasMultiple && (
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); next(); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/40 hover:bg-black/70 text-white rounded-full transition backdrop-blur-sm z-10"
+                    aria-label="Volgende foto"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            )}
+
+            {/* Counter */}
+            {hasMultiple && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/50 text-white text-sm rounded-full backdrop-blur-sm">
+                    {index + 1} / {images.length}
+                </div>
+            )}
         </div>
     );
 }
 
-function GallerySlider({ images, onOpenLightbox }: { images: string[]; onOpenLightbox: (src: string) => void }) {
+function GallerySlider({ images, onOpenLightbox }: { images: string[]; onOpenLightbox: (index: number) => void }) {
     const [current, setCurrent] = useState(0);
     const touchStartX = useRef<number | null>(null);
 
@@ -83,7 +139,7 @@ function GallerySlider({ images, onOpenLightbox }: { images: string[]; onOpenLig
                     <button
                         key={src}
                         type="button"
-                        onClick={() => onOpenLightbox(src)}
+                        onClick={() => onOpenLightbox(idx)}
                         className={`absolute inset-0 w-full h-full cursor-zoom-in transition-opacity duration-500 ${
                             idx === current ? 'opacity-100' : 'opacity-0 pointer-events-none'
                         }`}
@@ -179,8 +235,12 @@ export default function BlogShow({ post }: Props) {
     const siteUrl = window.location.origin;
     const canonicalUrl = `${siteUrl}/blog/${post.slug}`;
     const description = post.excerpt ?? `Lees het verhaal "${post.title}" van De Ongeplande Route.`;
-    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+    const [lightboxState, setLightboxState] = useState<{ images: string[]; index: number } | null>(null);
     const articleRef = useRef<HTMLElement>(null);
+
+    const openLightbox = useCallback((images: string[], index: number) => {
+        setLightboxState({ images, index });
+    }, []);
 
     // Click delegation for images inside the rendered HTML content
     useEffect(() => {
@@ -190,12 +250,12 @@ export default function BlogShow({ post }: Props) {
             const target = e.target as HTMLElement;
             if (target.tagName === 'IMG') {
                 const src = (target as HTMLImageElement).src;
-                if (src) setLightboxSrc(src);
+                if (src) openLightbox([src], 0);
             }
         };
         el.addEventListener('click', handler);
         return () => el.removeEventListener('click', handler);
-    }, [post.content]);
+    }, [post.content, openLightbox]);
 
     const structuredData = [
         {
@@ -245,7 +305,14 @@ export default function BlogShow({ post }: Props) {
             <div className="min-h-screen bg-warm-bg">
                 <Navigation variant="page" />
 
-                {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+                {lightboxState && (
+                    <Lightbox
+                        images={lightboxState.images}
+                        index={lightboxState.index}
+                        onClose={() => setLightboxState(null)}
+                        onNavigate={(i) => setLightboxState((s) => s ? { ...s, index: i } : null)}
+                    />
+                )}
 
                 {/* Hero */}
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
@@ -264,7 +331,7 @@ export default function BlogShow({ post }: Props) {
                     {post.featured_image && (
                         <button
                             type="button"
-                            onClick={() => setLightboxSrc(post.featured_image!)}
+                            onClick={() => openLightbox([post.featured_image!], 0)}
                             className="w-full rounded-3xl overflow-hidden shadow-xl mb-8 aspect-[16/9] block cursor-zoom-in"
                         >
                             <img
@@ -335,7 +402,7 @@ export default function BlogShow({ post }: Props) {
                     {post.gallery_images && post.gallery_images.length >= 1 && (
                         <GallerySlider
                             images={post.gallery_images}
-                            onOpenLightbox={setLightboxSrc}
+                            onOpenLightbox={(i) => openLightbox(post.gallery_images!, i)}
                         />
                     )}
 
