@@ -56,6 +56,7 @@ class StoryController extends Controller
             'content' => 'nullable|string',
             'youtube_url' => 'nullable|url|max:255',
             'featured_image' => 'nullable|image|max:10240',
+            'video_file' => 'nullable|mimetypes:video/mp4,video/quicktime,video/webm,video/x-msvideo|max:204800',
             'existing_story_id' => 'nullable|exists:stories,id',
         ]);
 
@@ -64,6 +65,13 @@ class StoryController extends Controller
         if ($request->hasFile('featured_image')) {
             $path = $request->file('featured_image')->store('stories', 'public');
             $imageUrl = Storage::disk('public')->url($path);
+        }
+
+        // Handle video upload
+        $videoUrl = null;
+        if ($request->hasFile('video_file')) {
+            $path = $request->file('video_file')->store('stories/videos', 'public');
+            $videoUrl = Storage::disk('public')->url($path);
         }
 
         // Add as chapter to existing story
@@ -88,6 +96,7 @@ class StoryController extends Controller
             'description' => $validated['description'] ?? null,
             'content' => $validated['content'] ?? null,
             'youtube_url' => $validated['youtube_url'] ?? null,
+            'library_video_url' => $videoUrl,
             'featured_image' => $imageUrl,
             'status' => 'draft',
             'user_id' => Auth::id(),

@@ -14,15 +14,19 @@ interface Props {
 
 export default function QuickNote({ recentStories }: Props) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [videoPreview, setVideoPreview] = useState<string | null>(null);
+    const [videoMode, setVideoMode] = useState<'none' | 'file' | 'youtube'>('none');
     const [linkToExisting, setLinkToExisting] = useState(false);
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         title: '',
         description: '',
         content: '',
         youtube_url: '',
         featured_image: null as File | null,
+        video_file: null as File | null,
         existing_story_id: '',
     });
 
@@ -34,6 +38,22 @@ export default function QuickNote({ recentStories }: Props) {
             reader.onload = (ev) => setImagePreview(ev.target?.result as string);
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setData('video_file', file);
+            setVideoPreview(URL.createObjectURL(file));
+            setVideoMode('file');
+        }
+    };
+
+    const removeVideo = () => {
+        setData('video_file', null);
+        setVideoPreview(null);
+        setVideoMode('none');
+        if (videoInputRef.current) videoInputRef.current.value = '';
     };
 
     const handleSubmit = (e: FormEvent) => {
@@ -146,17 +166,75 @@ export default function QuickNote({ recentStories }: Props) {
                         />
                     </div>
 
-                    {/* Video URL */}
-                    <div className="bg-[#16181f] rounded-2xl p-5 border border-gray-800">
-                        <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">🎬 Video (optioneel)</h3>
+                    {/* Video */}
+                    <div className="bg-[#16181f] rounded-2xl p-5 border border-gray-800 space-y-3">
+                        <h3 className="text-base font-semibold text-white flex items-center gap-2">🎬 Video (optioneel)</h3>
+
                         <input
-                            type="url"
-                            value={data.youtube_url}
-                            onChange={(e) => setData('youtube_url', e.target.value)}
-                            placeholder="YouTube URL (https://youtube.com/...)"
-                            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-600 focus:outline-none focus:border-amber-500 transition"
+                            ref={videoInputRef}
+                            type="file"
+                            accept="video/*"
+                            capture="environment"
+                            onChange={handleVideoChange}
+                            className="hidden"
                         />
-                        {errors.youtube_url && <p className="text-red-400 text-xs mt-1">{errors.youtube_url}</p>}
+
+                        {/* Eigen video */}
+                        {videoMode !== 'youtube' && (
+                            <>
+                                {videoPreview ? (
+                                    <div className="relative">
+                                        <video
+                                            src={videoPreview}
+                                            controls
+                                            className="w-full rounded-xl border border-gray-700 max-h-48"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={removeVideo}
+                                            className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center font-bold transition"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => videoInputRef.current?.click()}
+                                        className="w-full h-20 border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:border-amber-500 hover:text-amber-400 transition"
+                                    >
+                                        <span className="text-2xl mb-1">🎥</span>
+                                        <span className="text-xs font-medium">Camera / Gallerij</span>
+                                    </button>
+                                )}
+                            </>
+                        )}
+
+                        {/* Scheidingslijn */}
+                        {videoMode === 'none' && (
+                            <div className="flex items-center gap-3 text-gray-600 text-xs">
+                                <div className="flex-1 h-px bg-gray-800" />
+                                <span>of YouTube URL</span>
+                                <div className="flex-1 h-px bg-gray-800" />
+                            </div>
+                        )}
+
+                        {/* YouTube URL */}
+                        {videoMode !== 'file' && (
+                            <>
+                                <input
+                                    type="url"
+                                    value={data.youtube_url}
+                                    onChange={(e) => {
+                                        setData('youtube_url', e.target.value);
+                                        setVideoMode(e.target.value ? 'youtube' : 'none');
+                                    }}
+                                    placeholder="YouTube URL (https://youtube.com/...)"
+                                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-600 focus:outline-none focus:border-amber-500 transition"
+                                />
+                                {errors.youtube_url && <p className="text-red-400 text-xs">{errors.youtube_url}</p>}
+                            </>
+                        )}
                     </div>
 
                     {/* Koppelen aan bestaand verhaal */}
