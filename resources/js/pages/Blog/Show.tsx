@@ -331,8 +331,8 @@ export default function BlogShow({ post }: Props) {
                         />
                     )}
 
-                    {/* Gallery slider — only when 2+ images */}
-                    {post.gallery_images && post.gallery_images.length >= 2 && (
+                    {/* Gallery slider */}
+                    {post.gallery_images && post.gallery_images.length >= 1 && (
                         <GallerySlider
                             images={post.gallery_images}
                             onOpenLightbox={setLightboxSrc}

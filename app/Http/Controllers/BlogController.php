@@ -41,7 +41,9 @@ class BlogController extends Controller
                 'excerpt' => $post->excerpt,
                 'content' => $post->content,
                 'youtube_url' => $post->youtube_url,
+                'library_video_url' => $post->library_video_url,
                 'featured_image' => $post->featured_image,
+                'gallery_images' => $post->gallery_images,
                 'published_at' => $post->published_at?->toDateString(),
             ],
         ]);
