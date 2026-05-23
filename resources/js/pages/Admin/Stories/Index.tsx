@@ -67,26 +67,26 @@ export default function StoriesIndex({ stories }: Props) {
                                 >
                                     {/* Featured image */}
                                     {story.featured_image ? (
-                                        <a href={`/verhalen/${story.slug}`} target="_blank" rel="noopener noreferrer" className="block overflow-hidden aspect-video">
+                                        <Link href={`/admin/stories/${story.id}`} className="block overflow-hidden aspect-video">
                                             <img
                                                 src={story.featured_image}
                                                 alt={story.title}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
-                                        </a>
+                                        </Link>
                                     ) : (
-                                        <a href={`/verhalen/${story.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center aspect-video bg-gray-800 text-gray-600 hover:text-gray-500 transition">
+                                        <Link href={`/admin/stories/${story.id}`} className="flex items-center justify-center aspect-video bg-gray-800 text-gray-600 hover:text-gray-500 transition">
                                             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                                             </svg>
-                                        </a>
+                                        </Link>
                                     )}
 
                                     <div className="p-5">
                                         <div className="flex items-start justify-between gap-2 mb-2">
-                                            <h3 className="text-base font-semibold text-white line-clamp-2 group-hover:text-purple-400 transition">
+                                            <Link href={`/admin/stories/${story.id}`} className="text-base font-semibold text-white line-clamp-2 group-hover:text-purple-400 transition hover:underline">
                                                 {story.title}
-                                            </h3>
+                                            </Link>
                                             {getStatusBadge(story.status)}
                                         </div>
 
