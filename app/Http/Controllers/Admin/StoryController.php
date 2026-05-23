@@ -73,6 +73,22 @@ class StoryController extends Controller
             $videoUrl = Storage::disk('public')->url($path);
         }
 
+        // Build HTML content (tekst + foto + video direct in TipTap editor)
+        $htmlParts = [];
+        if (! empty($validated['content'])) {
+            $paragraphs = array_filter(array_map('trim', explode("\n", $validated['content'])));
+            foreach ($paragraphs as $paragraph) {
+                $htmlParts[] = '<p>'.e($paragraph).'</p>';
+            }
+        }
+        if ($imageUrl) {
+            $htmlParts[] = '<img src="'.$imageUrl.'" alt="">';
+        }
+        if ($videoUrl) {
+            $htmlParts[] = '<video src="'.$videoUrl.'" controls></video>';
+        }
+        $htmlContent = implode('', $htmlParts) ?: null;
+
         // Add as chapter to existing story
         if (! empty($validated['existing_story_id'])) {
             $story = Story::findOrFail($validated['existing_story_id']);
@@ -80,7 +96,7 @@ class StoryController extends Controller
             Chapter::create([
                 'story_id' => $story->id,
                 'title' => $validated['title'],
-                'content' => $validated['content'] ?? null,
+                'content' => $htmlContent,
                 'order' => $nextOrder,
             ]);
 
@@ -92,7 +108,7 @@ class StoryController extends Controller
         $story = Story::create([
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']).'-'.now()->format('YmdHis'),
-            'content' => $validated['content'] ?? null,
+            'content' => $htmlContent,
             'youtube_url' => $validated['youtube_url'] ?? null,
             'library_video_url' => $videoUrl,
             'featured_image' => $imageUrl,
