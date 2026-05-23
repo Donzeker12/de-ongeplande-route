@@ -304,6 +304,16 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                             className="w-full h-full object-cover"
                                         />
                                     )}
+                                    {/* Optimizing overlay */}
+                                    {optimizingId === item.id && (
+                                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-2 z-10">
+                                            <svg className="w-6 h-6 text-emerald-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                            </svg>
+                                            <span className="text-white text-xs font-medium">Verkleinen...</span>
+                                        </div>
+                                    )}
                                     {/* Hover actions */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 gap-1">
                                         <button
