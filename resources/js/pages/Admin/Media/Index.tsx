@@ -56,42 +56,46 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         return () => window.removeEventListener('keydown', onKey);
     }, [lightbox, media]);
 
-    const uploadFile = async (file: File) => {
-        setUploading(true);
-        setUploadError(null);
+    const uploadFile = async (file: File): Promise<boolean> => {
         const formData = new FormData();
         formData.append('image', file);
         try {
             await axios.post('/admin/media', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            router.reload({ only: ['media'] });
+            return true;
         } catch {
-            setUploadError('Upload mislukt. Probeer het opnieuw (max 200 MB, afbeeldingen of video\'s).');
-        } finally {
-            setUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
+            return false;
         }
     };
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files?.length) return;
-        for (const file of Array.from(files)) {
-            await uploadFile(file);
+    const uploadFiles = async (files: File[]) => {
+        if (!files.length) return;
+        setUploading(true);
+        setUploadError(null);
+        let failed = 0;
+        for (const file of files) {
+            const ok = await uploadFile(file);
+            if (!ok) failed++;
         }
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        if (failed > 0) {
+            setUploadError(`${failed} bestand(en) konden niet worden geüpload. Controleer het bestandstype en de grootte.`);
+        }
+        router.reload({ only: ['media'] });
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files ?? []);
+        await uploadFiles(files);
     };
 
     const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
-        const files = e.dataTransfer.files;
-        if (!files?.length) return;
-        for (const file of Array.from(files)) {
-                if (file.type.startsWith('image/')) {
-                await uploadFile(file);
-                }
-            }
+        const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith('image/'));
+        await uploadFiles(files);
     };
 
     const copyUrl = (item: MediaItem) => {
