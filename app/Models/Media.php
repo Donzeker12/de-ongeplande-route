@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Media extends Model
 {
-    protected $fillable = ['filename', 'path', 'url', 'mime_type', 'size', 'alt'];
+    protected $fillable = ['filename', 'path', 'url', 'mime_type', 'size', 'alt', 'processing'];
 
     protected function casts(): array
     {
-        return ['size' => 'integer'];
+        return [
+            'size' => 'integer',
+            'processing' => 'boolean',
+        ];
     }
 }

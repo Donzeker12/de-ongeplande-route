@@ -10,6 +10,7 @@ interface MediaItem {
     mime_type: string | null;
     size: number | null;
     alt: string | null;
+    processing: boolean;
     created_at: string;
 }
 
@@ -37,6 +38,7 @@ export default function VideosIndex({ media }: Props) {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [compressingId, setCompressingId] = useState<number | null>(null);
     const [selected, setSelected] = useState<MediaItem | null>(null);
     const [lightbox, setLightbox] = useState<MediaItem | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -115,6 +117,19 @@ export default function VideosIndex({ media }: Props) {
         navigator.clipboard.writeText(item.url);
         setCopiedId(item.id);
         setTimeout(() => setCopiedId(null), 2000);
+    };
+
+    const compressVideo = async (item: MediaItem) => {
+        if (item.processing) return;
+        setCompressingId(item.id);
+        try {
+            await axios.post(`/admin/media/${item.id}/compress`);
+            router.reload({ only: ['media'] });
+        } catch {
+            // silently fail
+        } finally {
+            setCompressingId(null);
+        }
     };
 
     const deleteMedia = async (item: MediaItem) => {
@@ -294,6 +309,13 @@ export default function VideosIndex({ media }: Props) {
                                                 className="flex-1 py-1 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs rounded-lg transition"
                                             >
                                                 {copiedId === item.id ? '✓' : 'Kopieer'}
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); compressVideo(item); }}
+                                                disabled={item.processing || compressingId === item.id}
+                                                className="flex-1 py-1 bg-sky-500/40 hover:bg-sky-500/60 backdrop-blur-sm text-white text-xs rounded-lg transition disabled:opacity-50"
+                                            >
+                                                {item.processing ? 'Bezig...' : compressingId === item.id ? '...' : 'Verklein'}
                                             </button>
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); deleteMedia(item); }}

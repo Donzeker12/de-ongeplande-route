@@ -102,6 +102,8 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::get('/media/list', [MediaController::class, 'list'])->name('media.list');
     Route::get('/media/videos', [MediaController::class, 'videos'])->name('media.videos');
     Route::resource('media', MediaController::class)->only(['index', 'store', 'destroy']);
+    Route::post('/media/{medium}/optimize', [MediaController::class, 'optimize'])->name('media.optimize');
+    Route::post('/media/{medium}/compress', [MediaController::class, 'compress'])->name('media.compress');
 
     // Site instellingen
     Route::get('/settings', [SiteSettingController::class, 'index'])->name('settings.index');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\CompressMedia;
 use App\Models\Media;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -88,6 +89,33 @@ class MediaController extends Controller
             'url' => $media->url,
             'id' => $media->id,
         ], 201);
+    }
+
+    public function optimize(Media $medium): JsonResponse
+    {
+        $fullPath = Storage::disk('public')->path($medium->path);
+
+        if (! file_exists($fullPath)) {
+            return response()->json(['error' => 'Bestand niet gevonden.'], 404);
+        }
+
+        $this->optimizeImage($fullPath);
+
+        $medium->update(['size' => Storage::disk('public')->size($medium->path)]);
+
+        return response()->json(['size' => $medium->size]);
+    }
+
+    public function compress(Media $medium): JsonResponse
+    {
+        if ($medium->processing) {
+            return response()->json(['error' => 'Al bezig met comprimeren.'], 409);
+        }
+
+        $medium->update(['processing' => true]);
+        CompressMedia::dispatch($medium);
+
+        return response()->json(['processing' => true]);
     }
 
     public function destroy(Media $medium): JsonResponse

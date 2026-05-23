@@ -10,6 +10,7 @@ interface MediaItem {
     mime_type: string | null;
     size: number | null;
     alt: string | null;
+    processing: boolean;
     created_at: string;
 }
 
@@ -37,6 +38,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [optimizingId, setOptimizingId] = useState<number | null>(null);
     const [selected, setSelected] = useState<MediaItem | null>(null);
     const [lightbox, setLightbox] = useState<MediaItem | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -115,6 +117,18 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         navigator.clipboard.writeText(item.url);
         setCopiedId(item.id);
         setTimeout(() => setCopiedId(null), 2000);
+    };
+
+    const optimizeImage = async (item: MediaItem) => {
+        setOptimizingId(item.id);
+        try {
+            await axios.post(`/admin/media/${item.id}/optimize`);
+            router.reload({ only: ['media'] });
+        } catch {
+            // silently fail
+        } finally {
+            setOptimizingId(null);
+        }
     };
 
     const deleteMedia = async (item: MediaItem) => {
@@ -296,7 +310,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                             onClick={(e) => { e.stopPropagation(); setLightbox(item); }}
                                             className="w-full py-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs rounded-lg transition font-medium"
                                         >
-                                            {item.mime_type?.startsWith('video/') ? 'Afspelen' : 'Vergroot'}
+                                            Vergroot
                                         </button>
                                         <div className="flex gap-1">
                                             <button
@@ -304,6 +318,13 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                                 className="flex-1 py-1 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs rounded-lg transition"
                                             >
                                                 {copiedId === item.id ? '✓' : 'Kopieer'}
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); optimizeImage(item); }}
+                                                disabled={optimizingId === item.id}
+                                                className="flex-1 py-1 bg-emerald-500/40 hover:bg-emerald-500/60 backdrop-blur-sm text-white text-xs rounded-lg transition disabled:opacity-50"
+                                            >
+                                                {optimizingId === item.id ? '...' : 'Verklein'}
                                             </button>
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); deleteMedia(item); }}
