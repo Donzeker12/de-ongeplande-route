@@ -32,6 +32,8 @@ function totalSize(items: MediaItem[]): string {
 export default function MediaIndex({ media }: MediaIndexProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+    const [uploadLabel, setUploadLabel] = useState<string>('');
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -56,12 +58,15 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         return () => window.removeEventListener('keydown', onKey);
     }, [lightbox, media]);
 
-    const uploadFile = async (file: File): Promise<boolean> => {
+    const uploadFile = async (file: File, onProgress: (pct: number) => void): Promise<boolean> => {
         const formData = new FormData();
         formData.append('image', file);
         try {
             await axios.post('/admin/media', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
+                onUploadProgress: (e) => {
+                    if (e.total) onProgress(Math.round((e.loaded / e.total) * 100));
+                },
             });
             return true;
         } catch {
@@ -73,12 +78,20 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         if (!files.length) return;
         setUploading(true);
         setUploadError(null);
+        setUploadProgress(0);
         let failed = 0;
-        for (const file of files) {
-            const ok = await uploadFile(file);
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const label = files.length > 1
+                ? `Bestand ${i + 1} van ${files.length} — ${file.name}`
+                : file.name;
+            setUploadLabel(label);
+            const ok = await uploadFile(file, (pct) => setUploadProgress(pct));
             if (!ok) failed++;
         }
         setUploading(false);
+        setUploadProgress(null);
+        setUploadLabel('');
         if (fileInputRef.current) fileInputRef.current.value = '';
         if (failed > 0) {
             setUploadError(`${failed} bestand(en) konden niet worden geüpload. Controleer het bestandstype en de grootte.`);
@@ -187,6 +200,25 @@ export default function MediaIndex({ media }: MediaIndexProps) {
 
                 {/* Main content */}
                 <div className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0">
+                    {/* Upload progress */}
+                    {uploadProgress !== null && (
+                        <div className="mb-5 p-4 bg-[#16181f] border border-gray-700 rounded-xl">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm text-gray-300 truncate mr-3">{uploadLabel}</span>
+                                <span className="text-sm font-semibold text-emerald-400 shrink-0">{uploadProgress}%</span>
+                            </div>
+                            <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                                <div
+                                    className="bg-emerald-500 h-2 rounded-full transition-all duration-200"
+                                    style={{ width: `${uploadProgress}%` }}
+                                />
+                            </div>
+                            {uploadProgress === 100 && (
+                                <p className="text-xs text-gray-500 mt-1.5">Verwerken op de server...</p>
+                            )}
+                        </div>
+                    )}
+
                     {uploadError && (
                         <div className="mb-5 flex items-center gap-3 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
                             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
