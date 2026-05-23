@@ -20,6 +20,7 @@ class Post extends Model
         'excerpt',
         'content',
         'featured_image',
+        'gallery_images',
         'youtube_url',
         'status',
         'published_at',
@@ -29,6 +30,7 @@ class Post extends Model
     {
         return [
             'published_at' => 'datetime',
+            'gallery_images' => 'array',
         ];
     }
 

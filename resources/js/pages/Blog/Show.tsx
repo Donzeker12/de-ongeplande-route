@@ -1,7 +1,7 @@
 import Navigation from '@/Components/Navigation';
 import Seo from '@/Components/Seo';
 import { Link } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
     useEffect(() => {
@@ -39,6 +39,110 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
     );
 }
 
+function GallerySlider({ images, onOpenLightbox }: { images: string[]; onOpenLightbox: (src: string) => void }) {
+    const [current, setCurrent] = useState(0);
+    const touchStartX = useRef<number | null>(null);
+
+    const prev = useCallback(() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1)), [images.length]);
+    const next = useCallback(() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1)), [images.length]);
+
+    // Keyboard arrows
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowLeft') prev();
+            if (e.key === 'ArrowRight') next();
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [prev, next]);
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+    };
+
+    const onTouchEnd = (e: React.TouchEvent) => {
+        if (touchStartX.current === null) return;
+        const diff = touchStartX.current - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) {
+            diff > 0 ? next() : prev();
+        }
+        touchStartX.current = null;
+    };
+
+    return (
+        <div className="my-10">
+            <h2 className="font-serif text-2xl text-warm-800 mb-5">Foto's</h2>
+
+            {/* Main image */}
+            <div
+                className="relative rounded-3xl overflow-hidden aspect-[16/9] bg-warm-100 select-none"
+                onTouchStart={onTouchStart}
+                onTouchEnd={onTouchEnd}
+            >
+                {images.map((src, idx) => (
+                    <button
+                        key={src}
+                        type="button"
+                        onClick={() => onOpenLightbox(src)}
+                        className={`absolute inset-0 w-full h-full cursor-zoom-in transition-opacity duration-500 ${
+                            idx === current ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                        }`}
+                        aria-label="Vergroot foto"
+                    >
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                    </button>
+                ))}
+
+                {/* Arrows */}
+                <button
+                    type="button"
+                    onClick={prev}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition backdrop-blur-sm"
+                    aria-label="Vorige foto"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <button
+                    type="button"
+                    onClick={next}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition backdrop-blur-sm"
+                    aria-label="Volgende foto"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+
+                {/* Counter badge */}
+                <div className="absolute bottom-3 right-3 px-2.5 py-1 bg-black/50 text-white text-xs rounded-full backdrop-blur-sm">
+                    {current + 1} / {images.length}
+                </div>
+            </div>
+
+            {/* Thumbnails */}
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1 snap-x">
+                {images.map((src, idx) => (
+                    <button
+                        key={src}
+                        type="button"
+                        onClick={() => setCurrent(idx)}
+                        className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition snap-start ${
+                            idx === current
+                                ? 'border-amber-400 opacity-100'
+                                : 'border-transparent opacity-60 hover:opacity-90'
+                        }`}
+                        aria-label={`Foto ${idx + 1}`}
+                    >
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 interface Post {
     id: number;
     title: string;
@@ -47,6 +151,7 @@ interface Post {
     content: string | null;
     youtube_url: string | null;
     featured_image: string | null;
+    gallery_images: string[] | null;
     published_at: string | null;
 }
 
@@ -210,6 +315,14 @@ export default function BlogShow({ post }: Props) {
                             ref={articleRef}
                             className="prose prose-stone max-w-none prose-p:text-warm-700 prose-headings:text-warm-800 prose-headings:font-serif prose-a:text-amber-600 prose-strong:text-warm-800 prose-blockquote:border-amber-400 prose-blockquote:text-warm-600 leading-relaxed text-lg mb-12 [&_img]:cursor-zoom-in [&_img]:transition [&_img]:hover:opacity-90"
                             dangerouslySetInnerHTML={{ __html: post.content }}
+                        />
+                    )}
+
+                    {/* Gallery slider — only when 2+ images */}
+                    {post.gallery_images && post.gallery_images.length >= 2 && (
+                        <GallerySlider
+                            images={post.gallery_images}
+                            onOpenLightbox={setLightboxSrc}
                         />
                     )}
 

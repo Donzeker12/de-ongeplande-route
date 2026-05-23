@@ -1,8 +1,15 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import GalleryPicker from '@/Components/GalleryPicker';
 import ImageUpload from '@/Components/ImageUpload';
 import RichTextEditor from '@/Components/RichTextEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
+
+interface MediaImage {
+    id: number;
+    url: string;
+    filename: string;
+}
 
 interface FormData {
     title: string;
@@ -10,9 +17,14 @@ interface FormData {
     excerpt: string;
     content: string;
     featured_image: string;
+    gallery_images: string[];
     youtube_url: string;
     status: 'draft' | 'published';
-    [key: string]: string;
+    [key: string]: string | string[];
+}
+
+interface Props {
+    mediaImages: MediaImage[];
 }
 
 function getYoutubeEmbedUrl(url: string): string | null {
@@ -30,13 +42,14 @@ function getYoutubeEmbedUrl(url: string): string | null {
     }
 }
 
-export default function BlogCreate() {
+export default function BlogCreate({ mediaImages }: Props) {
     const { data, setData, post, processing, errors } = useForm<FormData>({
         title: '',
         slug: '',
         excerpt: '',
         content: '',
         featured_image: '',
+        gallery_images: [],
         youtube_url: '',
         status: 'draft',
     });
@@ -235,6 +248,17 @@ export default function BlogCreate() {
                                         onChange={(url) => setData('featured_image', url)}
                                     />
                                     {errors.featured_image && <p className="text-red-400 text-xs mt-2">{errors.featured_image}</p>}
+                                </div>
+
+                                {/* Gallery */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Fotogalerij</h3>
+                                    <p className="text-xs text-gray-500 mb-4">Meerdere foto's worden als slider getoond op de blogpost.</p>
+                                    <GalleryPicker
+                                        value={data.gallery_images as string[]}
+                                        onChange={(urls) => setData('gallery_images', urls)}
+                                        mediaImages={mediaImages}
+                                    />
                                 </div>
                             </div>
                         </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Avontuur;
+use App\Models\Media;
 use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,9 @@ class PostController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Admin/Blog/Create');
+        return Inertia::render('Admin/Blog/Create', [
+            'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename']),
+        ]);
     }
 
     public function store(Request $request)
@@ -40,12 +43,15 @@ class PostController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'content' => 'nullable|string',
             'featured_image' => 'nullable|string|max:500',
+            'gallery_images' => 'nullable|array|max:50',
+            'gallery_images.*' => 'nullable|string|max:500',
             'youtube_url' => 'nullable|url|max:255',
             'status' => 'required|in:draft,published',
         ]);
 
         $validated['user_id'] = Auth::id();
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['title']);
+        $validated['gallery_images'] = array_values(array_filter($validated['gallery_images'] ?? []));
 
         if ($validated['status'] === 'published' && empty($validated['published_at'] ?? null)) {
             $validated['published_at'] = now();
@@ -61,6 +67,7 @@ class PostController extends Controller
     {
         return Inertia::render('Admin/Blog/Edit', [
             'post' => $post,
+            'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename']),
         ]);
     }
 
@@ -72,9 +79,13 @@ class PostController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'content' => 'nullable|string',
             'featured_image' => 'nullable|string|max:500',
+            'gallery_images' => 'nullable|array|max:50',
+            'gallery_images.*' => 'nullable|string|max:500',
             'youtube_url' => 'nullable|url|max:255',
             'status' => 'required|in:draft,published',
         ]);
+
+        $validated['gallery_images'] = array_values(array_filter($validated['gallery_images'] ?? []));
 
         if ($validated['status'] === 'published' && $post->published_at === null) {
             $validated['published_at'] = now();
