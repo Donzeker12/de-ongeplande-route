@@ -116,11 +116,18 @@ export default function QuickNote({ recentStories }: Props) {
                                 </button>
                             </div>
                         ) : (
-                            <label className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-white/5 transition">
-                                <span className="text-2xl">📷</span>
-                                <span className="text-gray-300 font-medium">Foto toevoegen</span>
-                                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                            </label>
+                            <div className="flex">
+                                <label className="flex-1 flex flex-col items-center gap-1.5 py-5 cursor-pointer hover:bg-white/5 transition border-r border-gray-800">
+                                    <span className="text-2xl">📸</span>
+                                    <span className="text-gray-300 text-xs font-medium">Foto maken</span>
+                                    <input type="file" accept="image/*" capture="environment" onChange={handleImageChange} className="hidden" />
+                                </label>
+                                <label className="flex-1 flex flex-col items-center gap-1.5 py-5 cursor-pointer hover:bg-white/5 transition">
+                                    <span className="text-2xl">🖼️</span>
+                                    <span className="text-gray-300 text-xs font-medium">Uit gallerij</span>
+                                    <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                </label>
+                            </div>
                         )}
                     </div>
 
@@ -141,21 +148,34 @@ export default function QuickNote({ recentStories }: Props) {
                             <div className="flex items-center gap-3 px-5 py-4">
                                 <span className="text-2xl">🎬</span>
                                 <span className="text-gray-300 text-sm flex-1 truncate">{data.youtube_url}</span>
-                                <button type="button" onClick={removeVideo} className="text-gray-500 hover:text-red-400 transition text-sm">×</button>
+                                <button type="button" onClick={removeVideo} className="text-gray-500 hover:text-red-400 transition text-xl leading-none">×</button>
                             </div>
                         ) : (
                             <div>
-                                <label className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-white/5 transition border-b border-gray-800">
-                                    <span className="text-2xl">🎥</span>
-                                    <span className="text-gray-300 font-medium">Video opnemen / uploaden</span>
-                                    <input
-                                        ref={videoInputRef}
-                                        type="file"
-                                        accept="video/*"
-                                        onChange={handleVideoChange}
-                                        className="hidden"
-                                    />
-                                </label>
+                                <div className="flex border-b border-gray-800">
+                                    <label className="flex-1 flex flex-col items-center gap-1.5 py-5 cursor-pointer hover:bg-white/5 transition border-r border-gray-800">
+                                        <span className="text-2xl">🎥</span>
+                                        <span className="text-gray-300 text-xs font-medium">Video opnemen</span>
+                                        <input
+                                            ref={videoInputRef}
+                                            type="file"
+                                            accept="video/*"
+                                            capture="environment"
+                                            onChange={handleVideoChange}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    <label className="flex-1 flex flex-col items-center gap-1.5 py-5 cursor-pointer hover:bg-white/5 transition">
+                                        <span className="text-2xl">📂</span>
+                                        <span className="text-gray-300 text-xs font-medium">Uploaden</span>
+                                        <input
+                                            type="file"
+                                            accept="video/*"
+                                            onChange={handleVideoChange}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
                                 <div className="flex items-center gap-3 px-5 py-3">
                                     <span className="text-lg">▶️</span>
                                     <input
