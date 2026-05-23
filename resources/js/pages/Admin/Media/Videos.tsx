@@ -61,6 +61,18 @@ export default function VideosIndex({ media }: Props) {
         return () => window.removeEventListener('keydown', onKey);
     }, [lightbox, media]);
 
+    // Poll every 3s while any video is being processed by the queue worker
+    useEffect(() => {
+        const hasProcessing = media.some((m) => m.processing);
+        if (!hasProcessing) return;
+        const interval = setInterval(() => {
+            router.reload({ only: ['media'] });
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [media]);
+
+    const processingItem = media.find((m) => m.processing) ?? null;
+
     const uploadFile = async (file: File, onProgress: (pct: number) => void): Promise<boolean> => {
         const formData = new FormData();
         formData.append('image', file);
@@ -236,6 +248,25 @@ export default function VideosIndex({ media }: Props) {
                             {uploadProgress === 100 && (
                                 <p className="text-xs text-gray-500 mt-1.5">Verwerken op de server...</p>
                             )}
+                        </div>
+                    )}
+
+                    {/* Compression progress */}
+                    {processingItem && (
+                        <div className="mb-5 p-4 bg-[#16181f] border border-sky-900/40 rounded-xl">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm text-gray-300 truncate mr-3">
+                                    Comprimeren: {processingItem.filename}
+                                </span>
+                                <svg className="w-4 h-4 text-sky-400 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                </svg>
+                            </div>
+                            <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                                <div className="h-2 rounded-full bg-sky-500 animate-pulse w-full" />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1.5">Video wordt gecomprimeerd via ffmpeg — even geduld...</p>
                         </div>
                     )}
 
