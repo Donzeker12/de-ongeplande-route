@@ -52,7 +52,6 @@ class StoryController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
             'content' => 'nullable|string',
             'youtube_url' => 'nullable|url|max:255',
             'featured_image' => 'nullable|image|max:10240',
@@ -81,7 +80,7 @@ class StoryController extends Controller
             Chapter::create([
                 'story_id' => $story->id,
                 'title' => $validated['title'],
-                'content' => trim(($validated['description'] ?? '')."\n\n".($validated['content'] ?? '')),
+                'content' => $validated['content'] ?? null,
                 'order' => $nextOrder,
             ]);
 
@@ -93,7 +92,6 @@ class StoryController extends Controller
         $story = Story::create([
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']).'-'.now()->format('YmdHis'),
-            'description' => $validated['description'] ?? null,
             'content' => $validated['content'] ?? null,
             'youtube_url' => $validated['youtube_url'] ?? null,
             'library_video_url' => $videoUrl,
