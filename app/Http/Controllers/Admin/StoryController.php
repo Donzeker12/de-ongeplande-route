@@ -10,6 +10,7 @@ use App\Services\GeminiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -38,7 +39,13 @@ class StoryController extends Controller
 
     public function quickNote(): Response
     {
-        return Inertia::render('Admin/Stories/QuickNote');
+        $recentStories = Story::orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get(['id', 'title', 'status']);
+
+        return Inertia::render('Admin/Stories/QuickNote', [
+            'recentStories' => $recentStories,
+        ]);
     }
 
     public function storeQuickNote(Request $request): RedirectResponse
@@ -47,13 +54,41 @@ class StoryController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'content' => 'nullable|string',
+            'youtube_url' => 'nullable|url|max:255',
+            'featured_image' => 'nullable|image|max:10240',
+            'existing_story_id' => 'nullable|exists:stories,id',
         ]);
 
+        // Handle image upload
+        $imageUrl = null;
+        if ($request->hasFile('featured_image')) {
+            $path = $request->file('featured_image')->store('stories', 'public');
+            $imageUrl = Storage::disk('public')->url($path);
+        }
+
+        // Add as chapter to existing story
+        if (! empty($validated['existing_story_id'])) {
+            $story = Story::findOrFail($validated['existing_story_id']);
+            $nextOrder = $story->chapters()->max('order') + 1;
+            Chapter::create([
+                'story_id' => $story->id,
+                'title' => $validated['title'],
+                'content' => trim(($validated['description'] ?? '')."\n\n".($validated['content'] ?? '')),
+                'order' => $nextOrder,
+            ]);
+
+            return redirect()->route('admin.stories.edit', $story)
+                ->with('success', 'Notitie toegevoegd als hoofdstuk!');
+        }
+
+        // Create new draft story
         $story = Story::create([
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']).'-'.now()->format('YmdHis'),
             'description' => $validated['description'] ?? null,
             'content' => $validated['content'] ?? null,
+            'youtube_url' => $validated['youtube_url'] ?? null,
+            'featured_image' => $imageUrl,
             'status' => 'draft',
             'user_id' => Auth::id(),
         ]);
