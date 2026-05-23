@@ -251,8 +251,8 @@ export default function AdminLayout({ header, children }) {
 
                         <div className="flex items-center space-x-3 flex-shrink-0">
                             <Link
-                                href="/admin/blog/quick-note"
-                                title="Blog Notitie"
+                                href="/admin/stories/quick-note"
+                                title="Snelle Notitie"
                                 className="flex items-center justify-center w-8 h-8 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

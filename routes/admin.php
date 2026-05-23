@@ -77,6 +77,8 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::resource('venues', VenueController::class)->except('show');
 
     // Stories (Verhalen)
+    Route::get('/stories/quick-note', [StoryController::class, 'quickNote'])->name('stories.quick-note');
+    Route::post('/stories/quick-note', [StoryController::class, 'storeQuickNote'])->name('stories.quick-note.store');
     Route::resource('stories', StoryController::class);
     Route::post('stories/{story}/generate', [StoryController::class, 'generateStory'])->name('stories.generate');
 

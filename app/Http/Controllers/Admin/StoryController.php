@@ -36,6 +36,32 @@ class StoryController extends Controller
         ]);
     }
 
+    public function quickNote(): Response
+    {
+        return Inertia::render('Admin/Stories/QuickNote');
+    }
+
+    public function storeQuickNote(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'content' => 'nullable|string',
+        ]);
+
+        $story = Story::create([
+            'title' => $validated['title'],
+            'slug' => Str::slug($validated['title']).'-'.now()->format('YmdHis'),
+            'description' => $validated['description'] ?? null,
+            'content' => $validated['content'] ?? null,
+            'status' => 'draft',
+            'user_id' => Auth::id(),
+        ]);
+
+        return redirect()->route('admin.stories.edit', $story)
+            ->with('success', 'Snelle notitie opgeslagen! Je kunt hem nu verder uitwerken.');
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
