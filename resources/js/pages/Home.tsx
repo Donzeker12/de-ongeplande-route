@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import Navigation from '@/Components/Navigation';
 import OutingCard from '@/Components/OutingCard';
 import Seo from '@/Components/Seo';
@@ -29,14 +29,6 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
         description: 'Geen plan. Wel verhalen. Een familie die spontane uitjes deelt.',
         inLanguage: 'nl-NL',
     };
-    const handleCategoryClick = (category: string) => {
-        if (activeCategory === category) {
-            router.get('/', {}, { preserveScroll: false });
-        } else {
-            router.get('/', { category }, { preserveScroll: false });
-        }
-    };
-
     return (
         <>
             <Seo
@@ -152,87 +144,22 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                         </section>
                     )}
 
-                    {/* Latest Outings Section */}
+                    {/* Verhalen Section */}
                     <section id="uitjes" className="py-20">
                         <div className="text-center mb-16 animate-fade-in-up">
                             <h2 className="text-4xl md:text-5xl font-serif mb-6 text-warm-700 tracking-tight">
-                                Onze Laatste Avonturen
+                                Onze Verhalen
                             </h2>
                             <p className="text-lg text-warm-600 max-w-2xl mx-auto leading-relaxed">
-                                Kijk mee waar we zoal terechtkwamen tijdens onze spontane ontdekkingen
+                                Verhalen, herinneringen en belevenissen uit ons gezinsleven onderweg
                             </p>
                         </div>
 
-                        {/* Category Navigation */}
-                        <div className="flex flex-wrap justify-center gap-3 mb-16 animate-fade-in-up">
-                            {activeCategory && (
-                                <button
-                                    onClick={() => router.get('/', {}, { preserveScroll: false })}
-                                    className="px-6 py-3 rounded-full bg-warm-700 text-white text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 shadow-md hover:shadow-lg"
-                                >
-                                    ✕ Alles tonen
-                                </button>
-                            )}
-                            {categories.map((category) => (
-                                <button
-                                    key={category}
-                                    onClick={() => handleCategoryClick(category)}
-                                    className={`px-6 py-3 rounded-full border text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 ${
-                                        activeCategory === category
-                                            ? 'bg-warm-700 text-white border-warm-700 shadow-md'
-                                            : 'bg-white border-warm-300 hover:border-warm-500 hover:shadow-md text-warm-700'
-                                    }`}
-                                >
-                                    {category}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Outings Grid */}
-                        {latestOutings.length === 0 ? (
+                        {latestStories.length === 0 ? (
                             <div className="text-center py-20 animate-fade-in-up">
-                                <div className="w-24 h-24 mx-auto mb-6 text-warm-400">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <p className="text-warm-500 text-lg mb-4">
-                                    Geen uitjes gevonden in <strong className="text-warm-700">{activeCategory}</strong>.
-                                </p>
-                                <button
-                                    onClick={() => router.get('/', {}, { preserveScroll: false })}
-                                    className="btn-primary"
-                                >
-                                    Alle uitjes bekijken
-                                </button>
+                                <p className="text-warm-500 text-lg">Nog geen verhalen gepubliceerd. Kom snel terug!</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {latestOutings.map((outing, index) => (
-                                    <div 
-                                        key={outing.id}
-                                        className="animate-fade-in-up"
-                                        style={{ animationDelay: `${index * 0.1}s` }}
-                                    >
-                                        <OutingCard outing={outing} />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Verhalen Section */}
-                    {latestStories.length > 0 && (
-                        <section className="py-20">
-                            <div className="text-center mb-16 animate-fade-in-up">
-                                <h2 className="text-4xl md:text-5xl font-serif mb-6 text-warm-700 tracking-tight">
-                                    Onze Verhalen
-                                </h2>
-                                <p className="text-lg text-warm-600 max-w-2xl mx-auto leading-relaxed">
-                                    Verhalen, herinneringen en belevenissen uit ons gezinsleven onderweg
-                                </p>
-                            </div>
-
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 {latestStories.map((story, index) => (
                                     <Link
@@ -275,17 +202,17 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                                     </Link>
                                 ))}
                             </div>
+                        )}
 
-                            <div className="text-center mt-10 animate-fade-in-up">
-                                <Link
-                                    href="/verhalen"
-                                    className="px-8 py-3 border-2 border-warm-400 text-warm-700 rounded-full font-medium hover:bg-warm-700 hover:text-white hover:border-warm-700 transition-all duration-300 hover:-translate-y-0.5"
-                                >
-                                    Alle verhalen bekijken
-                                </Link>
-                            </div>
-                        </section>
-                    )}
+                        <div className="text-center mt-10 animate-fade-in-up">
+                            <Link
+                                href="/verhalen"
+                                className="px-8 py-3 border-2 border-warm-400 text-warm-700 rounded-full font-medium hover:bg-warm-700 hover:text-white hover:border-warm-700 transition-all duration-300 hover:-translate-y-0.5"
+                            >
+                                Alle verhalen bekijken
+                            </Link>
+                        </div>
+                    </section>
 
                     {/* Recent Discoveries Section */}
                     {newDiscoveries.length > 0 && (
