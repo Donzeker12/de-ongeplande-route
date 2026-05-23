@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class MediaController extends Controller
 {
@@ -99,7 +100,8 @@ class MediaController extends Controller
 
     private function optimizeImage(string $fullPath): void
     {
-        $image = Image::read($fullPath);
+        $manager = new ImageManager(new Driver);
+        $image = $manager->read($fullPath);
 
         if ($image->width() > 2048) {
             $image->scaleDown(width: 2048);
