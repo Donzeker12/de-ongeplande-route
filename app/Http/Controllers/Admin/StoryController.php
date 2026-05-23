@@ -89,19 +89,17 @@ class StoryController extends Controller
         }
         $htmlContent = implode('', $htmlParts) ?: null;
 
-        // Add as chapter to existing story
+        // Append to existing story's TipTap content
         if (! empty($validated['existing_story_id'])) {
             $story = Story::findOrFail($validated['existing_story_id']);
-            $nextOrder = $story->chapters()->max('order') + 1;
-            Chapter::create([
-                'story_id' => $story->id,
-                'title' => $validated['title'],
-                'content' => $htmlContent,
-                'order' => $nextOrder,
+            $separator = $story->content ? '<hr>' : '';
+            $story->update([
+                'content' => ($story->content ?? '').$separator.$htmlContent,
+                'featured_image' => $story->featured_image ?? $imageUrl,
             ]);
 
             return redirect()->route('admin.stories.edit', $story)
-                ->with('success', 'Notitie toegevoegd als hoofdstuk!');
+                ->with('success', 'Notitie toegevoegd aan het verhaal!');
         }
 
         // Create new draft story

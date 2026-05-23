@@ -75,25 +75,6 @@ export default function StoryEdit({ story, mediaImages, mediaVideos }: Props) {
         chapters: story.chapters ?? [],
     });
 
-    const [showAI, setShowAI] = useState(story.chapters.length > 0 || !!story.generated_content);
-    const [isGenerating, setIsGenerating] = useState(story.status === 'generating');
-    const [generationStatus, setGenerationStatus] = useState<'idle' | 'generating' | 'success' | 'error'>(() => {
-        if (story.status === 'generating') return 'generating';
-        if (story.status === 'completed') return 'success';
-        return 'idle';
-    });
-
-    const addChapter = () => {
-        const maxOrder = Math.max(...data.chapters.map((c) => c.order ?? 0), 0) + 1;
-        setData('chapters', [...data.chapters, { title: '', content: '', order: maxOrder }]);
-    };
-    const removeChapter = (i: number) => setData('chapters', data.chapters.filter((_, idx) => idx !== i));
-    const updateChapter = (i: number, field: keyof Chapter, value: string) => {
-        const updated = [...data.chapters];
-        updated[i] = { ...updated[i], [field]: value };
-        setData('chapters', updated);
-    };
-
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         put(route('admin.stories.update', story.id));
@@ -103,19 +84,6 @@ export default function StoryEdit({ story, mediaImages, mediaVideos }: Props) {
         if (confirm(`Weet je zeker dat je "${story.title}" wilt verwijderen?`)) {
             router.delete(route('admin.stories.destroy', story.id));
         }
-    };
-
-    const handleGenerateStory = () => {
-        setIsGenerating(true);
-        setGenerationStatus('generating');
-        router.post(route('admin.stories.generate', story.id), {}, {
-            onSuccess: () => {
-                setGenerationStatus('success');
-                setTimeout(() => router.visit(route('admin.stories.edit', story.id), { preserveScroll: true, replace: true }), 1000);
-            },
-            onError: () => { setGenerationStatus('error'); },
-            onFinish: () => setIsGenerating(false),
-        });
     };
 
     const embedUrl = data.youtube_url ? getYoutubeEmbedUrl(data.youtube_url) : null;
@@ -188,76 +156,6 @@ export default function StoryEdit({ story, mediaImages, mediaVideos }: Props) {
                                     {embedUrl && <div className="mt-4 aspect-video rounded-lg overflow-hidden"><iframe src={embedUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title="YouTube preview" /></div>}
                                 </div>
 
-                                {/* AI Sectie */}
-                                <div className="bg-[#16181f] rounded-xl border border-gray-800 overflow-hidden">
-                                    <button type="button" onClick={() => setShowAI(!showAI)} className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/5 transition">
-                                        <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider">🤖 AI Verhaal Genereren</h3>
-                                        <svg className={`w-4 h-4 text-gray-500 transition-transform ${showAI ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                    </button>
-                                    {showAI && (
-                                        <div className="px-6 pb-6 space-y-5 border-t border-gray-800">
-                                            {/* Generation status banner */}
-                                            {generationStatus !== 'idle' && (
-                                                <div className={`mt-4 rounded-lg px-4 py-3 flex items-center justify-between ${generationStatus === 'generating' ? 'bg-blue-900/40 border border-blue-700' : generationStatus === 'success' ? 'bg-green-900/40 border border-green-700' : 'bg-red-900/40 border border-red-700'}`}>
-                                                    <span className="text-sm text-white">
-                                                        {generationStatus === 'generating' && '🤖 AI schrijft jouw verhaal...'}
-                                                        {generationStatus === 'success' && '✅ Verhaal gegenereerd! Pagina wordt vernieuwd...'}
-                                                        {generationStatus === 'error' && '❌ Er ging iets mis. Probeer opnieuw.'}
-                                                    </span>
-                                                    {generationStatus !== 'generating' && <button type="button" onClick={() => setGenerationStatus('idle')} className="text-white/60 hover:text-white">✕</button>}
-                                                </div>
-                                            )}
-
-                                            {/* AI generated content preview */}
-                                            {story.generated_content && (
-                                                <div className="bg-green-900/20 border border-green-800/50 rounded-lg p-4">
-                                                    <p className="text-xs text-green-400 font-semibold uppercase mb-2">AI Gegenereerde inhoud</p>
-                                                    <div className="text-gray-300 text-sm whitespace-pre-wrap max-h-48 overflow-y-auto">{story.generated_content}</div>
-                                                </div>
-                                            )}
-
-                                            {/* AI Settings */}
-                                            <div className="grid grid-cols-3 gap-3 pt-2">
-                                                {([['tone', 'Toon', [['vriendelijk','Vriendelijk'],['avontuurlijk','Avontuurlijk'],['grappig','Grappig'],['nostalgisch','Nostalgisch'],['informatief','Informatief']]], ['length', 'Lengte', [['kort','Kort'],['medium','Medium'],['lang','Lang']]], ['style', 'Stijl', [['verhaal','Verhaal'],['dagboek','Dagboek'],['blog','Blog Post'],['gids','Reisgids']]]] as const).map(([key, label, options]) => (
-                                                    <div key={key}>
-                                                        <label className="block text-xs font-medium text-gray-400 mb-1.5">{label}</label>
-                                                        <select value={(data.ai_settings as Record<string, string>)[key]} onChange={(e) => setData('ai_settings', { ...data.ai_settings, [key]: e.target.value })} className="w-full bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition">
-                                                            {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                                                        </select>
-                                                    </div>
-                                                ))}
-                                            </div>
-
-                                            {/* Chapters */}
-                                            <div>
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <label className="text-sm font-medium text-gray-300">Hoofdstukken</label>
-                                                    <button type="button" onClick={addChapter} className="text-xs px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 rounded-lg transition border border-purple-600/30">+ Hoofdstuk</button>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    {data.chapters.map((ch, i) => (
-                                                        <div key={i} className="bg-[#0f1117] rounded-lg p-4 border border-gray-800">
-                                                            <div className="flex items-center justify-between mb-3">
-                                                                <span className="text-xs text-gray-500 font-medium">Hoofdstuk {i + 1}</span>
-                                                                <button type="button" onClick={() => removeChapter(i)} className="text-red-500 hover:text-red-400 text-xs">Verwijderen</button>
-                                                            </div>
-                                                            <input type="text" value={ch.title} onChange={(e) => updateChapter(i, 'title', e.target.value)} placeholder="Titel..." className="w-full bg-[#16181f] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm mb-2 focus:border-purple-500 focus:outline-none" />
-                                                            <textarea value={ch.content} onChange={(e) => updateChapter(i, 'content', e.target.value)} placeholder="Notities..." rows={2} className="w-full bg-[#16181f] border border-gray-700 rounded-lg px-3 py-2 text-gray-200 text-sm resize-none focus:border-purple-500 focus:outline-none" />
-                                                        </div>
-                                                    ))}
-                                                    {data.chapters.length === 0 && <p className="text-xs text-gray-600 text-center py-4">Nog geen hoofdstukken.</p>}
-                                                </div>
-                                            </div>
-
-                                            {/* Generate button */}
-                                            {data.chapters.length > 0 && (
-                                                <button type="button" onClick={handleGenerateStory} disabled={isGenerating || generationStatus === 'generating'} className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition text-sm flex items-center justify-center gap-2">
-                                                    {isGenerating ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> AI Werkt...</> : story.generated_content ? '🔄 Opnieuw genereren' : '🤖 AI Verhaal Genereren'}
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
                             </div>
 
                             {/* Right — sidebar */}
