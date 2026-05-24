@@ -18,6 +18,7 @@ class SocialSnippet extends Model
      */
     protected $fillable = [
         'outing_id',
+        'story_id',
         'platform',
         'hook_text',
         'caption',
@@ -43,5 +44,10 @@ class SocialSnippet extends Model
     public function outing(): BelongsTo
     {
         return $this->belongsTo(Outing::class);
+    }
+
+    public function story(): BelongsTo
+    {
+        return $this->belongsTo(Story::class);
     }
 }

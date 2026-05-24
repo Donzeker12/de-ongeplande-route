@@ -5,6 +5,7 @@ import ImageUpload from '@/Components/ImageUpload';
 import RichTextEditor from '@/Components/RichTextEditor';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
+import { shareInstagram } from '@/actions/App/Http/Controllers/Admin/StoryController';
 
 interface MediaImage { id: number; url: string; filename: string; }
 interface MediaVideo { id: number; url: string; filename: string; }
@@ -182,6 +183,15 @@ export default function StoryEdit({ story, mediaImages, mediaVideos, allVenues }
                                     {story.published_at && <p className="text-gray-600 text-xs mt-3 px-3">Gepubliceerd op: {new Date(story.published_at).toLocaleDateString('nl-NL')}</p>}
                                     <button type="submit" disabled={processing} className="mt-5 w-full px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-semibold rounded-lg transition text-sm">
                                         {processing ? 'Opslaan...' : '💾 Wijzigingen opslaan'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.post(shareInstagram.url(story.id))}
+                                        disabled={!story.featured_image}
+                                        title={!story.featured_image ? 'Voeg eerst een uitgelichte afbeelding toe' : 'Deel op Instagram'}
+                                        className="mt-2 w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition text-sm"
+                                    >
+                                        📸 Deel op Instagram
                                     </button>
                                 </div>
 

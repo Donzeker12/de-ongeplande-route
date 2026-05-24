@@ -81,6 +81,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::post('/stories/quick-note', [StoryController::class, 'storeQuickNote'])->name('stories.quick-note.store');
     Route::resource('stories', StoryController::class);
     Route::post('stories/{story}/generate', [StoryController::class, 'generateStory'])->name('stories.generate');
+    Route::post('stories/{story}/share-instagram', [StoryController::class, 'shareInstagram'])->name('stories.share-instagram');
 
     // Avonturen
     Route::get('/avonturen', [AvontuurController::class, 'index'])->name('avonturen.index');

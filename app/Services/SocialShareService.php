@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Outing;
 use App\Models\SiteSetting;
 use App\Models\SocialSnippet;
+use App\Models\Story;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -172,6 +173,97 @@ class SocialShareService
         $lines[] = '🔗 Link in bio!';
         $lines[] = '';
         $lines[] = '#deongeplanderoute #uitjemet #weekenduitje #gezinsuitje #nederlandseblog';
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Share a story to Instagram Business account.
+     * Requires a publicly accessible featured_image URL.
+     */
+    public function shareStoryToInstagram(Story $story): bool
+    {
+        $accountId = SiteSetting::get('instagram_business_account_id') ?? config('services.instagram.business_account_id');
+        $accessToken = SiteSetting::get('instagram_page_access_token') ?? config('services.instagram.page_access_token');
+
+        if (! $accountId || ! $accessToken) {
+            Log::warning('Instagram credentials not configured.');
+
+            return false;
+        }
+
+        if (! $story->featured_image) {
+            Log::warning('Instagram post skipped: story has no featured image.', ['story_id' => $story->id]);
+
+            return false;
+        }
+
+        $caption = $this->buildStoryInstagramCaption($story);
+        $graphUrl = config('services.instagram.graph_url');
+
+        // Step 1: Create media container
+        $containerResponse = Http::post("{$graphUrl}/{$accountId}/media", [
+            'image_url' => $story->featured_image,
+            'caption' => $caption,
+            'access_token' => $accessToken,
+        ]);
+
+        if (! $containerResponse->successful()) {
+            Log::error('Instagram media container failed (story)', [
+                'status' => $containerResponse->status(),
+                'body' => $containerResponse->body(),
+            ]);
+
+            return false;
+        }
+
+        $creationId = $containerResponse->json('id');
+
+        // Step 2: Publish the media container
+        $publishResponse = Http::post("{$graphUrl}/{$accountId}/media_publish", [
+            'creation_id' => $creationId,
+            'access_token' => $accessToken,
+        ]);
+
+        if ($publishResponse->successful()) {
+            SocialSnippet::create([
+                'outing_id' => null,
+                'story_id' => $story->id,
+                'platform' => 'instagram',
+                'hook_text' => substr($caption, 0, 150),
+                'caption' => $caption,
+                'teaser_content' => $story->featured_image,
+                'published_at' => now(),
+            ]);
+
+            return true;
+        }
+
+        Log::error('Instagram media_publish failed (story)', [
+            'status' => $publishResponse->status(),
+            'body' => $publishResponse->body(),
+        ]);
+
+        return false;
+    }
+
+    /**
+     * Build a natural Dutch caption for a story on Instagram.
+     */
+    private function buildStoryInstagramCaption(Story $story): string
+    {
+        $lines = [];
+        $lines[] = "✨ {$story->title}";
+        $lines[] = '';
+
+        if ($story->description) {
+            $lines[] = $story->description;
+            $lines[] = '';
+        }
+
+        $lines[] = '🔗 Link in bio!';
+        $lines[] = '';
+        $lines[] = '#deongeplanderoute #reisverhaal #weekenduitje #nederlandseblog';
 
         return implode("\n", $lines);
     }

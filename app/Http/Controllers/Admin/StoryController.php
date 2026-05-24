@@ -8,6 +8,7 @@ use App\Models\Media;
 use App\Models\Story;
 use App\Models\Venue;
 use App\Services\GeminiService;
+use App\Services\SocialShareService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -303,5 +304,22 @@ class StoryController extends Controller
 
         return redirect()->route('admin.stories.index')
             ->with('success', 'Verhaal verwijderd!');
+    }
+
+    public function shareInstagram(Story $story, SocialShareService $service): RedirectResponse
+    {
+        $this->authorize('update', $story);
+
+        if (! $story->featured_image) {
+            return redirect()->back()->with('error', 'Dit verhaal heeft geen uitgelichte afbeelding. Voeg er eerst één toe.');
+        }
+
+        $success = $service->shareStoryToInstagram($story);
+
+        if ($success) {
+            return redirect()->back()->with('success', 'Verhaal gedeeld op Instagram!');
+        }
+
+        return redirect()->back()->with('error', 'Instagram delen mislukt. Controleer je Instagram-instellingen en token.');
     }
 }
