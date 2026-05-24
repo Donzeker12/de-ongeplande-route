@@ -28,6 +28,12 @@ class SiteSettingController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
+        \Log::info('SiteSettings update received', [
+            'instagram_business_account_id' => $request->input('instagram_business_account_id'),
+            'instagram_page_access_token_len' => strlen($request->input('instagram_page_access_token') ?? ''),
+            'all_keys' => array_keys($request->all()),
+        ]);
+
         $validated = $request->validate([
             'hero_background_url' => 'nullable|url|max:2048',
             'hero_background_image' => 'nullable|image|max:5120',
