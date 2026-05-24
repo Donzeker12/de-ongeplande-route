@@ -82,14 +82,14 @@ export default function Navigation({ variant = 'page', className = '' }: Navigat
                         
                         {/* CTA Button */}
                         <Link 
-                            href="/uitjes" 
+                            href="/verhalen" 
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 ${
                                 isHome && !isSticky 
                                     ? 'bg-white text-warm-700 hover:bg-warm-50 shadow-md hover:shadow-lg' 
                                     : 'bg-warm-700 text-white hover:bg-warm-800 shadow-md hover:shadow-lg'
                             }`}
                         >
-                            Alle Uitjes
+                            Verhalen
                         </Link>
                     </div>
                     
@@ -139,10 +139,10 @@ export default function Navigation({ variant = 'page', className = '' }: Navigat
                             )}
                             <div className="pt-2">
                                 <Link 
-                                    href="/uitjes" 
+                                    href="/verhalen" 
                                     className="block w-full px-4 py-3 bg-warm-700 text-white text-center rounded-lg font-medium hover:bg-warm-800 transition-colors"
                                 >
-                                    Alle Uitjes
+                                    Verhalen
                                 </Link>
                             </div>
                         </div>
