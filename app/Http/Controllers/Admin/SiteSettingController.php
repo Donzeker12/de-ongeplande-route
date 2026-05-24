@@ -37,11 +37,11 @@ class SiteSettingController extends Controller
         $validated = $request->validate([
             'hero_background_url' => 'nullable|url|max:2048',
             'hero_background_image' => 'nullable|image|max:5120',
-            'hero_title' => 'required|string|max:255',
-            'hero_subtitle' => 'required|string|max:255',
-            'hero_description' => 'required|string|max:500',
+            'hero_title' => 'nullable|string|max:255',
+            'hero_subtitle' => 'nullable|string|max:255',
+            'hero_description' => 'nullable|string|max:500',
             'instagram_business_account_id' => 'nullable|string|max:255',
-            'instagram_page_access_token' => 'nullable|string|max:2048',
+            'instagram_page_access_token' => 'nullable|string|max:4096',
         ]);
 
         if ($request->hasFile('hero_background_image')) {
@@ -50,11 +50,11 @@ class SiteSettingController extends Controller
         }
 
         SiteSetting::set('hero_background_url', $validated['hero_background_url'] ?? SiteSetting::get('hero_background_url'));
-        SiteSetting::set('hero_title', $validated['hero_title']);
-        SiteSetting::set('hero_subtitle', $validated['hero_subtitle']);
-        SiteSetting::set('hero_description', $validated['hero_description']);
-        SiteSetting::set('instagram_business_account_id', $validated['instagram_business_account_id'] ?? null);
-        SiteSetting::set('instagram_page_access_token', $validated['instagram_page_access_token'] ?? null);
+        SiteSetting::set('hero_title', $validated['hero_title'] ?? SiteSetting::get('hero_title'));
+        SiteSetting::set('hero_subtitle', $validated['hero_subtitle'] ?? SiteSetting::get('hero_subtitle'));
+        SiteSetting::set('hero_description', $validated['hero_description'] ?? SiteSetting::get('hero_description'));
+        SiteSetting::set('instagram_business_account_id', $validated['instagram_business_account_id'] ?? SiteSetting::get('instagram_business_account_id'));
+        SiteSetting::set('instagram_page_access_token', $validated['instagram_page_access_token'] ?? SiteSetting::get('instagram_page_access_token'));
 
         return redirect()->route('admin.settings.index')->with('success', 'Site instellingen opgeslagen.');
     }
