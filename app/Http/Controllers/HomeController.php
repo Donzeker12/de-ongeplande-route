@@ -93,7 +93,7 @@ class HomeController extends Controller
             'latestStories' => Story::query()
                 ->where('status', 'published')
                 ->latest('published_at')
-                ->take(3)
+                ->take(5)
                 ->get()
                 ->map(fn ($story) => [
                     'id' => $story->id,

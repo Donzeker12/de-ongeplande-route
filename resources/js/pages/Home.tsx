@@ -1,6 +1,5 @@
 import { Link } from '@inertiajs/react';
 import Navigation from '@/Components/Navigation';
-import OutingCard from '@/Components/OutingCard';
 import Seo from '@/Components/Seo';
 import type { HomePageProps } from '@/types';
 
@@ -90,160 +89,189 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
 
                 {/* Main Content */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                    {/* Stats Section */}
-                    <section className="py-20 -mt-16 relative z-10">
-                        <div className="glass rounded-3xl p-8 shadow-warm">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                                <div className="animate-fade-in-up">
-                                    <div className="text-3xl font-bold text-warm-700 mb-2">{latestOutings.length + recommendedOutings.length}</div>
-                                    <div className="text-sm text-warm-600 uppercase tracking-wider">Uitjes</div>
+
+                    {/* Brand Pillars */}
+                    <section className="py-16 -mt-10 relative z-10">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-warm-200 rounded-3xl overflow-hidden shadow-warm">
+                            <div className="bg-warm-bg px-8 py-10 flex items-start gap-5">
+                                <span className="text-4xl shrink-0">🧭</span>
+                                <div>
+                                    <h3 className="font-serif text-xl text-warm-800 mb-2">Geen plan</h3>
+                                    <p className="text-sm text-warm-500 leading-relaxed">We vertrekken zonder route — dat is precies het idee</p>
                                 </div>
-                                <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                                    <div className="text-3xl font-bold text-warm-700 mb-2">{categories.length}</div>
-                                    <div className="text-sm text-warm-600 uppercase tracking-wider">Categorieën</div>
+                            </div>
+                            <div className="bg-warm-bg px-8 py-10 flex items-start gap-5">
+                                <span className="text-4xl shrink-0">✍️</span>
+                                <div>
+                                    <h3 className="font-serif text-xl text-warm-800 mb-2">Eerlijke verhalen</h3>
+                                    <p className="text-sm text-warm-500 leading-relaxed">Geen gesponsorde content — gewoon wat we echt meemaakten</p>
                                 </div>
-                                <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                                    <div className="text-3xl font-bold text-warm-700 mb-2">{newDiscoveries.length}</div>
-                                    <div className="text-sm text-warm-600 uppercase tracking-wider">Ontdekkingen</div>
-                                </div>
-                                <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                                    <div className="text-3xl font-bold text-warm-700 mb-2">100%</div>
-                                    <div className="text-sm text-warm-600 uppercase tracking-wider">Spontaan</div>
+                            </div>
+                            <div className="bg-warm-bg px-8 py-10 flex items-start gap-5">
+                                <span className="text-4xl shrink-0">🗺️</span>
+                                <div>
+                                    <h3 className="font-serif text-xl text-warm-800 mb-2">Altijd onderweg</h3>
+                                    <p className="text-sm text-warm-500 leading-relaxed">Van dierentuin tot bos, van kust tot binnenstad</p>
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    {/* Featured Recommendations */}
-                    {recommendedOutings.length > 0 && (
-                        <section className="py-20">
-                            <div className="text-center mb-16 animate-fade-in-up">
-                                <h2 className="text-4xl md:text-5xl font-serif mb-6 text-warm-700 tracking-tight gradient-text">
-                                    Onze Favorieten
-                                </h2>
-                                <p className="text-lg text-warm-600 max-w-2xl mx-auto leading-relaxed">
-                                    Deze plekken hebben een speciale plek in ons hart gekregen
-                                </p>
+                    {/* Verhalen — editorial magazine layout */}
+                    <section className="py-20">
+                        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600 mb-3">Van ons gezin</p>
+                                <h2 className="text-4xl md:text-5xl font-serif text-warm-800 leading-tight">Onze Verhalen</h2>
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {recommendedOutings.map((outing, index) => (
-                                    <div 
-                                        key={outing.id} 
-                                        className="animate-fade-in-up"
-                                        style={{ animationDelay: `${index * 0.1}s` }}
-                                    >
-                                        <OutingCard 
-                                            outing={outing} 
-                                            size="default"
-                                            showDescription={false}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Verhalen Section */}
-                    <section id="uitjes" className="py-20">
-                        <div className="text-center mb-16 animate-fade-in-up">
-                            <h2 className="text-4xl md:text-5xl font-serif mb-6 text-warm-700 tracking-tight">
-                                Onze Verhalen
-                            </h2>
-                            <p className="text-lg text-warm-600 max-w-2xl mx-auto leading-relaxed">
-                                Verhalen, herinneringen en belevenissen uit ons gezinsleven onderweg
-                            </p>
+                            <Link
+                                href="/verhalen"
+                                className="self-start sm:self-auto inline-flex items-center gap-1.5 text-sm font-medium text-warm-600 hover:text-warm-800 transition-colors whitespace-nowrap"
+                            >
+                                Alle verhalen
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            </Link>
                         </div>
 
                         {latestStories.length === 0 ? (
-                            <div className="text-center py-20 animate-fade-in-up">
-                                <p className="text-warm-500 text-lg">Nog geen verhalen gepubliceerd. Kom snel terug!</p>
+                            <div className="text-center py-24 bg-warm-50 rounded-3xl">
+                                <p className="text-warm-400 text-lg">Nog geen verhalen gepubliceerd. Kom snel terug!</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {latestStories.map((story, index) => (
+                            <div className="space-y-6">
+                                {/* Featured + side */}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    {/* Featured story */}
                                     <Link
-                                        key={story.id}
-                                        href={`/verhalen/${story.slug}`}
-                                        className="card group overflow-hidden hover:shadow-warm-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in-up"
-                                        style={{ animationDelay: `${index * 0.1}s` }}
+                                        href={`/verhalen/${latestStories[0].slug}`}
+                                        className="lg:col-span-2 group relative rounded-3xl overflow-hidden bg-warm-200 block"
+                                        style={{ minHeight: '360px' }}
                                     >
-                                        {story.featured_image ? (
-                                            <div className="aspect-video overflow-hidden">
-                                                <img
-                                                    src={story.featured_image}
-                                                    alt={story.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
-                                            </div>
+                                        {latestStories[0].featured_image ? (
+                                            <img
+                                                src={latestStories[0].featured_image}
+                                                alt={latestStories[0].title}
+                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                            />
                                         ) : (
-                                            <div className="aspect-video bg-warm-100 flex items-center justify-center">
-                                                <svg className="w-12 h-12 text-warm-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                                                </svg>
+                                            <div className="absolute inset-0 bg-gradient-to-br from-warm-300 to-warm-400 flex items-center justify-center">
+                                                <svg className="w-20 h-20 text-warm-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.75} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
                                             </div>
                                         )}
-                                        <div className="p-6">
-                                            {story.published_at && (
-                                                <p className="text-xs text-warm-500 uppercase tracking-wider mb-2">
-                                                    {new Date(story.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                                        <div className="absolute bottom-0 left-0 right-0 p-8">
+                                            {latestStories[0].published_at && (
+                                                <p className="text-white/60 text-xs uppercase tracking-wider mb-2">
+                                                    {new Date(latestStories[0].published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                 </p>
                                             )}
-                                            <h3 className="font-serif text-xl text-warm-700 mb-3 group-hover:text-warm-800 transition-colors leading-snug">
-                                                {story.title}
-                                            </h3>
-                                            {story.description && (
-                                                <p className="text-warm-600 text-sm leading-relaxed line-clamp-3">{story.description}</p>
+                                            <h3 className="font-serif text-2xl md:text-3xl text-white font-bold leading-tight mb-2">{latestStories[0].title}</h3>
+                                            {latestStories[0].description && (
+                                                <p className="text-white/75 text-sm line-clamp-2 mb-4">{latestStories[0].description}</p>
                                             )}
-                                            <span className="inline-block mt-4 text-sm font-medium text-warm-700 group-hover:text-warm-800 transition-colors">
-                                                Lees meer →
+                                            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-300 group-hover:text-amber-200 transition">
+                                                Lees het verhaal
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                                             </span>
                                         </div>
                                     </Link>
-                                ))}
+
+                                    {/* Side cards */}
+                                    <div className="flex flex-col gap-5">
+                                        {latestStories.slice(1, 3).map((story) => (
+                                            <Link
+                                                key={story.id}
+                                                href={`/verhalen/${story.slug}`}
+                                                className="group flex gap-4 bg-white rounded-2xl overflow-hidden shadow-sm border border-warm-100 hover:shadow-md hover:border-warm-200 transition-all duration-300 p-4 flex-1"
+                                            >
+                                                {story.featured_image ? (
+                                                    <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
+                                                        <img src={story.featured_image} alt={story.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-24 h-24 rounded-xl bg-warm-100 flex items-center justify-center shrink-0">
+                                                        <svg className="w-7 h-7 text-warm-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                                    <div>
+                                                        {story.published_at && (
+                                                            <p className="text-xs text-warm-400 mb-1">
+                                                                {new Date(story.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                            </p>
+                                                        )}
+                                                        <h3 className="font-serif text-warm-800 font-semibold leading-snug line-clamp-3 group-hover:text-warm-900 transition-colors">{story.title}</h3>
+                                                    </div>
+                                                    <span className="mt-2 text-xs font-semibold text-amber-600 group-hover:text-amber-700 transition inline-flex items-center gap-1">
+                                                        Lezen
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                                    </span>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Extra stories row */}
+                                {latestStories.length > 3 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        {latestStories.slice(3, 5).map((story) => (
+                                            <Link
+                                                key={story.id}
+                                                href={`/verhalen/${story.slug}`}
+                                                className="group flex bg-white rounded-2xl overflow-hidden shadow-sm border border-warm-100 hover:shadow-md hover:border-warm-200 transition-all duration-300"
+                                            >
+                                                {story.featured_image && (
+                                                    <div className="w-36 shrink-0 overflow-hidden">
+                                                        <img src={story.featured_image} alt={story.title} className="w-full h-full object-cover min-h-[120px] group-hover:scale-105 transition-transform duration-300" />
+                                                    </div>
+                                                )}
+                                                <div className="p-5 flex-1 min-w-0 flex flex-col justify-center">
+                                                    {story.published_at && (
+                                                        <p className="text-xs text-warm-400 mb-1">
+                                                            {new Date(story.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                        </p>
+                                                    )}
+                                                    <h3 className="font-serif text-lg text-warm-800 font-semibold leading-snug mb-1 group-hover:text-warm-900 transition-colors line-clamp-2">{story.title}</h3>
+                                                    {story.description && <p className="text-sm text-warm-500 line-clamp-2">{story.description}</p>}
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
-
-                        <div className="text-center mt-10 animate-fade-in-up">
-                            <Link
-                                href="/verhalen"
-                                className="px-8 py-3 border-2 border-warm-400 text-warm-700 rounded-full font-medium hover:bg-warm-700 hover:text-white hover:border-warm-700 transition-all duration-300 hover:-translate-y-0.5"
-                            >
-                                Alle verhalen bekijken
-                            </Link>
-                        </div>
                     </section>
 
-                    {/* Recent Discoveries Section */}
+                    {/* Ontdekkingen */}
                     {newDiscoveries.length > 0 && (
-                        <section className="py-20">
-                            <div className="text-center mb-16 animate-fade-in-up">
-                                <h2 className="text-4xl md:text-5xl font-serif mb-6 text-warm-700 tracking-tight">
-                                    Nieuwste Ontdekkingen
-                                </h2>
-                                <p className="text-lg text-warm-600 max-w-2xl mx-auto leading-relaxed">
-                                    De kleine en grote dingen die ons opvielen tijdens onze uitjes
-                                </p>
+                        <section className="py-20 border-t border-warm-100">
+                            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600 mb-3">Onderweg gezien</p>
+                                    <h2 className="text-3xl md:text-4xl font-serif text-warm-800">Ontdekkingen</h2>
+                                </div>
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {newDiscoveries.slice(0, 8).map((discovery, index) => (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {newDiscoveries.slice(0, 8).map((discovery) => (
                                     <Link
                                         key={discovery.id}
                                         href={`/ontdekkingen/${discovery.slug || discovery.id}`}
-                                        className="card p-6 text-center animate-fade-in-up hover:shadow-lg transition-all duration-300 group cursor-pointer"
-                                        style={{ animationDelay: `${index * 0.1}s` }}
+                                        className="group bg-white rounded-2xl overflow-hidden border border-warm-100 hover:border-warm-200 hover:shadow-md transition-all duration-300"
                                     >
-                                        {discovery.image && (
-                                            <img 
-                                                src={discovery.image} 
-                                                alt={discovery.title}
-                                                className="w-16 h-16 object-cover rounded-xl mx-auto mb-4 group-hover:scale-105 transition-transform duration-300"
-                                            />
+                                        {discovery.image ? (
+                                            <div className="aspect-video overflow-hidden">
+                                                <img src={discovery.image} alt={discovery.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                            </div>
+                                        ) : (
+                                            <div className="aspect-video bg-warm-50 flex items-center justify-center">
+                                                <span className="text-3xl opacity-40">✨</span>
+                                            </div>
                                         )}
-                                        <h3 className="font-serif text-lg text-warm-700 mb-2 group-hover:text-warm-800 transition-colors">{discovery.title}</h3>
-                                        <p className="text-sm text-warm-600 mb-3">{discovery.description}</p>
-                                        <span className="text-xs text-warm-500 uppercase tracking-wider">{discovery.type}</span>
+                                        <div className="p-4">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">{discovery.type}</span>
+                                            <h3 className="font-serif text-sm font-semibold text-warm-800 mt-1 leading-snug line-clamp-2 group-hover:text-warm-900 transition-colors">{discovery.title}</h3>
+                                        </div>
                                     </Link>
                                 ))}
                             </div>
@@ -252,26 +280,27 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                 </div>
 
                 {/* Call to Action */}
-                <section className="bg-warm-700 text-white py-20">
-                    <div className="max-w-4xl mx-auto px-6 text-center">
-                        <h2 className="text-4xl md:text-5xl font-serif mb-6 animate-fade-in-up">
-                            Klaar voor je eigen avontuur?
+                <section className="bg-gradient-to-br from-warm-800 to-warm-900 text-white py-24">
+                    <div className="max-w-3xl mx-auto px-6 text-center">
+                        <p className="text-amber-400 text-xs font-bold uppercase tracking-[0.2em] mb-5">Ga mee op reis</p>
+                        <h2 className="text-4xl md:text-5xl font-serif mb-6 leading-tight">
+                            Laat je inspireren<br />door onze belevenissen
                         </h2>
-                        <p className="text-xl opacity-90 mb-8 leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                            Laat je inspireren door onze verhalen en ga zelf op ontdekking
+                        <p className="text-warm-300 text-lg mb-10 leading-relaxed max-w-xl mx-auto">
+                            Geen gesponsorde content, gewoon eerlijke verhalen over wat we meemaakten als gezin
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-                            <Link 
-                                href="/uitjes" 
-                                className="px-8 py-4 bg-white text-warm-700 rounded-full font-medium hover:bg-warm-50 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <Link
+                                href="/verhalen"
+                                className="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-warm-900 font-semibold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg"
                             >
-                                Bekijk Alle Uitjes
+                                Lees onze verhalen
                             </Link>
-                            <Link 
-                                href="/over-ons" 
-                                className="px-8 py-4 border-2 border-white text-white rounded-full font-medium hover:bg-white hover:text-warm-700 transition-all duration-300 hover:-translate-y-1"
+                            <Link
+                                href="/over-ons"
+                                className="px-8 py-4 border-2 border-white/30 text-white rounded-full font-medium hover:bg-white/10 transition-all duration-300 hover:-translate-y-0.5"
                             >
-                                Ons Verhaal
+                                Over ons gezin
                             </Link>
                         </div>
                     </div>
@@ -291,10 +320,9 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                                 <h4 className="font-medium text-white mb-4">Navigatie</h4>
                                 <ul className="space-y-2">
                                     <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-                                    <li><Link href="/uitjes" className="hover:text-white transition-colors">Alle Uitjes</Link></li>
-                                    <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                                    <li><Link href="/verhalen" className="hover:text-white transition-colors">Verhalen</Link></li>
+                                    <li><Link href="/locaties" className="hover:text-white transition-colors">Locaties</Link></li>
                                     <li><Link href="/over-ons" className="hover:text-white transition-colors">Over Ons</Link></li>
-                                    <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
                                 </ul>
                             </div>
                             <div>
