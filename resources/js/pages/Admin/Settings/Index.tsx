@@ -74,7 +74,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                         </div>
                     )}
 
-                    <form onSubmit={submit} className="space-y-6">
+                    <form onSubmit={submit} noValidate className="space-y-6">
 
                         {/* Hero Achtergrond */}
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
@@ -113,7 +113,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">Afbeelding URL</label>
                                     <input
-                                        type="url"
+                                        type="text"
                                         value={data.hero_background_url}
                                         onChange={(e) => handleUrlChange(e.target.value)}
                                         placeholder="https://..."
