@@ -93,6 +93,7 @@ export interface HomePageProps {
         description: string | null;
         featured_image: string | null;
         published_at: string | null;
+        reading_time: number;
     }[];
     featuredVenues: {
         id: number;

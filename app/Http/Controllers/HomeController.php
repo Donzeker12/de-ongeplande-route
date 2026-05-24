@@ -96,14 +96,19 @@ class HomeController extends Controller
                 ->latest('published_at')
                 ->take(5)
                 ->get()
-                ->map(fn ($story) => [
-                    'id' => $story->id,
-                    'title' => $story->title,
-                    'slug' => $story->slug,
-                    'description' => $story->description,
-                    'featured_image' => $story->featured_image,
-                    'published_at' => $story->published_at?->toDateString(),
-                ]),
+                ->map(function ($story) {
+                    $wordCount = str_word_count(strip_tags($story->content ?? $story->generated_content ?? ''));
+
+                    return [
+                        'id' => $story->id,
+                        'title' => $story->title,
+                        'slug' => $story->slug,
+                        'description' => $story->description,
+                        'featured_image' => $story->featured_image,
+                        'published_at' => $story->published_at?->toDateString(),
+                        'reading_time' => max(1, (int) ceil($wordCount / 200)),
+                    ];
+                }),
 
             'featuredVenues' => Venue::query()
                 ->latest()

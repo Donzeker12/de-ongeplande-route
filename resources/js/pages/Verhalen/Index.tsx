@@ -9,6 +9,7 @@ interface Story {
     description: string | null;
     featured_image: string | null;
     published_at: string | null;
+    reading_time: number;
 }
 
 interface Props {
@@ -102,6 +103,10 @@ export default function VerhalenIndex({ stories }: Props) {
                                                 })}
                                             </p>
                                         )}
+                                        <p className="text-warm-300 text-xs flex items-center gap-1 mt-0.5">
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            {story.reading_time} min lezen
+                                        </p>
                                     </div>
                                 </Link>
                             ))}

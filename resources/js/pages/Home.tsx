@@ -160,8 +160,13 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                                     <div className="flex flex-col justify-center px-8 py-10 md:py-12 flex-1">
                                         <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 mb-4">Uitgelicht verhaal</span>
                                         {latestStories[0].published_at && (
-                                            <p className="text-xs text-warm-400 mb-3">
+                                            <p className="text-xs text-warm-400 mb-3 flex items-center gap-2">
                                                 {new Date(latestStories[0].published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                <span aria-hidden>·</span>
+                                                <span className="inline-flex items-center gap-1">
+                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                    {latestStories[0].reading_time} min lezen
+                                                </span>
                                             </p>
                                         )}
                                         <h3 className="font-serif text-2xl md:text-3xl text-warm-800 leading-tight mb-4 group-hover:text-warm-900 transition-colors">{latestStories[0].title}</h3>
@@ -195,8 +200,13 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                                                 </div>
                                                 <div className="p-4">
                                                     {story.published_at && (
-                                                        <p className="text-[11px] text-warm-400 mb-1.5">
+                                                        <p className="text-[11px] text-warm-400 mb-1.5 flex items-center gap-1.5">
                                                             {new Date(story.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                            <span aria-hidden>·</span>
+                                                            <span className="inline-flex items-center gap-0.5">
+                                                                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                                {story.reading_time} min
+                                                            </span>
                                                         </p>
                                                     )}
                                                     <h3 className="font-serif text-sm font-semibold text-warm-800 leading-snug line-clamp-2 group-hover:text-warm-900 transition-colors">{story.title}</h3>

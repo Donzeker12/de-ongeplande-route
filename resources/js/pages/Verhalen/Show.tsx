@@ -107,6 +107,7 @@ interface Story {
     featured_image: string | null;
     gallery_images: string[] | null;
     published_at: string | null;
+    reading_time: number;
     venues: {
         id: number;
         name: string;
@@ -189,9 +190,16 @@ export default function VerhaalShow({ story }: Props) {
                             {/* Title & meta */}
                             <header className="mb-10">
                                 <h1 className="font-serif text-4xl md:text-5xl text-warm-800 leading-tight mb-4">{story.title}</h1>
-                                {story.published_at && (
-                                    <p className="text-sm text-warm-400">Gepubliceerd op{' '}{new Date(story.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                                )}
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-warm-400">
+                                    {story.published_at && (
+                                        <span>Gepubliceerd op{' '}{new Date(story.published_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                    )}
+                                    {story.published_at && <span aria-hidden>·</span>}
+                                    <span className="inline-flex items-center gap-1">
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        {story.reading_time} min lezen
+                                    </span>
+                                </div>
                                 {story.description && (
                                     <p className="mt-4 text-lg text-warm-600 leading-relaxed border-l-4 border-amber-400 pl-4">{story.description}</p>
                                 )}

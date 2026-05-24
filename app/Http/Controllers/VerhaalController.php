@@ -15,14 +15,19 @@ class VerhaalController extends Controller
             ->whereNotNull('published_at')
             ->latest('published_at')
             ->get()
-            ->map(fn (Story $story) => [
-                'id' => $story->id,
-                'title' => $story->title,
-                'slug' => $story->slug,
-                'description' => $story->description,
-                'featured_image' => $story->featured_image,
-                'published_at' => $story->published_at?->toDateString(),
-            ]);
+            ->map(function (Story $story) {
+                $wordCount = str_word_count(strip_tags($story->content ?? $story->generated_content ?? ''));
+
+                return [
+                    'id' => $story->id,
+                    'title' => $story->title,
+                    'slug' => $story->slug,
+                    'description' => $story->description,
+                    'featured_image' => $story->featured_image,
+                    'published_at' => $story->published_at?->toDateString(),
+                    'reading_time' => max(1, (int) ceil($wordCount / 200)),
+                ];
+            });
 
         return Inertia::render('Verhalen/Index', [
             'stories' => $stories,
@@ -34,6 +39,8 @@ class VerhaalController extends Controller
         abort_unless($story->status === 'published' && $story->published_at !== null, 404);
 
         $story->load('venues');
+
+        $wordCount = str_word_count(strip_tags($story->content ?? $story->generated_content ?? ''));
 
         return Inertia::render('Verhalen/Show', [
             'story' => [
@@ -48,6 +55,7 @@ class VerhaalController extends Controller
                 'featured_image' => $story->featured_image,
                 'gallery_images' => $story->gallery_images,
                 'published_at' => $story->published_at?->toDateString(),
+                'reading_time' => max(1, (int) ceil($wordCount / 200)),
                 'venues' => $story->venues->map(fn ($v) => [
                     'id' => $v->id,
                     'name' => $v->name,
