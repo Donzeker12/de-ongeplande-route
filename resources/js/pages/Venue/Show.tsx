@@ -49,12 +49,20 @@ export default function VenueShow({ venue }: Props) {
     })();
 
     const openingHoursSpec = venue.opening_hours
-        ? DAYS.filter((d) => venue.opening_hours?.[d]?.open).map((d) => ({
-              '@type': 'OpeningHoursSpecification',
-              dayOfWeek: `https://schema.org/${d.charAt(0).toUpperCase() + d.slice(1)}`,
-              opens: venue.opening_hours?.[d]?.from ?? '00:00',
-              closes: venue.opening_hours?.[d]?.to ?? '00:00',
-          }))
+        ? DAYS.filter((d) => venue.opening_hours?.[d]?.open).flatMap((d) => {
+              const s = venue.opening_hours?.[d] as Record<string, unknown> | undefined;
+              if (!s) { return []; }
+              const dayOfWeek = `https://schema.org/${d.charAt(0).toUpperCase() + d.slice(1)}`;
+              if (Array.isArray(s.slots)) {
+                  return (s.slots as { from: string; to: string }[]).map((slot) => ({
+                      '@type': 'OpeningHoursSpecification',
+                      dayOfWeek,
+                      opens: slot.from,
+                      closes: slot.to,
+                  }));
+              }
+              return [{ '@type': 'OpeningHoursSpecification', dayOfWeek, opens: (s.from as string) ?? '00:00', closes: (s.to as string) ?? '00:00' }];
+          })
         : undefined;
 
     const structuredData = [
@@ -189,15 +197,19 @@ export default function VenueShow({ venue }: Props) {
                                 </h2>
                                 <div className="bg-white rounded-xl border border-warm-200 divide-y divide-warm-100 shadow-sm overflow-hidden">
                                     {DAYS.map((day) => {
-                                        const s = venue.opening_hours?.[day];
+                                        const s = venue.opening_hours?.[day] as Record<string, unknown> | undefined;
                                         if (!s) { return null; }
+                                        const sOpen = Boolean(s.open);
+                                        const timeText = sOpen
+                                            ? Array.isArray(s.slots) && (s.slots as { from: string; to: string }[]).length > 0
+                                                ? (s.slots as { from: string; to: string }[]).map((slot) => `${slot.from} – ${slot.to}`).join(' & ')
+                                                : s.from && s.to ? `${s.from} – ${s.to}` : null
+                                            : null;
                                         return (
                                             <div key={day} className="flex items-center justify-between px-4 py-2.5 text-sm">
                                                 <span className="font-medium text-warm-700 w-24">{DAY_LABELS[day]}</span>
-                                                {s.open ? (
-                                                    <span className="text-warm-600">
-                                                        {s.from} – {s.to}
-                                                    </span>
+                                                {timeText ? (
+                                                    <span className="text-warm-600">{timeText}</span>
                                                 ) : (
                                                     <span className="text-warm-400 italic">Gesloten</span>
                                                 )}

@@ -9,10 +9,14 @@ interface Props {
     types: Record<string, VenueType>;
 }
 
-interface DaySchedule {
-    open: boolean;
+interface DaySlot {
     from: string;
     to: string;
+}
+
+interface DaySchedule {
+    open: boolean;
+    slots: DaySlot[];
 }
 
 interface PriceEntry {
@@ -79,13 +83,13 @@ const PRICE_TABS: { key: PriceCategory; label: string; emoji: string }[] = [
 ];
 
 const defaultOpeningHours: Record<string, DaySchedule> = {
-    maandag: { open: true, from: '09:00', to: '17:00' },
-    dinsdag: { open: true, from: '09:00', to: '17:00' },
-    woensdag: { open: true, from: '09:00', to: '17:00' },
-    donderdag: { open: true, from: '09:00', to: '17:00' },
-    vrijdag: { open: true, from: '09:00', to: '17:00' },
-    zaterdag: { open: true, from: '10:00', to: '17:00' },
-    zondag: { open: false, from: '', to: '' },
+    maandag: { open: true, slots: [{ from: '09:00', to: '17:00' }] },
+    dinsdag: { open: true, slots: [{ from: '09:00', to: '17:00' }] },
+    woensdag: { open: true, slots: [{ from: '09:00', to: '17:00' }] },
+    donderdag: { open: true, slots: [{ from: '09:00', to: '17:00' }] },
+    vrijdag: { open: true, slots: [{ from: '09:00', to: '17:00' }] },
+    zaterdag: { open: true, slots: [{ from: '10:00', to: '17:00' }] },
+    zondag: { open: false, slots: [] },
 };
 
 const defaultPrices: PriceCategories = {
@@ -104,7 +108,24 @@ const defaultPrices: PriceCategories = {
 
 const initOpeningHours = (raw: unknown): Record<string, DaySchedule> => {
     if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-        return raw as Record<string, DaySchedule>;
+        const r = raw as Record<string, unknown>;
+        const result: Record<string, DaySchedule> = {};
+        for (const day of DAYS) {
+            const d = r[day] as Record<string, unknown> | undefined;
+            if (d) {
+                if (Array.isArray(d.slots)) {
+                    result[day] = { open: Boolean(d.open), slots: d.slots as DaySlot[] };
+                } else {
+                    result[day] = {
+                        open: Boolean(d.open),
+                        slots: d.open && d.from ? [{ from: d.from as string, to: (d.to ?? '') as string }] : [],
+                    };
+                }
+            } else {
+                result[day] = defaultOpeningHours[day] ?? { open: false, slots: [] };
+            }
+        }
+        return result;
     }
     return { ...defaultOpeningHours };
 };
@@ -165,10 +186,42 @@ export default function VenuesEdit({ venue, types }: Props) {
         patch(`/admin/venues/${venue.id}`);
     };
 
-    const updateDay = (day: string, field: keyof DaySchedule, value: boolean | string) => {
+    const toggleDay = (day: string) => {
+        const current = data.opening_hours[day];
+        const nowOpen = !current.open;
         setData('opening_hours', {
             ...data.opening_hours,
-            [day]: { ...data.opening_hours[day], [field]: value },
+            [day]: {
+                open: nowOpen,
+                slots: nowOpen && current.slots.length === 0 ? [{ from: '09:00', to: '17:00' }] : current.slots,
+            },
+        });
+    };
+
+    const addSlot = (day: string) => {
+        const current = data.opening_hours[day];
+        setData('opening_hours', {
+            ...data.opening_hours,
+            [day]: { ...current, slots: [...current.slots, { from: '09:00', to: '17:00' }] },
+        });
+    };
+
+    const removeSlot = (day: string, slotIndex: number) => {
+        const current = data.opening_hours[day];
+        setData('opening_hours', {
+            ...data.opening_hours,
+            [day]: { ...current, slots: current.slots.filter((_, i) => i !== slotIndex) },
+        });
+    };
+
+    const updateSlot = (day: string, slotIndex: number, field: 'from' | 'to', value: string) => {
+        const current = data.opening_hours[day];
+        setData('opening_hours', {
+            ...data.opening_hours,
+            [day]: {
+                ...current,
+                slots: current.slots.map((slot, i) => (i === slotIndex ? { ...slot, [field]: value } : slot)),
+            },
         });
     };
 
@@ -355,39 +408,68 @@ export default function VenuesEdit({ venue, types }: Props) {
                                     {DAYS.map((day) => {
                                         const schedule = data.opening_hours[day];
                                         return (
-                                            <div key={day} className="flex flex-wrap items-center gap-2 px-4 py-3 sm:px-6">
-                                                <span className="w-24 text-sm font-medium text-gray-300 shrink-0">
-                                                    {DAY_LABELS[day]}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => updateDay(day, 'open', !schedule.open)}
-                                                    className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition ${
-                                                        schedule.open
-                                                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                                            : 'bg-gray-800 text-gray-500 border border-gray-700'
-                                                    }`}
-                                                >
-                                                    {schedule.open ? 'Open' : 'Gesloten'}
-                                                </button>
+                                            <div key={day} className="px-4 py-3 sm:px-6 space-y-2">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="w-24 text-sm font-medium text-gray-300 shrink-0">
+                                                        {DAY_LABELS[day]}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleDay(day)}
+                                                        className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition ${
+                                                            schedule.open
+                                                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                                                : 'bg-gray-800 text-gray-500 border border-gray-700'
+                                                        }`}
+                                                    >
+                                                        {schedule.open ? 'Open' : 'Gesloten'}
+                                                    </button>
+                                                    {schedule.open && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addSlot(day)}
+                                                            className="ml-auto flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 transition"
+                                                        >
+                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            Tijdblok
+                                                        </button>
+                                                    )}
+                                                </div>
                                                 {schedule.open ? (
-                                                    <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
-                                                        <input
-                                                            type="time"
-                                                            value={schedule.from}
-                                                            onChange={(e) => updateDay(day, 'from', e.target.value)}
-                                                            className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-1.5 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition"
-                                                        />
-                                                        <span className="text-gray-600 text-sm shrink-0">tot</span>
-                                                        <input
-                                                            type="time"
-                                                            value={schedule.to}
-                                                            onChange={(e) => updateDay(day, 'to', e.target.value)}
-                                                            className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-1.5 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition"
-                                                        />
+                                                    <div className="ml-28 space-y-2">
+                                                        {schedule.slots.map((slot, slotIndex) => (
+                                                            <div key={slotIndex} className="flex items-center gap-2">
+                                                                <input
+                                                                    type="time"
+                                                                    value={slot.from}
+                                                                    onChange={(e) => updateSlot(day, slotIndex, 'from', e.target.value)}
+                                                                    className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-1.5 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition"
+                                                                />
+                                                                <span className="text-gray-600 text-sm shrink-0">tot</span>
+                                                                <input
+                                                                    type="time"
+                                                                    value={slot.to}
+                                                                    onChange={(e) => updateSlot(day, slotIndex, 'to', e.target.value)}
+                                                                    className="bg-[#0f1117] border border-gray-700 rounded-lg px-3 py-1.5 text-gray-200 text-sm focus:outline-none focus:border-emerald-500 transition"
+                                                                />
+                                                                {schedule.slots.length > 1 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => removeSlot(day, slotIndex)}
+                                                                        className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition"
+                                                                    >
+                                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 ) : (
-                                                    <span className="ml-auto text-sm text-gray-700">—</span>
+                                                    <div className="ml-28 text-sm text-gray-700">—</div>
                                                 )}
                                             </div>
                                         );
