@@ -51,13 +51,22 @@ class StoryController extends Controller
     public function storeQuickNote(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'content' => 'nullable|string',
             'youtube_url' => 'nullable|url|max:255',
             'featured_image' => 'nullable|image|max:10240',
             'video_file' => 'nullable|mimetypes:video/mp4,video/quicktime,video/webm,video/x-msvideo|max:204800',
             'existing_story_id' => 'nullable|exists:stories,id',
         ]);
+
+        // Auto-generate title from content or timestamp
+        $title = ! empty($validated['title']) ? $validated['title'] : null;
+        if (empty($title)) {
+            $plainText = strip_tags($validated['content'] ?? '');
+            $words = array_filter(explode(' ', $plainText));
+            $title = implode(' ', array_slice($words, 0, 6));
+            $title = mb_substr($title, 0, 60) ?: 'Notitie '.now()->format('d M Y H:i');
+        }
 
         // Handle image upload
         $imageUrl = null;
@@ -104,8 +113,8 @@ class StoryController extends Controller
 
         // Create new draft story
         $story = Story::create([
-            'title' => $validated['title'],
-            'slug' => Str::slug($validated['title']).'-'.now()->format('YmdHis'),
+            'title' => $title,
+            'slug' => Str::slug($title).'-'.now()->format('YmdHis'),
             'content' => $htmlContent,
             'youtube_url' => $validated['youtube_url'] ?? null,
             'library_video_url' => $videoUrl,

@@ -80,29 +80,17 @@ export default function QuickNote({ recentStories }: Props) {
             <div className="max-w-lg mx-auto p-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
 
-                    {/* 1. Titel */}
-                    <div>
-                        <input
-                            type="text"
-                            value={data.title}
-                            onChange={(e) => setData('title', e.target.value)}
-                            placeholder="Titel..."
-                            autoFocus
-                            className="w-full bg-[#16181f] border border-gray-700 rounded-2xl px-4 py-4 text-white text-xl font-semibold placeholder-gray-600 focus:outline-none focus:border-amber-500 transition"
-                        />
-                        {errors.title && <p className="mt-1 text-red-400 text-xs">{errors.title}</p>}
-                    </div>
-
-                    {/* 2. Tekst */}
+                    {/* 1. Tekst */}
                     <textarea
                         value={data.content}
                         onChange={(e) => setData('content', e.target.value)}
                         placeholder="Begin met schrijven..."
-                        rows={6}
+                        rows={8}
+                        autoFocus
                         className="w-full bg-[#16181f] border border-gray-700 rounded-2xl px-4 py-4 text-gray-200 placeholder-gray-600 focus:outline-none focus:border-amber-500 transition resize-none"
                     />
 
-                    {/* 3. Foto */}
+                    {/* 2. Foto */}
                     <div className="bg-[#16181f] rounded-2xl border border-gray-800 overflow-hidden">
                         {imagePreview ? (
                             <div className="relative">
@@ -131,7 +119,7 @@ export default function QuickNote({ recentStories }: Props) {
                         )}
                     </div>
 
-                    {/* 4. Video */}
+                    {/* 3. Video */}
                     <div className="bg-[#16181f] rounded-2xl border border-gray-800 overflow-hidden">
                         {videoPreview ? (
                             <div className="relative">
@@ -190,7 +178,7 @@ export default function QuickNote({ recentStories }: Props) {
                         )}
                     </div>
 
-                    {/* 5. Verhaal keuze */}
+                    {/* 4. Verhaal keuze */}
                     <div className="bg-[#16181f] rounded-2xl border border-gray-800 overflow-hidden">
                         <div className="flex">
                             <button
@@ -240,7 +228,7 @@ export default function QuickNote({ recentStories }: Props) {
                     <div className="flex gap-3 pb-6">
                         <button
                             type="submit"
-                            disabled={processing || !data.title.trim()}
+                            disabled={processing || !data.content.trim()}
                             className="flex-1 py-4 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold rounded-2xl transition text-base"
                         >
                             {processing ? 'Opslaan...' : (storyMode === 'existing' && data.existing_story_id ? 'Toevoegen als hoofdstuk' : 'Opslaan')}
