@@ -57,7 +57,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post('/admin/settings', {
-            forceFormData: true,
+            forceFormData: data.hero_background_image !== null,
         });
     };
 
