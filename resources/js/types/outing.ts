@@ -94,4 +94,14 @@ export interface HomePageProps {
         featured_image: string | null;
         published_at: string | null;
     }[];
+    featuredVenues: {
+        id: number;
+        name: string;
+        slug: string;
+        type: string;
+        type_label: string;
+        type_emoji: string;
+        city: string | null;
+        featured_image: string | null;
+    }[];
 }

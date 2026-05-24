@@ -3,7 +3,7 @@ import Navigation from '@/Components/Navigation';
 import Seo from '@/Components/Seo';
 import type { HomePageProps } from '@/types';
 
-export default function Home({ latestOutings, recommendedOutings, newDiscoveries, categories, activeCategory, heroSettings, latestStories }: HomePageProps) {
+export default function Home({ latestOutings, recommendedOutings, newDiscoveries, categories, activeCategory, heroSettings, latestStories, featuredVenues }: HomePageProps) {
     const siteUrl = window.location.origin;
 
     const websiteSchema = {
@@ -211,6 +211,63 @@ export default function Home({ latestOutings, recommendedOutings, newDiscoveries
                             </div>
                         )}
                     </section>
+
+                    {/* Locaties */}
+                    {featuredVenues.length > 0 && (
+                        <section className="py-20 border-t border-warm-100">
+                            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600 mb-3">Plekken die we bezochten</p>
+                                    <h2 className="text-4xl md:text-5xl font-serif text-warm-800 leading-tight">Locaties</h2>
+                                </div>
+                                <Link
+                                    href="/locaties"
+                                    className="self-start sm:self-auto inline-flex items-center gap-1.5 text-sm font-medium text-warm-600 hover:text-warm-800 transition-colors whitespace-nowrap"
+                                >
+                                    Alle locaties
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                </Link>
+                            </div>
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                                {featuredVenues.map((venue) => (
+                                    <Link
+                                        key={venue.id}
+                                        href={`/locaties/${venue.slug}`}
+                                        className="group bg-white rounded-2xl overflow-hidden border border-warm-100 hover:border-warm-200 hover:shadow-md transition-all duration-300"
+                                    >
+                                        <div className="aspect-[4/3] overflow-hidden bg-warm-100 relative">
+                                            {venue.featured_image ? (
+                                                <img
+                                                    src={venue.featured_image}
+                                                    alt={venue.name}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-warm-100 to-warm-200">
+                                                    <span className="text-4xl opacity-40">{venue.type_emoji}</span>
+                                                </div>
+                                            )}
+                                            <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-warm-700 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
+                                                {venue.type_emoji} {venue.type_label}
+                                            </span>
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-serif text-sm font-semibold text-warm-800 leading-snug line-clamp-2 group-hover:text-warm-900 transition-colors">{venue.name}</h3>
+                                            {venue.city && (
+                                                <p className="mt-1 text-[11px] text-warm-400 flex items-center gap-1">
+                                                    <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                                    {venue.city}
+                                                </p>
+                                            )}
+                                            <span className="mt-3 text-xs font-semibold text-amber-600 group-hover:text-amber-700 transition inline-flex items-center gap-1">
+                                                Bekijk locatie <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                            </span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
                     {/* Ontdekkingen */}
                     {newDiscoveries.length > 0 && (

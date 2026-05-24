@@ -6,6 +6,7 @@ use App\Models\Discovery;
 use App\Models\Outing;
 use App\Models\SiteSetting;
 use App\Models\Story;
+use App\Models\Venue;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -102,6 +103,21 @@ class HomeController extends Controller
                     'description' => $story->description,
                     'featured_image' => $story->featured_image,
                     'published_at' => $story->published_at?->toDateString(),
+                ]),
+
+            'featuredVenues' => Venue::query()
+                ->latest()
+                ->take(4)
+                ->get()
+                ->map(fn ($venue) => [
+                    'id' => $venue->id,
+                    'name' => $venue->name,
+                    'slug' => $venue->slug,
+                    'type' => $venue->type,
+                    'type_label' => $venue->type_label,
+                    'type_emoji' => $venue->type_emoji,
+                    'city' => $venue->city,
+                    'featured_image' => $venue->featured_image,
                 ]),
         ]);
     }
