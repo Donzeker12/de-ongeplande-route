@@ -29,6 +29,7 @@ const navItems = [
     { href: '/admin/discoveries', label: 'Ontdekkingen', icon: '🔍', color: 'text-gray-300' },
     { href: '/admin/stories', label: 'Verhalen', icon: '📝', color: 'text-gray-300' },
     { href: '/admin/snippets', label: 'Social', icon: '📲', color: 'text-gray-300' },
+    { href: '/admin/instagram', label: 'Instagram', icon: '📸', color: 'text-pink-400' },
     { href: '/admin/venues', label: 'Locaties', icon: '📍', color: 'text-gray-300' },
     { href: '/admin/categories', label: 'Categorieën', icon: '🏷️', color: 'text-gray-300' },
     { href: '/admin/users', label: 'Gebruikers', icon: '👥', color: 'text-gray-300' },

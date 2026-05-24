@@ -60,6 +60,53 @@ class SocialShareService
     }
 
     /**
+     * Post any image to Instagram with a custom caption.
+     * The image URL must be publicly accessible.
+     */
+    public function postToInstagram(string $imageUrl, string $caption): array
+    {
+        $accountId = SiteSetting::get('instagram_business_account_id') ?? config('services.instagram.business_account_id');
+        $accessToken = SiteSetting::get('instagram_page_access_token') ?? config('services.instagram.page_access_token');
+
+        if (! $accountId || ! $accessToken) {
+            return ['success' => false, 'error' => 'Instagram-instellingen niet geconfigureerd.'];
+        }
+
+        $graphUrl = config('services.instagram.graph_url');
+
+        // Step 1: Create media container
+        $containerResponse = Http::post("{$graphUrl}/{$accountId}/media", [
+            'image_url' => $imageUrl,
+            'caption' => $caption,
+            'access_token' => $accessToken,
+        ]);
+
+        if (! $containerResponse->successful()) {
+            $error = $containerResponse->json('error.message') ?? $containerResponse->body();
+            Log::error('Instagram media container failed', ['status' => $containerResponse->status(), 'body' => $containerResponse->body()]);
+
+            return ['success' => false, 'error' => $error];
+        }
+
+        $creationId = $containerResponse->json('id');
+
+        // Step 2: Publish the media container
+        $publishResponse = Http::post("{$graphUrl}/{$accountId}/media_publish", [
+            'creation_id' => $creationId,
+            'access_token' => $accessToken,
+        ]);
+
+        if ($publishResponse->successful()) {
+            return ['success' => true, 'post_id' => $publishResponse->json('id')];
+        }
+
+        $error = $publishResponse->json('error.message') ?? $publishResponse->body();
+        Log::error('Instagram media_publish failed', ['status' => $publishResponse->status(), 'body' => $publishResponse->body()]);
+
+        return ['success' => false, 'error' => $error];
+    }
+
+    /**
      * Share an outing to Instagram Business account.
      * Requires a publicly accessible featured_image URL.
      */

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AvontuurController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DiscoveryController;
 use App\Http\Controllers\Admin\ImageUploadController;
+use App\Http\Controllers\Admin\InstagramController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OutingController;
 use App\Http\Controllers\Admin\QuickCaptureController;
@@ -75,6 +76,10 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 
     // Venues
     Route::resource('venues', VenueController::class)->except('show');
+
+    // Instagram Compose
+    Route::get('/instagram', [InstagramController::class, 'compose'])->name('instagram.compose');
+    Route::post('/instagram', [InstagramController::class, 'post'])->name('instagram.post');
 
     // Stories (Verhalen)
     Route::get('/stories/quick-note', [StoryController::class, 'quickNote'])->name('stories.quick-note');
