@@ -35,7 +35,7 @@ class SiteSettingController extends Controller
         ]);
 
         $validated = $request->validate([
-            'hero_background_url' => 'nullable|url|max:2048',
+            'hero_background_url' => 'nullable|string|max:2048',
             'hero_background_image' => 'nullable|image|max:5120',
             'hero_title' => 'nullable|string|max:255',
             'hero_subtitle' => 'nullable|string|max:255',
