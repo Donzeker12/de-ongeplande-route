@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Chapter;
 use App\Models\Media;
 use App\Models\Story;
+use App\Models\Venue;
 use App\Services\GeminiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -187,12 +188,13 @@ class StoryController extends Controller
     {
         $this->authorize('update', $story);
 
-        $story->load('chapters');
+        $story->load(['chapters', 'venues']);
 
         return Inertia::render('Admin/Stories/Edit', [
             'story' => $story,
             'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename']),
             'mediaVideos' => Media::query()->where('mime_type', 'LIKE', 'video/%')->latest()->get(['id', 'url', 'filename']),
+            'allVenues' => Venue::orderBy('name')->get(['id', 'name', 'type', 'city']),
         ]);
     }
 
@@ -217,6 +219,8 @@ class StoryController extends Controller
             'chapters.*.content' => 'nullable|string|max:2000',
             'chapters.*.order' => 'nullable|integer',
             'status' => 'required|in:draft,published',
+            'venue_ids' => 'nullable|array',
+            'venue_ids.*' => 'integer|exists:venues,id',
         ]);
 
         $validated['gallery_images'] = array_values(array_filter($validated['gallery_images'] ?? []));
@@ -231,6 +235,7 @@ class StoryController extends Controller
         unset($validated['chapters']);
 
         $story->update($validated);
+        $story->venues()->sync($validated['venue_ids'] ?? []);
 
         if ($chapters !== null) {
             $submittedIds = array_filter(array_column($chapters, 'id'));

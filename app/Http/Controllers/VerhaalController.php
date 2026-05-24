@@ -33,6 +33,8 @@ class VerhaalController extends Controller
     {
         abort_unless($story->status === 'published' && $story->published_at !== null, 404);
 
+        $story->load('venues');
+
         return Inertia::render('Verhalen/Show', [
             'story' => [
                 'id' => $story->id,
@@ -46,6 +48,15 @@ class VerhaalController extends Controller
                 'featured_image' => $story->featured_image,
                 'gallery_images' => $story->gallery_images,
                 'published_at' => $story->published_at?->toDateString(),
+                'venues' => $story->venues->map(fn ($v) => [
+                    'id' => $v->id,
+                    'name' => $v->name,
+                    'slug' => $v->slug,
+                    'type_label' => $v->type_label,
+                    'type_emoji' => $v->type_emoji,
+                    'city' => $v->city,
+                    'featured_image' => $v->featured_image,
+                ]),
             ],
         ]);
     }

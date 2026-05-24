@@ -9,6 +9,7 @@ import { FormEvent, useState } from 'react';
 interface MediaImage { id: number; url: string; filename: string; }
 interface MediaVideo { id: number; url: string; filename: string; }
 interface Chapter { id?: number; title: string; content: string; order: number; }
+interface VenueOption { id: number; name: string; type: string; city: string | null; }
 
 interface Story {
     id: number;
@@ -25,6 +26,7 @@ interface Story {
     ai_settings: { tone: string; length: string; style: string } | null;
     generated_content: string | null;
     chapters: Chapter[];
+    venues: VenueOption[];
 }
 
 interface FormData {
@@ -39,6 +41,7 @@ interface FormData {
     status: 'draft' | 'published';
     ai_settings: { tone: string; length: string; style: string };
     chapters: Chapter[];
+    venue_ids: number[];
     [key: string]: unknown;
 }
 
@@ -46,6 +49,7 @@ interface Props {
     story: Story;
     mediaImages: MediaImage[];
     mediaVideos: MediaVideo[];
+    allVenues: VenueOption[];
 }
 
 function getYoutubeEmbedUrl(url: string): string | null {
@@ -58,7 +62,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
     } catch { return null; }
 }
 
-export default function StoryEdit({ story, mediaImages, mediaVideos }: Props) {
+export default function StoryEdit({ story, mediaImages, mediaVideos, allVenues }: Props) {
     const publishedStatus = (story.status === 'published') ? 'published' : 'draft';
 
     const { data, setData, put, processing, errors } = useForm<FormData>({
@@ -73,6 +77,7 @@ export default function StoryEdit({ story, mediaImages, mediaVideos }: Props) {
         status: publishedStatus,
         ai_settings: story.ai_settings ?? { tone: 'vriendelijk', length: 'medium', style: 'verhaal' },
         chapters: story.chapters ?? [],
+        venue_ids: (story.venues ?? []).map((v) => v.id),
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -199,6 +204,37 @@ export default function StoryEdit({ story, mediaImages, mediaVideos }: Props) {
                                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Video</h3>
                                     <p className="text-xs text-gray-500 mb-4">Kies een video uit de mediabibliotheek.</p>
                                     <VideoPicker value={data.library_video_url || null} onChange={(url) => setData('library_video_url', url ?? '')} mediaVideos={mediaVideos} />
+                                </div>
+
+                                {/* Locaties */}
+                                <div className="bg-[#16181f] rounded-xl p-6 border border-gray-800">
+                                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Locaties</h3>
+                                    {allVenues.length === 0 ? (
+                                        <p className="text-xs text-gray-600">Nog geen locaties aangemaakt.</p>
+                                    ) : (
+                                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                                            {allVenues.map((venue) => (
+                                                <label key={venue.id} className="flex items-center gap-2.5 cursor-pointer rounded-lg px-2 py-2 hover:bg-gray-800/50 transition">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={data.venue_ids.includes(venue.id)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setData('venue_ids', [...data.venue_ids, venue.id]);
+                                                            } else {
+                                                                setData('venue_ids', data.venue_ids.filter((id) => id !== venue.id));
+                                                            }
+                                                        }}
+                                                        className="text-emerald-500 focus:ring-emerald-500 rounded"
+                                                    />
+                                                    <div className="min-w-0">
+                                                        <span className="text-gray-200 text-sm block truncate">{venue.name}</span>
+                                                        {venue.city && <span className="text-gray-500 text-xs">{venue.city}</span>}
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Danger zone */}
