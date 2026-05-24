@@ -20,6 +20,8 @@ class SiteSettingController extends Controller
                 'hero_title' => SiteSetting::get('hero_title'),
                 'hero_subtitle' => SiteSetting::get('hero_subtitle'),
                 'hero_description' => SiteSetting::get('hero_description'),
+                'instagram_business_account_id' => SiteSetting::get('instagram_business_account_id'),
+                'instagram_page_access_token' => SiteSetting::get('instagram_page_access_token'),
             ],
         ]);
     }
@@ -32,6 +34,8 @@ class SiteSettingController extends Controller
             'hero_title' => 'required|string|max:255',
             'hero_subtitle' => 'required|string|max:255',
             'hero_description' => 'required|string|max:500',
+            'instagram_business_account_id' => 'nullable|string|max:255',
+            'instagram_page_access_token' => 'nullable|string|max:2048',
         ]);
 
         if ($request->hasFile('hero_background_image')) {
@@ -43,6 +47,8 @@ class SiteSettingController extends Controller
         SiteSetting::set('hero_title', $validated['hero_title']);
         SiteSetting::set('hero_subtitle', $validated['hero_subtitle']);
         SiteSetting::set('hero_description', $validated['hero_description']);
+        SiteSetting::set('instagram_business_account_id', $validated['instagram_business_account_id'] ?? null);
+        SiteSetting::set('instagram_page_access_token', $validated['instagram_page_access_token'] ?? null);
 
         return redirect()->route('admin.settings.index')->with('success', 'Site instellingen opgeslagen.');
     }

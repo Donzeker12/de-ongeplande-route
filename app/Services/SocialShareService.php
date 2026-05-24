@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Outing;
+use App\Models\SiteSetting;
 use App\Models\SocialSnippet;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -63,8 +64,8 @@ class SocialShareService
      */
     public function shareToInstagram(Outing $outing): bool
     {
-        $accountId = config('services.instagram.business_account_id');
-        $accessToken = config('services.instagram.page_access_token');
+        $accountId = SiteSetting::get('instagram_business_account_id') ?? config('services.instagram.business_account_id');
+        $accessToken = SiteSetting::get('instagram_page_access_token') ?? config('services.instagram.page_access_token');
 
         if (! $accountId || ! $accessToken) {
             Log::warning('Instagram credentials not configured.');

@@ -7,6 +7,8 @@ interface Settings {
     hero_title: string;
     hero_subtitle: string;
     hero_description: string;
+    instagram_business_account_id: string | null;
+    instagram_page_access_token: string | null;
 }
 
 interface SettingsPageProps {
@@ -25,6 +27,8 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         hero_title: string;
         hero_subtitle: string;
         hero_description: string;
+        instagram_business_account_id: string;
+        instagram_page_access_token: string;
         _method: string;
     }>({
         hero_background_url: settings.hero_background_url ?? '',
@@ -32,6 +36,8 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         hero_title: settings.hero_title ?? '',
         hero_subtitle: settings.hero_subtitle ?? '',
         hero_description: settings.hero_description ?? '',
+        instagram_business_account_id: settings.instagram_business_account_id ?? '',
+        instagram_page_access_token: settings.instagram_page_access_token ?? '',
         _method: 'PUT',
     });
 
@@ -202,6 +208,40 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                     className="w-full px-3 py-2 bg-[#0f1117] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 transition"
                                 />
                                 {errors.hero_description && <p className="mt-1 text-xs text-red-400">{errors.hero_description}</p>}
+                            </div>
+                        </div>
+
+                        {/* Instagram Instellingen */}
+                        <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
+                            <div className="flex items-center gap-3">
+                                <div className="w-1 h-6 bg-gradient-to-b from-pink-400 to-purple-500 rounded-full" />
+                                <h3 className="text-base font-semibold text-white">Instagram Instellingen</h3>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                                Vul hieronder je Instagram Business Account ID en Page Access Token in om verhalen te kunnen delen op Instagram.
+                            </p>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Instagram Business Account ID</label>
+                                <input
+                                    type="text"
+                                    value={data.instagram_business_account_id}
+                                    onChange={(e) => setData('instagram_business_account_id', e.target.value)}
+                                    placeholder="17841432578328591"
+                                    className="w-full px-3 py-2 bg-[#0f1117] border border-gray-700 rounded-lg text-gray-300 placeholder-gray-600 focus:outline-none focus:border-pink-500 transition"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Page Access Token</label>
+                                <input
+                                    type="password"
+                                    value={data.instagram_page_access_token}
+                                    onChange={(e) => setData('instagram_page_access_token', e.target.value)}
+                                    placeholder="EAAWPw..."
+                                    className="w-full px-3 py-2 bg-[#0f1117] border border-gray-700 rounded-lg text-gray-300 placeholder-gray-600 focus:outline-none focus:border-pink-500 transition"
+                                />
+                                <p className="mt-1 text-xs text-gray-600">Token wordt versleuteld opgeslagen. Laat leeg om de huidige te bewaren.</p>
                             </div>
                         </div>
 
