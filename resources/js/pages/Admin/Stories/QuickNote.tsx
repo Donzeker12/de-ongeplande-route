@@ -16,7 +16,7 @@ export default function QuickNote({ recentStories }: Props) {
     const videoInputRef = useRef<HTMLInputElement>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [videoPreview, setVideoPreview] = useState<string | null>(null);
-    const [storyMode, setStoryMode] = useState<'new' | 'existing'>('new');
+    const [storyMode, setStoryMode] = useState<'new' | 'existing'>('existing');
 
     const { data, setData, post, processing, errors } = useForm({
         title: '',
@@ -183,18 +183,7 @@ export default function QuickNote({ recentStories }: Props) {
                         <div className="flex">
                             <button
                                 type="button"
-                                onClick={() => { setStoryMode('new'); setData('existing_story_id', ''); }}
-                                className={`flex-1 py-4 text-sm font-medium transition ${
-                                    storyMode === 'new'
-                                        ? 'text-amber-400 border-b-2 border-amber-500'
-                                        : 'text-gray-500 hover:text-gray-300'
-                                }`}
-                            >
-                                📄 Nieuw verhaal
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setStoryMode('existing')}
+                                onClick={() => { setStoryMode('existing'); setData('existing_story_id', ''); }}
                                 className={`flex-1 py-4 text-sm font-medium transition ${
                                     storyMode === 'existing'
                                         ? 'text-purple-400 border-b-2 border-purple-500'
@@ -202,6 +191,17 @@ export default function QuickNote({ recentStories }: Props) {
                                 }`}
                             >
                                 🔗 Bestaand verhaal
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setStoryMode('new')}
+                                className={`flex-1 py-4 text-sm font-medium transition ${
+                                    storyMode === 'new'
+                                        ? 'text-amber-400 border-b-2 border-amber-500'
+                                        : 'text-gray-500 hover:text-gray-300'
+                                }`}
+                            >
+                                📄 Nieuw verhaal
                             </button>
                         </div>
 
@@ -219,7 +219,19 @@ export default function QuickNote({ recentStories }: Props) {
                                         </option>
                                     ))}
                                 </select>
-                                <p className="text-xs text-gray-600 mt-2">Wordt toegevoegd als nieuw hoofdstuk.</p>
+                                <p className="text-xs text-gray-600 mt-2">Wordt toegevoegd aan het gekozen verhaal.</p>
+                            </div>
+                        )}
+
+                        {storyMode === 'new' && (
+                            <div className="px-4 py-3">
+                                <input
+                                    type="text"
+                                    value={data.title}
+                                    onChange={(e) => setData('title', e.target.value)}
+                                    placeholder="Titel van het nieuwe verhaal..."
+                                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 transition"
+                                />
                             </div>
                         )}
                     </div>
@@ -228,7 +240,7 @@ export default function QuickNote({ recentStories }: Props) {
                     <div className="flex gap-3 pb-6">
                         <button
                             type="submit"
-                            disabled={processing || !data.content.trim()}
+                            disabled={processing || !data.content.trim() || (storyMode === 'new' && !data.title.trim())}
                             className="flex-1 py-4 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold rounded-2xl transition text-base"
                         >
                             {processing ? 'Opslaan...' : (storyMode === 'existing' && data.existing_story_id ? 'Toevoegen als hoofdstuk' : 'Opslaan')}
