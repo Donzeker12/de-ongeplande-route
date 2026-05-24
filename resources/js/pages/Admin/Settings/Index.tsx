@@ -225,6 +225,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                 <label className="block text-sm font-medium text-gray-300 mb-2">Instagram Business Account ID</label>
                                 <input
                                     type="text"
+                                    autoComplete="off"
                                     value={data.instagram_business_account_id}
                                     onChange={(e) => setData('instagram_business_account_id', e.target.value)}
                                     placeholder="17841432578328591"
@@ -235,13 +236,14 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2">Page Access Token</label>
                                 <input
-                                    type="password"
+                                    type="text"
+                                    autoComplete="off"
                                     value={data.instagram_page_access_token}
                                     onChange={(e) => setData('instagram_page_access_token', e.target.value)}
                                     placeholder="EAAWPw..."
                                     className="w-full px-3 py-2 bg-[#0f1117] border border-gray-700 rounded-lg text-gray-300 placeholder-gray-600 focus:outline-none focus:border-pink-500 transition"
                                 />
-                                <p className="mt-1 text-xs text-gray-600">Token wordt versleuteld opgeslagen. Laat leeg om de huidige te bewaren.</p>
+                                <p className="mt-1 text-xs text-gray-600">Laat leeg om de huidige te bewaren.</p>
                             </div>
                         </div>
 
