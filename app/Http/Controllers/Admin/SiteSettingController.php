@@ -25,6 +25,23 @@ class SiteSettingController extends Controller
                 'instagram_page_access_token' => SiteSetting::get('instagram_page_access_token'),
                 'instagram_token_obtained_at' => SiteSetting::get('instagram_token_obtained_at'),
                 'instagram_hashtags' => SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal',
+                'over_ons_hero_title' => SiteSetting::get('over_ons_hero_title') ?? 'Over Ons',
+                'over_ons_hero_intro' => SiteSetting::get('over_ons_hero_intro') ?? 'Wij zijn een gezin dat van spontaniteit houdt. Geen uitgebreide planningen, geen stress over waar we naartoe gaan. Gewoon instappen en kijken waar de weg ons brengt.',
+                'over_ons_hero_image' => SiteSetting::get('over_ons_hero_image') ?? 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&q=80',
+                'over_ons_hero_year' => SiteSetting::get('over_ons_hero_year') ?? 'Sinds 2023',
+                'over_ons_mission_title' => SiteSetting::get('over_ons_mission_title') ?? 'Onze Missie',
+                'over_ons_mission_text' => SiteSetting::get('over_ons_mission_text') ?? 'We geloven dat de mooiste herinneringen ontstaan wanneer je geen plan hebt. Door onze verhalen te delen, hopen we anderen te inspireren om ook eens spontaan op pad te gaan en hun eigen avonturen te beleven.',
+                'over_ons_pillar_1_title' => SiteSetting::get('over_ons_pillar_1_title') ?? 'Spontaan',
+                'over_ons_pillar_1_text' => SiteSetting::get('over_ons_pillar_1_text') ?? 'Geen uitgebreide plannen, gewoon gaan en onderweg beslissen wat we gaan doen.',
+                'over_ons_pillar_2_title' => SiteSetting::get('over_ons_pillar_2_title') ?? 'Ontdekken',
+                'over_ons_pillar_2_text' => SiteSetting::get('over_ons_pillar_2_text') ?? 'Elk uitje brengt nieuwe ontdekkingen: van kleine details tot grote verrassingen.',
+                'over_ons_pillar_3_title' => SiteSetting::get('over_ons_pillar_3_title') ?? 'Delen',
+                'over_ons_pillar_3_text' => SiteSetting::get('over_ons_pillar_3_text') ?? 'We delen onze verhalen zodat anderen ook kunnen genieten van mooie plekken.',
+                'over_ons_story_title' => SiteSetting::get('over_ons_story_title') ?? 'Hoe Het Begon',
+                'over_ons_story_image' => SiteSetting::get('over_ons_story_image') ?? 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&q=80',
+                'over_ons_story_text' => SiteSetting::get('over_ons_story_text') ?? "Het begon allemaal met een zaterdagochtend waarop we geen plannen hadden.\n\nWe ontdekten een prachtig kasteel dat we nooit eerder hadden gezien, aten de beste pannenkoeken in een klein dorpscafeetje en vonden een speeltuin waar de kinderen uren konden spelen. Het was perfect.\n\nSinds die dag zijn we regelmatig 'de ongeplande route' gaan rijden. Elke keer ontdekken we weer nieuwe plekjes, maken we mooie herinneringen en komen we thuis met verhalen om te vertellen.",
+                'over_ons_cta_title' => SiteSetting::get('over_ons_cta_title') ?? 'Laat Je Inspireren',
+                'over_ons_cta_text' => SiteSetting::get('over_ons_cta_text') ?? 'Benieuwd naar onze verhalen? Bekijk onze uitjes en misschien inspireren ze jou wel om ook eens spontaan op pad te gaan.',
             ],
         ]);
     }
@@ -40,6 +57,23 @@ class SiteSettingController extends Controller
             'instagram_business_account_id' => 'nullable|string|max:255',
             'instagram_page_access_token' => 'nullable|string|max:4096',
             'instagram_hashtags' => 'nullable|string|max:2200',
+            'over_ons_hero_title' => 'nullable|string|max:255',
+            'over_ons_hero_intro' => 'nullable|string|max:1000',
+            'over_ons_hero_image' => 'nullable|string|max:2048',
+            'over_ons_hero_year' => 'nullable|string|max:50',
+            'over_ons_mission_title' => 'nullable|string|max:255',
+            'over_ons_mission_text' => 'nullable|string|max:1000',
+            'over_ons_pillar_1_title' => 'nullable|string|max:100',
+            'over_ons_pillar_1_text' => 'nullable|string|max:500',
+            'over_ons_pillar_2_title' => 'nullable|string|max:100',
+            'over_ons_pillar_2_text' => 'nullable|string|max:500',
+            'over_ons_pillar_3_title' => 'nullable|string|max:100',
+            'over_ons_pillar_3_text' => 'nullable|string|max:500',
+            'over_ons_story_title' => 'nullable|string|max:255',
+            'over_ons_story_image' => 'nullable|string|max:2048',
+            'over_ons_story_text' => 'nullable|string|max:3000',
+            'over_ons_cta_title' => 'nullable|string|max:255',
+            'over_ons_cta_text' => 'nullable|string|max:500',
         ]);
 
         if ($request->hasFile('hero_background_image')) {
@@ -54,6 +88,22 @@ class SiteSettingController extends Controller
         SiteSetting::set('instagram_business_account_id', $validated['instagram_business_account_id'] ?? SiteSetting::get('instagram_business_account_id'));
         SiteSetting::set('instagram_page_access_token', $validated['instagram_page_access_token'] ?? SiteSetting::get('instagram_page_access_token'));
         SiteSetting::set('instagram_hashtags', $validated['instagram_hashtags'] ?? SiteSetting::get('instagram_hashtags'));
+
+        $overOnsKeys = [
+            'over_ons_hero_title', 'over_ons_hero_intro', 'over_ons_hero_image', 'over_ons_hero_year',
+            'over_ons_mission_title', 'over_ons_mission_text',
+            'over_ons_pillar_1_title', 'over_ons_pillar_1_text',
+            'over_ons_pillar_2_title', 'over_ons_pillar_2_text',
+            'over_ons_pillar_3_title', 'over_ons_pillar_3_text',
+            'over_ons_story_title', 'over_ons_story_image', 'over_ons_story_text',
+            'over_ons_cta_title', 'over_ons_cta_text',
+        ];
+
+        foreach ($overOnsKeys as $key) {
+            if (array_key_exists($key, $validated)) {
+                SiteSetting::set($key, $validated[$key] ?? SiteSetting::get($key));
+            }
+        }
 
         return redirect()->route('admin.settings.index')->with('success', 'Site instellingen opgeslagen.');
     }

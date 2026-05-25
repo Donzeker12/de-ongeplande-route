@@ -12,19 +12,39 @@ interface Settings {
     instagram_page_access_token: string | null;
     instagram_token_obtained_at: string | null;
     instagram_hashtags: string;
+    over_ons_hero_title: string;
+    over_ons_hero_intro: string;
+    over_ons_hero_image: string;
+    over_ons_hero_year: string;
+    over_ons_mission_title: string;
+    over_ons_mission_text: string;
+    over_ons_pillar_1_title: string;
+    over_ons_pillar_1_text: string;
+    over_ons_pillar_2_title: string;
+    over_ons_pillar_2_text: string;
+    over_ons_pillar_3_title: string;
+    over_ons_pillar_3_text: string;
+    over_ons_story_title: string;
+    over_ons_story_image: string;
+    over_ons_story_text: string;
+    over_ons_cta_title: string;
+    over_ons_cta_text: string;
 }
 
 interface SettingsPageProps {
     settings: Settings;
 }
 
+type Tab = 'homepage' | 'over-ons' | 'instagram';
+
 export default function SettingsIndex({ settings }: SettingsPageProps) {
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
+    const [activeTab, setActiveTab] = useState<Tab>('homepage');
     const [previewUrl, setPreviewUrl] = useState<string | null>(settings.hero_background_url);
     const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { data, setData, post, processing, errors, reset } = useForm<{
+    const { data, setData, post, processing, errors } = useForm<{
         hero_background_url: string;
         hero_background_image: File | null;
         hero_title: string;
@@ -33,6 +53,23 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         instagram_business_account_id: string;
         instagram_page_access_token: string;
         instagram_hashtags: string;
+        over_ons_hero_title: string;
+        over_ons_hero_intro: string;
+        over_ons_hero_image: string;
+        over_ons_hero_year: string;
+        over_ons_mission_title: string;
+        over_ons_mission_text: string;
+        over_ons_pillar_1_title: string;
+        over_ons_pillar_1_text: string;
+        over_ons_pillar_2_title: string;
+        over_ons_pillar_2_text: string;
+        over_ons_pillar_3_title: string;
+        over_ons_pillar_3_text: string;
+        over_ons_story_title: string;
+        over_ons_story_image: string;
+        over_ons_story_text: string;
+        over_ons_cta_title: string;
+        over_ons_cta_text: string;
         _method: string;
     }>({
         hero_background_url: settings.hero_background_url ?? '',
@@ -43,6 +80,23 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         instagram_business_account_id: settings.instagram_business_account_id ?? '',
         instagram_page_access_token: settings.instagram_page_access_token ?? '',
         instagram_hashtags: settings.instagram_hashtags ?? '',
+        over_ons_hero_title: settings.over_ons_hero_title ?? '',
+        over_ons_hero_intro: settings.over_ons_hero_intro ?? '',
+        over_ons_hero_image: settings.over_ons_hero_image ?? '',
+        over_ons_hero_year: settings.over_ons_hero_year ?? '',
+        over_ons_mission_title: settings.over_ons_mission_title ?? '',
+        over_ons_mission_text: settings.over_ons_mission_text ?? '',
+        over_ons_pillar_1_title: settings.over_ons_pillar_1_title ?? '',
+        over_ons_pillar_1_text: settings.over_ons_pillar_1_text ?? '',
+        over_ons_pillar_2_title: settings.over_ons_pillar_2_title ?? '',
+        over_ons_pillar_2_text: settings.over_ons_pillar_2_text ?? '',
+        over_ons_pillar_3_title: settings.over_ons_pillar_3_title ?? '',
+        over_ons_pillar_3_text: settings.over_ons_pillar_3_text ?? '',
+        over_ons_story_title: settings.over_ons_story_title ?? '',
+        over_ons_story_image: settings.over_ons_story_image ?? '',
+        over_ons_story_text: settings.over_ons_story_text ?? '',
+        over_ons_cta_title: settings.over_ons_cta_title ?? '',
+        over_ons_cta_text: settings.over_ons_cta_text ?? '',
         _method: 'PUT',
     });
 
@@ -68,6 +122,15 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         });
     };
 
+    const tabs: { id: Tab; label: string; icon: string }[] = [
+        { id: 'homepage', label: 'Homepage', icon: '🏠' },
+        { id: 'over-ons', label: 'Over Ons', icon: '👨‍👩‍👧' },
+        { id: 'instagram', label: 'Instagram', icon: '📸' },
+    ];
+
+    const inputClass = 'w-full px-3 py-2 bg-[#0f1117] border border-gray-700 rounded-lg text-gray-300 placeholder-gray-600 focus:outline-none focus:border-violet-500 transition';
+    const labelClass = 'block text-sm font-medium text-gray-300 mb-2';
+
     return (
         <AdminLayout header={<h2 className="text-lg font-semibold text-white">Site Instellingen</h2>}>
             <Head title="Site Instellingen" />
@@ -86,8 +149,30 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                         </div>
                     )}
 
+                    {/* Tab Navigation */}
+                    <div className="flex gap-1 bg-[#0f1117] border border-gray-800 rounded-xl p-1">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                                    activeTab === tab.id
+                                        ? 'bg-violet-600 text-white shadow'
+                                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                                }`}
+                            >
+                                <span>{tab.icon}</span>
+                                <span>{tab.label}</span>
+                            </button>
+                        ))}
+                    </div>
+
                     <form onSubmit={submit} noValidate className="space-y-6">
 
+                        {/* ── HOMEPAGE TAB ── */}
+                        {activeTab === 'homepage' && (
+                          <>
                         {/* Hero Achtergrond */}
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
                             <div className="flex items-center gap-3">
@@ -223,6 +308,128 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                             </div>
                         </div>
 
+                        <div className="flex justify-end">
+                            <button type="submit" disabled={processing} className="px-6 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition">
+                                {processing ? 'Opslaan...' : 'Instellingen opslaan'}
+                            </button>
+                        </div>
+                          </>
+                        )}
+
+                        {/* ── OVER ONS TAB ── */}
+                        {activeTab === 'over-ons' && (
+                          <>
+                            {/* Hero */}
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1 h-6 bg-gradient-to-b from-amber-400 to-orange-500 rounded-full" />
+                                    <h3 className="text-base font-semibold text-white">Hero Sectie</h3>
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Titel</label>
+                                    <input type="text" value={data.over_ons_hero_title} onChange={(e) => setData('over_ons_hero_title', e.target.value)} className={inputClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Intro tekst</label>
+                                    <textarea value={data.over_ons_hero_intro} onChange={(e) => setData('over_ons_hero_intro', e.target.value)} rows={3} className={`${inputClass} resize-none`} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Foto URL</label>
+                                    <input type="text" value={data.over_ons_hero_image} onChange={(e) => setData('over_ons_hero_image', e.target.value)} placeholder="https://..." className={inputClass} />
+                                    {data.over_ons_hero_image && (
+                                        <img src={data.over_ons_hero_image} alt="Preview" className="mt-2 h-24 w-auto rounded-lg object-cover border border-gray-700" />
+                                    )}
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Jaar label <span className="text-gray-500 font-normal">(bijv. "Sinds 2023")</span></label>
+                                    <input type="text" value={data.over_ons_hero_year} onChange={(e) => setData('over_ons_hero_year', e.target.value)} placeholder="Sinds 2023" className={inputClass} />
+                                </div>
+                            </div>
+
+                            {/* Missie */}
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1 h-6 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full" />
+                                    <h3 className="text-base font-semibold text-white">Missie Sectie</h3>
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Titel</label>
+                                    <input type="text" value={data.over_ons_mission_title} onChange={(e) => setData('over_ons_mission_title', e.target.value)} className={inputClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Tekst</label>
+                                    <textarea value={data.over_ons_mission_text} onChange={(e) => setData('over_ons_mission_text', e.target.value)} rows={3} className={`${inputClass} resize-none`} />
+                                </div>
+                                <p className="text-xs text-gray-500 uppercase tracking-wider pt-2">Drie kernwaarden</p>
+                                {([
+                                    { n: 1, titleKey: 'over_ons_pillar_1_title' as const, textKey: 'over_ons_pillar_1_text' as const },
+                                    { n: 2, titleKey: 'over_ons_pillar_2_title' as const, textKey: 'over_ons_pillar_2_text' as const },
+                                    { n: 3, titleKey: 'over_ons_pillar_3_title' as const, textKey: 'over_ons_pillar_3_text' as const },
+                                ]).map(({ n, titleKey, textKey }) => (
+                                    <div key={n} className="bg-[#0f1117] rounded-lg p-4 space-y-3 border border-gray-800">
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Kernwaarde {n}</p>
+                                        <div>
+                                            <label className={labelClass}>Titel</label>
+                                            <input type="text" value={data[titleKey]} onChange={(e) => setData(titleKey, e.target.value)} className={inputClass} />
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Beschrijving</label>
+                                            <textarea value={data[textKey]} onChange={(e) => setData(textKey, e.target.value)} rows={2} className={`${inputClass} resize-none`} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Verhaal */}
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-cyan-500 rounded-full" />
+                                    <h3 className="text-base font-semibold text-white">Verhaal Sectie</h3>
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Titel</label>
+                                    <input type="text" value={data.over_ons_story_title} onChange={(e) => setData('over_ons_story_title', e.target.value)} className={inputClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Foto URL</label>
+                                    <input type="text" value={data.over_ons_story_image} onChange={(e) => setData('over_ons_story_image', e.target.value)} placeholder="https://..." className={inputClass} />
+                                    {data.over_ons_story_image && (
+                                        <img src={data.over_ons_story_image} alt="Preview" className="mt-2 h-24 w-auto rounded-lg object-cover border border-gray-700" />
+                                    )}
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Verhaal tekst <span className="text-gray-500 font-normal">(gebruik een lege regel voor een nieuw alinea)</span></label>
+                                    <textarea value={data.over_ons_story_text} onChange={(e) => setData('over_ons_story_text', e.target.value)} rows={8} className={`${inputClass} resize-y`} />
+                                </div>
+                            </div>
+
+                            {/* CTA */}
+                            <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1 h-6 bg-gradient-to-b from-pink-400 to-rose-500 rounded-full" />
+                                    <h3 className="text-base font-semibold text-white">CTA Sectie</h3>
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Titel</label>
+                                    <input type="text" value={data.over_ons_cta_title} onChange={(e) => setData('over_ons_cta_title', e.target.value)} className={inputClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Tekst</label>
+                                    <textarea value={data.over_ons_cta_text} onChange={(e) => setData('over_ons_cta_text', e.target.value)} rows={2} className={`${inputClass} resize-none`} />
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end">
+                                <button type="submit" disabled={processing} className="px-6 py-2.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition">
+                                    {processing ? 'Opslaan...' : 'Instellingen opslaan'}
+                                </button>
+                            </div>
+                          </>
+                        )}
+
+                        {/* ── INSTAGRAM TAB ── */}
+                        {activeTab === 'instagram' && (
+                          <>
                         {/* Instagram Instellingen */}
                         <div className="bg-[#16181f] border border-gray-800 rounded-xl p-6 space-y-5">
                             <div className="flex items-center gap-3">
@@ -280,9 +487,12 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                 {processing ? 'Opslaan...' : 'Instellingen opslaan'}
                             </button>
                         </div>
+                          </>
+                        )}
                     </form>
 
                     {/* Token uitwisselen — aparte actie, buiten de hoofdform */}
+                    {activeTab === 'instagram' && (
                     <div className="bg-[#16181f] border border-pink-900/40 rounded-xl p-6 space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="w-1 h-6 bg-gradient-to-b from-pink-400 to-purple-500 rounded-full" />
@@ -353,6 +563,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                             </button>
                         </form>
                     </div>
+                    )}
                 </div>
             </div>
         </AdminLayout>
