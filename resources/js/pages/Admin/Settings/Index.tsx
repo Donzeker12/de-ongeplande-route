@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import ImageUpload from '@/Components/ImageUpload';
+import RichTextEditor from '@/Components/RichTextEditor';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useRef, useState } from 'react';
 import { exchangeInstagramToken } from '@/actions/App/Http/Controllers/Admin/SiteSettingController';
@@ -71,7 +72,6 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         over_ons_story_text: string;
         over_ons_cta_title: string;
         over_ons_cta_text: string;
-        _method: string;
     }>({
         hero_background_url: settings.hero_background_url ?? '',
         hero_background_image: null,
@@ -98,7 +98,6 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         over_ons_story_text: settings.over_ons_story_text ?? '',
         over_ons_cta_title: settings.over_ons_cta_title ?? '',
         over_ons_cta_text: settings.over_ons_cta_text ?? '',
-        _method: 'PUT',
     });
 
     const tokenForm = useForm<{ user_access_token: string }>({ user_access_token: '' });
@@ -332,7 +331,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                 </div>
                                 <div>
                                     <label className={labelClass}>Intro tekst</label>
-                                    <textarea value={data.over_ons_hero_intro} onChange={(e) => setData('over_ons_hero_intro', e.target.value)} rows={3} className={`${inputClass} resize-none`} />
+                                    <RichTextEditor value={data.over_ons_hero_intro} onChange={(val) => setData('over_ons_hero_intro', val)} placeholder="Schrijf de intro hier..." />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Foto</label>
@@ -359,7 +358,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                 </div>
                                 <div>
                                     <label className={labelClass}>Tekst</label>
-                                    <textarea value={data.over_ons_mission_text} onChange={(e) => setData('over_ons_mission_text', e.target.value)} rows={3} className={`${inputClass} resize-none`} />
+                                    <RichTextEditor value={data.over_ons_mission_text} onChange={(val) => setData('over_ons_mission_text', val)} placeholder="Schrijf de missie hier..." />
                                 </div>
                                 <p className="text-xs text-gray-500 uppercase tracking-wider pt-2">Drie kernwaarden</p>
                                 {([
@@ -375,7 +374,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                         </div>
                                         <div>
                                             <label className={labelClass}>Beschrijving</label>
-                                            <textarea value={data[textKey]} onChange={(e) => setData(textKey, e.target.value)} rows={2} className={`${inputClass} resize-none`} />
+                                            <RichTextEditor value={data[textKey]} onChange={(val) => setData(textKey, val)} placeholder="Beschrijf de kernwaarde..." />
                                         </div>
                                     </div>
                                 ))}
@@ -399,8 +398,8 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                     />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Verhaal tekst <span className="text-gray-500 font-normal">(gebruik een lege regel voor een nieuw alinea)</span></label>
-                                    <textarea value={data.over_ons_story_text} onChange={(e) => setData('over_ons_story_text', e.target.value)} rows={8} className={`${inputClass} resize-y`} />
+                                    <label className={labelClass}>Verhaal tekst</label>
+                                    <RichTextEditor value={data.over_ons_story_text} onChange={(val) => setData('over_ons_story_text', val)} placeholder="Schrijf jullie verhaal hier..." />
                                 </div>
                             </div>
 
@@ -416,7 +415,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                 </div>
                                 <div>
                                     <label className={labelClass}>Tekst</label>
-                                    <textarea value={data.over_ons_cta_text} onChange={(e) => setData('over_ons_cta_text', e.target.value)} rows={2} className={`${inputClass} resize-none`} />
+                                    <RichTextEditor value={data.over_ons_cta_text} onChange={(val) => setData('over_ons_cta_text', val)} placeholder="Schrijf de CTA tekst hier..." />
                                 </div>
                             </div>
 

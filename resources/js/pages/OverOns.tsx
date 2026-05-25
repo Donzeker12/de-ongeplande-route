@@ -26,7 +26,6 @@ interface Props {
 }
 
 export default function OverOns({ content }: Props) {
-    const storyParagraphs = content.story_text.split(/\n\n+/).filter(Boolean);
 
     return (
         <>
@@ -46,9 +45,9 @@ export default function OverOns({ content }: Props) {
                                 <h1 className="text-5xl md:text-6xl font-serif text-warm-700 mb-8 leading-tight">
                                     {content.hero_title}
                                 </h1>
-                                <p className="text-xl text-warm-600 mb-8 leading-relaxed">
-                                    {content.hero_intro}
-                                </p>
+                                <p className="text-xl text-warm-600 mb-8 leading-relaxed"
+                                    dangerouslySetInnerHTML={{ __html: content.hero_intro }}
+                                />
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-0.5 bg-warm-400"></div>
                                     <span className="text-sm text-warm-500 uppercase tracking-wider font-medium">
@@ -80,9 +79,9 @@ export default function OverOns({ content }: Props) {
                     <div className="max-w-4xl mx-auto px-6 text-center">
                         <div className="animate-fade-in-up">
                             <h2 className="text-4xl font-serif text-warm-700 mb-8">{content.mission_title}</h2>
-                            <p className="text-xl text-warm-600 leading-relaxed mb-12">
-                                {content.mission_text}
-                            </p>
+                            <div className="text-xl text-warm-600 leading-relaxed mb-12"
+                                dangerouslySetInnerHTML={{ __html: content.mission_text }}
+                            />
                             
                             <div className="grid md:grid-cols-3 gap-8 mt-16">
                                 <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
@@ -92,7 +91,7 @@ export default function OverOns({ content }: Props) {
                                         </svg>
                                     </div>
                                     <h3 className="font-serif text-xl text-warm-700 mb-3">{content.pillar_1_title}</h3>
-                                    <p className="text-warm-600">{content.pillar_1_text}</p>
+                                    <div className="text-warm-600" dangerouslySetInnerHTML={{ __html: content.pillar_1_text }} />
                                 </div>
                                 
                                 <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
@@ -103,7 +102,7 @@ export default function OverOns({ content }: Props) {
                                         </svg>
                                     </div>
                                     <h3 className="font-serif text-xl text-warm-700 mb-3">{content.pillar_2_title}</h3>
-                                    <p className="text-warm-600">{content.pillar_2_text}</p>
+                                    <div className="text-warm-600" dangerouslySetInnerHTML={{ __html: content.pillar_2_text }} />
                                 </div>
                                 
                                 <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
@@ -113,7 +112,7 @@ export default function OverOns({ content }: Props) {
                                         </svg>
                                     </div>
                                     <h3 className="font-serif text-xl text-warm-700 mb-3">{content.pillar_3_title}</h3>
-                                    <p className="text-warm-600">{content.pillar_3_text}</p>
+                                    <div className="text-warm-600" dangerouslySetInnerHTML={{ __html: content.pillar_3_text }} />
                                 </div>
                             </div>
                         </div>
@@ -136,11 +135,9 @@ export default function OverOns({ content }: Props) {
                                 <h2 className="text-4xl font-serif text-warm-700 mb-8">
                                     {content.story_title}
                                 </h2>
-                                <div className="space-y-6 text-warm-600 leading-relaxed">
-                                    {storyParagraphs.map((paragraph, index) => (
-                                        <p key={index}>{paragraph}</p>
-                                    ))}
-                                </div>
+                                <div className="space-y-6 text-warm-600 leading-relaxed"
+                                    dangerouslySetInnerHTML={{ __html: content.story_text }}
+                                />
                             </div>
                         </div>
                     </div>
@@ -152,9 +149,9 @@ export default function OverOns({ content }: Props) {
                         <h2 className="text-4xl md:text-5xl font-serif mb-6">
                             {content.cta_title}
                         </h2>
-                        <p className="text-xl opacity-90 mb-8 leading-relaxed">
-                            {content.cta_text}
-                        </p>
+                        <div className="text-xl opacity-90 mb-8 leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: content.cta_text }}
+                        />
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <a 
                                 href="/#uitjes" 
