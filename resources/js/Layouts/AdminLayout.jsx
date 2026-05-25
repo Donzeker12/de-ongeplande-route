@@ -50,7 +50,6 @@ export default function AdminLayout({ header, children }) {
         { name: 'Categorieën',   href: '/admin/categories',  icon: '🏷️', current: route().current('admin.categories.*') },
         { name: 'Locaties',      href: '/admin/venues',      icon: '📍', current: route().current('admin.venues.*') },
         { name: 'Ontdekkingen',  href: '/admin/discoveries', icon: '✨', current: route().current('admin.discoveries.*') },
-        { name: 'Social',        href: '/admin/snippets',    icon: '📱', current: route().current('admin.snippets.*') },
         { name: 'Instagram',     href: '/admin/instagram',   icon: '📸', current: route().current('admin.instagram.*') },
         { name: 'Gebruikers',    href: '/admin/users',       icon: '👥', current: route().current('admin.users.*') },
         { name: 'Instellingen',  href: '/admin/settings',    icon: '⚙️', current: route().current('admin.settings.*') },
