@@ -107,16 +107,6 @@ class SiteSettingController extends Controller
         }
 
         $pages = $accountsResponse->json('data') ?? [];
-        $pageToken = null;
-
-        // Try to match by Facebook Page ID from config, otherwise fall back to first page
-        $facebookPageId = config('services.facebook.page_id');
-        foreach ($pages as $page) {
-            if ($facebookPageId && (string) $page['id'] === (string) $facebookPageId) {
-                $pageToken = $page['access_token'];
-                break;
-            }
-        }
 
         // Fall back to first available page
         if (! $pageToken && ! empty($pages)) {
@@ -124,7 +114,13 @@ class SiteSettingController extends Controller
         }
 
         if (! $pageToken) {
-            return redirect()->back()->with('error', 'Geen Facebook pagina gevonden. Zorg dat de token permissions pages_show_list bevat.');
+            $pageCount = count($pages);
+            $pageIds = implode(', ', array_column($pages, 'id'));
+            $debugInfo = $pageCount > 0
+                ? "Gevonden pagina IDs: {$pageIds}"
+                : 'Geen paginas gevonden in /me/accounts (lege lijst).';
+
+            return redirect()->back()->with('error', "Geen Facebook pagina gevonden. {$debugInfo} Zorg dat je ingelogd bent als beheerder van de Facebook-pagina.");
         }
 
         SiteSetting::set('instagram_page_access_token', $pageToken);
