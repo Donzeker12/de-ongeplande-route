@@ -313,6 +313,66 @@ class SocialShareService
     }
 
     /**
+     * Share a story to the Facebook page as a link post.
+     */
+    public function shareStoryToFacebook(Story $story): bool
+    {
+        $pageId = config('services.facebook.page_id');
+        $accessToken = config('services.facebook.page_access_token');
+
+        if (! $pageId || ! $accessToken) {
+            Log::warning('Facebook credentials not configured.');
+
+            return false;
+        }
+
+        $siteUrl = config('app.url');
+        $storyUrl = "{$siteUrl}/verhalen/{$story->slug}";
+
+        $lines = [];
+        $lines[] = "✨ {$story->title}";
+        $lines[] = '';
+
+        if ($story->description) {
+            $lines[] = $story->description;
+            $lines[] = '';
+        }
+
+        $lines[] = 'Lees het hele verhaal op de website! 👇';
+        $message = implode("\n", $lines);
+
+        $response = Http::post(
+            config('services.facebook.graph_url')."/{$pageId}/feed",
+            [
+                'message' => $message,
+                'link' => $storyUrl,
+                'access_token' => $accessToken,
+            ],
+        );
+
+        if ($response->successful()) {
+            SocialSnippet::create([
+                'outing_id' => null,
+                'story_id' => $story->id,
+                'platform' => 'facebook',
+                'hook_text' => substr($message, 0, 150),
+                'caption' => $message,
+                'teaser_content' => $storyUrl,
+                'published_at' => now(),
+            ]);
+
+            return true;
+        }
+
+        Log::error('Facebook story post failed', [
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
+
+        return false;
+    }
+
+    /**
      * Build a natural Dutch caption for a story on Instagram.
      */
     private function buildStoryInstagramCaption(Story $story): string

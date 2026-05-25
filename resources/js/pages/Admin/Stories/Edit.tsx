@@ -5,7 +5,7 @@ import ImageUpload from '@/Components/ImageUpload';
 import RichTextEditor from '@/Components/RichTextEditor';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
-import { shareInstagram } from '@/actions/App/Http/Controllers/Admin/StoryController';
+import { shareInstagram, shareFacebook } from '@/actions/App/Http/Controllers/Admin/StoryController';
 
 interface MediaImage { id: number; url: string; filename: string; }
 interface MediaVideo { id: number; url: string; filename: string; }
@@ -192,6 +192,15 @@ export default function StoryEdit({ story, mediaImages, mediaVideos, allVenues }
                                         className="mt-2 w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition text-sm"
                                     >
                                         📸 Deel op Instagram
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.post(shareFacebook.url(story.id))}
+                                        disabled={story.status !== 'published'}
+                                        title={story.status !== 'published' ? 'Publiceer het verhaal eerst op de website' : 'Deel link op Facebook'}
+                                        className="mt-2 w-full px-4 py-2.5 bg-[#1877F2] hover:bg-[#166fe5] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition text-sm"
+                                    >
+                                        👍 Deel op Facebook
                                     </button>
                                 </div>
 

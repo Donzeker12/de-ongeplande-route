@@ -322,4 +322,17 @@ class StoryController extends Controller
 
         return redirect()->back()->with('error', 'Instagram delen mislukt. Controleer je Instagram-instellingen en token.');
     }
+
+    public function shareFacebook(Story $story, SocialShareService $service): RedirectResponse
+    {
+        $this->authorize('update', $story);
+
+        $success = $service->shareStoryToFacebook($story);
+
+        if ($success) {
+            return redirect()->back()->with('success', 'Verhaal gedeeld op Facebook!');
+        }
+
+        return redirect()->back()->with('error', 'Facebook delen mislukt. Controleer je Facebook-instellingen en token.');
+    }
 }
