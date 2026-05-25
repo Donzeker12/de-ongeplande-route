@@ -16,8 +16,8 @@ class SocialShareService
      */
     public function shareToFacebook(Outing $outing): bool
     {
-        $pageId = config('services.facebook.page_id');
-        $accessToken = config('services.facebook.page_access_token');
+        $pageId = SiteSetting::get('facebook_page_id') ?? config('services.facebook.page_id');
+        $accessToken = SiteSetting::get('instagram_page_access_token') ?? config('services.facebook.page_access_token');
 
         if (! $pageId || ! $accessToken) {
             Log::warning('Facebook credentials not configured.');
@@ -317,8 +317,8 @@ class SocialShareService
      */
     public function shareStoryToFacebook(Story $story): bool
     {
-        $pageId = config('services.facebook.page_id');
-        $accessToken = config('services.facebook.page_access_token');
+        $pageId = SiteSetting::get('facebook_page_id') ?? config('services.facebook.page_id');
+        $accessToken = SiteSetting::get('instagram_page_access_token') ?? config('services.facebook.page_access_token');
 
         if (! $pageId || ! $accessToken) {
             Log::warning('Facebook credentials not configured.');
