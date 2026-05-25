@@ -319,14 +319,15 @@ class SocialShareService
      */
     private function waitForContainerReady(string $creationId, string $accessToken, string $graphUrl): bool
     {
-        $maxAttempts = 10;
+        $maxAttempts = 20;
         for ($i = 0; $i < $maxAttempts; $i++) {
-            sleep(3);
+            sleep(5);
             $statusResponse = Http::get("{$graphUrl}/{$creationId}", [
                 'fields' => 'status_code',
                 'access_token' => $accessToken,
             ]);
             $statusCode = $statusResponse->json('status_code');
+            Log::info('Instagram container status', ['attempt' => $i + 1, 'status_code' => $statusCode, 'body' => $statusResponse->body()]);
             if ($statusCode === 'FINISHED') {
                 return true;
             }
