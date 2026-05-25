@@ -107,6 +107,16 @@ class SiteSettingController extends Controller
         }
 
         $pages = $accountsResponse->json('data') ?? [];
+        $pageToken = null;
+
+        // Try to match by Facebook Page ID from config
+        $facebookPageId = config('services.facebook.page_id');
+        foreach ($pages as $page) {
+            if ($facebookPageId && (string) $page['id'] === (string) $facebookPageId) {
+                $pageToken = $page['access_token'];
+                break;
+            }
+        }
 
         // Fall back to first available page
         if (! $pageToken && ! empty($pages)) {
