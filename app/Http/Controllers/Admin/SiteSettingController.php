@@ -24,18 +24,13 @@ class SiteSettingController extends Controller
                 'instagram_business_account_id' => SiteSetting::get('instagram_business_account_id'),
                 'instagram_page_access_token' => SiteSetting::get('instagram_page_access_token'),
                 'instagram_token_obtained_at' => SiteSetting::get('instagram_token_obtained_at'),
+                'instagram_hashtags' => SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal',
             ],
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
-        \Log::info('SiteSettings update received', [
-            'instagram_business_account_id' => $request->input('instagram_business_account_id'),
-            'instagram_page_access_token_len' => strlen($request->input('instagram_page_access_token') ?? ''),
-            'all_keys' => array_keys($request->all()),
-        ]);
-
         $validated = $request->validate([
             'hero_background_url' => 'nullable|string|max:2048',
             'hero_background_image' => 'nullable|image|max:5120',
@@ -44,6 +39,7 @@ class SiteSettingController extends Controller
             'hero_description' => 'nullable|string|max:500',
             'instagram_business_account_id' => 'nullable|string|max:255',
             'instagram_page_access_token' => 'nullable|string|max:4096',
+            'instagram_hashtags' => 'nullable|string|max:2200',
         ]);
 
         if ($request->hasFile('hero_background_image')) {
@@ -57,6 +53,7 @@ class SiteSettingController extends Controller
         SiteSetting::set('hero_description', $validated['hero_description'] ?? SiteSetting::get('hero_description'));
         SiteSetting::set('instagram_business_account_id', $validated['instagram_business_account_id'] ?? SiteSetting::get('instagram_business_account_id'));
         SiteSetting::set('instagram_page_access_token', $validated['instagram_page_access_token'] ?? SiteSetting::get('instagram_page_access_token'));
+        SiteSetting::set('instagram_hashtags', $validated['instagram_hashtags'] ?? SiteSetting::get('instagram_hashtags'));
 
         return redirect()->route('admin.settings.index')->with('success', 'Site instellingen opgeslagen.');
     }

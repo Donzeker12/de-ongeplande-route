@@ -219,13 +219,10 @@ class SocialShareService
         $lines[] = '';
         $lines[] = '🔗 Link in bio!';
         $lines[] = '';
-        $lines[] = '#deongeplanderoute #uitjemet #weekenduitje #gezinsuitje #nederlandseblog';
+        $lines[] = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #uitjemet #weekenduitje #gezinsuitje #nederlandseblog';
 
         return implode("\n", $lines);
     }
-
-    /**
-     * Share a story to Instagram Business account.
      * Requires a publicly accessible featured_image URL.
      */
     public function shareStoryToInstagram(Story $story): bool
@@ -310,7 +307,7 @@ class SocialShareService
 
         $lines[] = '🔗 Link in bio!';
         $lines[] = '';
-        $lines[] = '#deongeplanderoute #reisverhaal #weekenduitje #nederlandseblog';
+        $lines[] = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #reisverhaal #weekenduitje #nederlandseblog';
 
         return implode("\n", $lines);
     }

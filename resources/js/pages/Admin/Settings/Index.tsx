@@ -11,6 +11,7 @@ interface Settings {
     instagram_business_account_id: string | null;
     instagram_page_access_token: string | null;
     instagram_token_obtained_at: string | null;
+    instagram_hashtags: string;
 }
 
 interface SettingsPageProps {
@@ -31,6 +32,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         hero_description: string;
         instagram_business_account_id: string;
         instagram_page_access_token: string;
+        instagram_hashtags: string;
         _method: string;
     }>({
         hero_background_url: settings.hero_background_url ?? '',
@@ -40,6 +42,7 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         hero_description: settings.hero_description ?? '',
         instagram_business_account_id: settings.instagram_business_account_id ?? '',
         instagram_page_access_token: settings.instagram_page_access_token ?? '',
+        instagram_hashtags: settings.instagram_hashtags ?? '',
         _method: 'PUT',
     });
 
@@ -253,6 +256,18 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                     className="w-full px-3 py-2 bg-[#0f1117] border border-gray-700 rounded-lg text-gray-300 placeholder-gray-600 focus:outline-none focus:border-pink-500 transition"
                                 />
                                 <p className="mt-1 text-xs text-gray-600">Laat leeg om de huidige te bewaren.</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Standaard hashtags</label>
+                                <textarea
+                                    value={data.instagram_hashtags}
+                                    onChange={(e) => setData('instagram_hashtags', e.target.value)}
+                                    rows={3}
+                                    placeholder="#deongeplanderoute #weekenduitje #nederlandseblog"
+                                    className="w-full px-3 py-2 bg-[#0f1117] border border-gray-700 rounded-lg text-gray-300 placeholder-gray-600 focus:outline-none focus:border-pink-500 transition text-sm resize-none"
+                                />
+                                <p className="mt-1 text-xs text-gray-600">Worden automatisch toegevoegd aan elk Instagram bericht. Gebruik spaties tussen hashtags.</p>
                             </div>
                         </div>
 

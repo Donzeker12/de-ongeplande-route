@@ -12,6 +12,7 @@ interface MediaImage {
 
 interface Props {
     mediaImages: MediaImage[];
+    defaultHashtags: string;
 }
 
 interface FormData {
@@ -20,9 +21,7 @@ interface FormData {
     [key: string]: unknown;
 }
 
-const DEFAULT_HASHTAGS = '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal';
-
-export default function InstagramCompose({ mediaImages }: Props) {
+export default function InstagramCompose({ mediaImages, defaultHashtags }: Props) {
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -40,7 +39,7 @@ export default function InstagramCompose({ mediaImages }: Props) {
 
     const captionLength = data.caption.length;
     const captionWithHashtags = data.caption
-        ? data.caption + (data.caption.endsWith('\n') ? '' : '\n\n') + DEFAULT_HASHTAGS
+        ? data.caption + (data.caption.endsWith('\n') ? '' : '\n\n') + defaultHashtags
         : '';
 
     return (
@@ -169,7 +168,7 @@ export default function InstagramCompose({ mediaImages }: Props) {
                                     {/* Hashtag preview */}
                                     <div className="mt-4 p-3 bg-[#0f1117] rounded-lg border border-gray-800">
                                         <p className="text-xs text-gray-600 mb-1.5">Automatisch toegevoegde hashtags:</p>
-                                        <p className="text-xs text-blue-400 leading-relaxed">{DEFAULT_HASHTAGS}</p>
+                                        <p className="text-xs text-blue-400 leading-relaxed">{defaultHashtags}</p>
                                     </div>
                                 </div>
 

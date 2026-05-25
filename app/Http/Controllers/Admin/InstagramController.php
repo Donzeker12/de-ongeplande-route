@@ -19,6 +19,7 @@ class InstagramController extends Controller
                 ->where('mime_type', 'LIKE', 'image/%')
                 ->latest()
                 ->get(['id', 'url', 'filename']),
+            'defaultHashtags' => \App\Models\SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal',
         ]);
     }
 
