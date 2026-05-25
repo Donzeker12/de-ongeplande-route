@@ -109,7 +109,6 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 
     // Site instellingen
     Route::get('/settings', [SiteSettingController::class, 'index'])->name('settings.index');
-    Route::put('/settings', [SiteSettingController::class, 'update'])->name('settings.update');
-    Route::post('/settings', [SiteSettingController::class, 'update']);
+    Route::post('/settings', [SiteSettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/exchange-instagram-token', [SiteSettingController::class, 'exchangeInstagramToken'])->name('settings.exchange-instagram-token');
 });
