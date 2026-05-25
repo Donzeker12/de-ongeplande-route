@@ -34,6 +34,10 @@ class InstagramController extends Controller
         $hashtags = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal';
         $fullCaption = $validated['caption']."\n\n".$hashtags;
 
+        $request->validate([
+            'caption' => ['max:'.(2200 - strlen("\n\n".$hashtags))],
+        ]);
+
         $result = $service->postToInstagram($validated['image_url'], $fullCaption);
 
         if ($result['success']) {
