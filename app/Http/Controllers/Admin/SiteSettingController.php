@@ -96,7 +96,6 @@ class SiteSettingController extends Controller
         $longLivedUserToken = $longLivedResponse->json('access_token');
 
         // Step 2: Get Page Access Token using the long-lived user token (never expires)
-        $pageId = SiteSetting::get('instagram_business_account_id') ?? config('services.facebook.page_id');
         $accountsResponse = Http::get("{$graphUrl}/me/accounts", [
             'access_token' => $longLivedUserToken,
         ]);
@@ -110,16 +109,22 @@ class SiteSettingController extends Controller
         $pages = $accountsResponse->json('data') ?? [];
         $pageToken = null;
 
-        // Find the page token — use the first page if pageId matches or if there's only one
+        // Try to match by Facebook Page ID from config, otherwise fall back to first page
+        $facebookPageId = config('services.facebook.page_id');
         foreach ($pages as $page) {
-            if ((string) $page['id'] === (string) $pageId || count($pages) === 1) {
+            if ($facebookPageId && (string) $page['id'] === (string) $facebookPageId) {
                 $pageToken = $page['access_token'];
                 break;
             }
         }
 
+        // Fall back to first available page
+        if (! $pageToken && ! empty($pages)) {
+            $pageToken = $pages[0]['access_token'];
+        }
+
         if (! $pageToken) {
-            return redirect()->back()->with('error', 'Geen pagina gevonden bij dit account. Controleer het Business Account ID.');
+            return redirect()->back()->with('error', 'Geen Facebook pagina gevonden. Zorg dat de token permissions pages_show_list bevat.');
         }
 
         SiteSetting::set('instagram_page_access_token', $pageToken);
