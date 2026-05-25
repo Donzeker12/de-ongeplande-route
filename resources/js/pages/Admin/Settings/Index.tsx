@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import ImageUpload from '@/Components/ImageUpload';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useRef, useState } from 'react';
 import { exchangeInstagramToken } from '@/actions/App/Http/Controllers/Admin/SiteSettingController';
@@ -334,11 +335,11 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                     <textarea value={data.over_ons_hero_intro} onChange={(e) => setData('over_ons_hero_intro', e.target.value)} rows={3} className={`${inputClass} resize-none`} />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Foto URL</label>
-                                    <input type="text" value={data.over_ons_hero_image} onChange={(e) => setData('over_ons_hero_image', e.target.value)} placeholder="https://..." className={inputClass} />
-                                    {data.over_ons_hero_image && (
-                                        <img src={data.over_ons_hero_image} alt="Preview" className="mt-2 h-24 w-auto rounded-lg object-cover border border-gray-700" />
-                                    )}
+                                    <label className={labelClass}>Foto</label>
+                                    <ImageUpload
+                                        value={data.over_ons_hero_image}
+                                        onChange={(url) => setData('over_ons_hero_image', url)}
+                                    />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Jaar label <span className="text-gray-500 font-normal">(bijv. "Sinds 2023")</span></label>
@@ -391,11 +392,11 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                                     <input type="text" value={data.over_ons_story_title} onChange={(e) => setData('over_ons_story_title', e.target.value)} className={inputClass} />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Foto URL</label>
-                                    <input type="text" value={data.over_ons_story_image} onChange={(e) => setData('over_ons_story_image', e.target.value)} placeholder="https://..." className={inputClass} />
-                                    {data.over_ons_story_image && (
-                                        <img src={data.over_ons_story_image} alt="Preview" className="mt-2 h-24 w-auto rounded-lg object-cover border border-gray-700" />
-                                    )}
+                                    <label className={labelClass}>Foto</label>
+                                    <ImageUpload
+                                        value={data.over_ons_story_image}
+                                        onChange={(url) => setData('over_ons_story_image', url)}
+                                    />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Verhaal tekst <span className="text-gray-500 font-normal">(gebruik een lege regel voor een nieuw alinea)</span></label>
