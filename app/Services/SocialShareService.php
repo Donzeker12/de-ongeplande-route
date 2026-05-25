@@ -223,6 +223,9 @@ class SocialShareService
 
         return implode("\n", $lines);
     }
+
+    /**
+     * Share a story to Instagram Business account.
      * Requires a publicly accessible featured_image URL.
      */
     public function shareStoryToInstagram(Story $story): bool
