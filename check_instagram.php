@@ -38,12 +38,25 @@ if ($token && $creationId) {
     }
 }
 
+// Check for http:// URLs in database
+$httpCount = App\Models\Media::where('url', 'LIKE', 'http://%')->count();
+$httpsCount = App\Models\Media::where('url', 'LIKE', 'https://%')->count();
+echo "\nMedia URLs in database:\n";
+echo "  HTTP:  " . $httpCount . "\n";
+echo "  HTTPS: " . $httpsCount . "\n";
+
+// Update http:// to https:// in bulk
+if ($httpCount > 0) {
+    $updated = App\Models\Media::where('url', 'LIKE', 'http://%')
+        ->update(['url' => \Illuminate\Support\Facades\DB::raw("REPLACE(url, 'http://', 'https://')")]);
+    echo "  Bijgewerkt naar HTTPS: " . $updated . "\n";
+}
+
 // Check last media URL
 $media = App\Models\Media::where('mime_type', 'LIKE', 'image/%')->latest()->first();
 if ($media) {
     echo "\nLaatste media URL: " . $media->url . "\n";
     echo "MIME type: " . $media->mime_type . "\n";
-    // Check if reachable
     $test = Illuminate\Support\Facades\Http::timeout(10)->get($media->url);
     echo "URL bereikbaar: " . ($test->successful() ? 'JA (HTTP ' . $test->status() . ')' : 'NEE (HTTP ' . $test->status() . ')') . "\n";
 }
