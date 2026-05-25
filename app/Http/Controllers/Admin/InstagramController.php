@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Models\SiteSetting;
 use App\Services\SocialShareService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class InstagramController extends Controller
                 ->where('mime_type', 'LIKE', 'image/%')
                 ->latest()
                 ->get(['id', 'url', 'filename']),
-            'defaultHashtags' => \App\Models\SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal',
+            'defaultHashtags' => SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal',
         ]);
     }
 
@@ -30,7 +31,10 @@ class InstagramController extends Controller
             'caption' => 'required|string|max:2200',
         ]);
 
-        $result = $service->postToInstagram($validated['image_url'], $validated['caption']);
+        $hashtags = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal';
+        $fullCaption = $validated['caption']."\n\n".$hashtags;
+
+        $result = $service->postToInstagram($validated['image_url'], $fullCaption);
 
         if ($result['success']) {
             return redirect()->route('admin.instagram.compose')
