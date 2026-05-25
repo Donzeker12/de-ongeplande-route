@@ -19,7 +19,7 @@ class InstagramController extends Controller
             'mediaImages' => Media::query()
                 ->where('mime_type', 'LIKE', 'image/%')
                 ->latest()
-                ->get(['id', 'url', 'filename']),
+                ->get(['id', 'url', 'filename', 'folder']),
             'defaultHashtags' => SiteSetting::get('instagram_hashtags') ?? '#instagood #travel #photooftheday #familytravel #deongeplanderoute',
         ]);
     }

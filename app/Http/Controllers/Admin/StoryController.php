@@ -34,8 +34,8 @@ class StoryController extends Controller
     public function create(): Response
     {
         return Inertia::render('Admin/Stories/Create', [
-            'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename']),
-            'mediaVideos' => Media::query()->where('mime_type', 'LIKE', 'video/%')->latest()->get(['id', 'url', 'filename']),
+            'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename', 'folder']),
+            'mediaVideos' => Media::query()->where('mime_type', 'LIKE', 'video/%')->latest()->get(['id', 'url', 'filename', 'folder']),
         ]);
     }
 
@@ -193,8 +193,8 @@ class StoryController extends Controller
 
         return Inertia::render('Admin/Stories/Edit', [
             'story' => $story,
-            'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename']),
-            'mediaVideos' => Media::query()->where('mime_type', 'LIKE', 'video/%')->latest()->get(['id', 'url', 'filename']),
+            'mediaImages' => Media::query()->where('mime_type', 'LIKE', 'image/%')->latest()->get(['id', 'url', 'filename', 'folder']),
+            'mediaVideos' => Media::query()->where('mime_type', 'LIKE', 'video/%')->latest()->get(['id', 'url', 'filename', 'folder']),
             'allVenues' => Venue::orderBy('name')->get(['id', 'name', 'type', 'city']),
         ]);
     }

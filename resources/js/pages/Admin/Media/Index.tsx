@@ -10,6 +10,7 @@ interface MediaItem {
     mime_type: string | null;
     size: number | null;
     alt: string | null;
+    folder: string | null;
     processing: boolean;
     created_at: string;
 }
@@ -43,6 +44,10 @@ export default function MediaIndex({ media }: MediaIndexProps) {
     const [selected, setSelected] = useState<MediaItem | null>(null);
     const [lightbox, setLightbox] = useState<MediaItem | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [folderInput, setFolderInput] = useState('');
+    const [savingFolder, setSavingFolder] = useState(false);
+    const [activeFolder, setActiveFolder] = useState<string | 'all' | null>('all');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         if (!lightbox) return;
@@ -136,6 +141,16 @@ export default function MediaIndex({ media }: MediaIndexProps) {
         }
     };
 
+    const saveFolder = async (item: MediaItem) => {
+        setSavingFolder(true);
+        try {
+            await axios.patch(`/admin/media/${item.id}`, { folder: folderInput || null });
+            router.reload({ only: ['media'] });
+        } finally {
+            setSavingFolder(false);
+        }
+    };
+
     const deleteMedia = async (item: MediaItem) => {
         if (!confirm(`Weet je zeker dat je "${item.filename}" wil verwijderen?`)) return;
         setDeletingId(item.id);
@@ -149,6 +164,14 @@ export default function MediaIndex({ media }: MediaIndexProps) {
     };
 
     const lightboxIdx = lightbox ? media.findIndex((m) => m.id === lightbox.id) : -1;
+
+    const folders = Array.from(new Set(media.map((m) => m.folder).filter(Boolean))) as string[];
+
+    const filteredMedia = media.filter((m) => {
+        const matchesSearch = !searchQuery || m.filename.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesFolder = activeFolder === 'all' || (activeFolder === null ? !m.folder : m.folder === activeFolder);
+        return matchesSearch && matchesFolder;
+    });
 
     return (
         <>
@@ -271,6 +294,39 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                             <p className="text-gray-600 text-sm">of <span className="text-emerald-400">klik om te uploaden</span> · Afbeeldingen &amp; video's · max 200 MB</p>
                         </div>
                     ) : (
+                        <>
+                        {/* Folder filter bar */}
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Zoeken..."
+                                className="bg-[#16181f] border border-gray-800 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition w-40"
+                            />
+                            <button
+                                onClick={() => setActiveFolder('all')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${activeFolder === 'all' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-gray-800'}`}
+                            >
+                                Alle ({media.length})
+                            </button>
+                            <button
+                                onClick={() => setActiveFolder(null)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${activeFolder === null ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-gray-800'}`}
+                            >
+                                Geen map ({media.filter((m) => !m.folder).length})
+                            </button>
+                            {folders.map((f) => (
+                                <button
+                                    key={f}
+                                    onClick={() => setActiveFolder(f)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${activeFolder === f ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-gray-800'}`}
+                                >
+                                    📁 {f} ({media.filter((m) => m.folder === f).length})
+                                </button>
+                            ))}
+                        </div>
+
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                             {/* Upload tile */}
                             <div
@@ -285,10 +341,10 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                 <span className="text-gray-600 group-hover:text-gray-400 text-xs transition">Toevoegen</span>
                             </div>
 
-                            {media.map((item) => (
+                            {filteredMedia.map((item) => (
                                 <div
                                     key={item.id}
-                                    onClick={() => setSelected(selected?.id === item.id ? null : item)}
+                                    onClick={() => { setSelected(selected?.id === item.id ? null : item); setFolderInput(item.folder ?? ''); }}
                                     className={`group relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${
                                         selected?.id === item.id
                                             ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-[#0f1117] scale-[0.97]'
@@ -362,6 +418,7 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                 </div>
                             ))}
                         </div>
+                        </>
                     )}
                 </div>
 
@@ -435,6 +492,28 @@ export default function MediaIndex({ media }: MediaIndexProps) {
                                         className={`px-3 py-2 rounded-lg text-xs font-medium transition whitespace-nowrap ${copiedId === selected.id ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/8 hover:bg-white/12 text-gray-300 border border-white/10'}`}
                                     >
                                         {copiedId === selected.id ? '✓ Klaar' : 'Kopieer'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Folder */}
+                            <div className="space-y-2">
+                                <p className="text-xs text-gray-600 font-medium uppercase tracking-wider">Map</p>
+                                <div className="flex gap-1.5">
+                                    <input
+                                        type="text"
+                                        value={folderInput}
+                                        onChange={(e) => setFolderInput(e.target.value)}
+                                        placeholder="Geen map"
+                                        className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-emerald-500 transition"
+                                        onKeyDown={(e) => { if (e.key === 'Enter') saveFolder(selected); }}
+                                    />
+                                    <button
+                                        onClick={() => saveFolder(selected)}
+                                        disabled={savingFolder}
+                                        className="px-3 py-2 rounded-lg text-xs font-medium transition whitespace-nowrap bg-white/8 hover:bg-white/12 text-gray-300 border border-white/10 disabled:opacity-50"
+                                    >
+                                        {savingFolder ? '...' : 'Sla op'}
                                     </button>
                                 </div>
                             </div>

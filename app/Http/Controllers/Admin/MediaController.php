@@ -126,6 +126,18 @@ class MediaController extends Controller
         return response()->json(['processing' => true]);
     }
 
+    public function update(Request $request, Media $medium): JsonResponse
+    {
+        $validated = $request->validate([
+            'alt' => ['nullable', 'string', 'max:255'],
+            'folder' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $medium->update($validated);
+
+        return response()->json(['updated' => true]);
+    }
+
     public function destroy(Media $medium): JsonResponse
     {
         Storage::disk('public')->delete($medium->path);

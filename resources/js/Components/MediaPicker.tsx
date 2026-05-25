@@ -6,6 +6,7 @@ interface MediaItem {
     filename: string;
     url: string;
     size: number | null;
+    folder: string | null;
     created_at: string;
 }
 
@@ -20,6 +21,7 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [search, setSearch] = useState('');
+    const [activeFolder, setActiveFolder] = useState<string | null>(null);
     const [hovered, setHovered] = useState<number | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -62,9 +64,13 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
         }
     };
 
-    const filtered = media.filter((m) =>
-        m.filename.toLowerCase().includes(search.toLowerCase()),
-    );
+    const folders = Array.from(new Set(media.map((m) => m.folder).filter(Boolean))) as string[];
+
+    const filtered = media.filter((m) => {
+        const matchesSearch = m.filename.toLowerCase().includes(search.toLowerCase());
+        const matchesFolder = activeFolder === null ? !m.folder : m.folder === activeFolder;
+        return matchesSearch && matchesFolder;
+    });
 
     if (!open) return null;
 
@@ -103,6 +109,37 @@ export default function MediaPicker({ open, onClose, onSelect }: MediaPickerProp
                         </button>
                     </div>
                 </div>
+
+                {/* Folder tabs */}
+                {folders.length > 0 && (
+                    <div className="px-5 pt-3 border-b border-gray-800 flex gap-1.5 overflow-x-auto pb-0 scrollbar-hide">
+                        <button
+                            type="button"
+                            onClick={() => setActiveFolder(null)}
+                            className={`shrink-0 px-3 py-1.5 rounded-t-lg text-xs font-medium transition border-b-2 -mb-px ${
+                                activeFolder === null
+                                    ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                                    : 'border-transparent text-gray-400 hover:text-white'
+                            }`}
+                        >
+                            Geen map
+                        </button>
+                        {folders.map((f) => (
+                            <button
+                                key={f}
+                                type="button"
+                                onClick={() => setActiveFolder(f)}
+                                className={`shrink-0 px-3 py-1.5 rounded-t-lg text-xs font-medium transition border-b-2 -mb-px ${
+                                    activeFolder === f
+                                        ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                                        : 'border-transparent text-gray-400 hover:text-white'
+                                }`}
+                            >
+                                📁 {f}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Search */}
                 <div className="px-5 py-3 border-b border-gray-800">

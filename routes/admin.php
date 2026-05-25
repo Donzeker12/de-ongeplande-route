@@ -103,7 +103,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Media bibliotheek
     Route::get('/media/list', [MediaController::class, 'list'])->name('media.list');
     Route::get('/media/videos', [MediaController::class, 'videos'])->name('media.videos');
-    Route::resource('media', MediaController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('media', MediaController::class)->only(['index', 'store', 'destroy', 'update']);
     Route::post('/media/{medium}/optimize', [MediaController::class, 'optimize'])->name('media.optimize');
     Route::post('/media/{medium}/compress', [MediaController::class, 'compress'])->name('media.compress');
 

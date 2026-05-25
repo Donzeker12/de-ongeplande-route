@@ -4,6 +4,7 @@ interface MediaImage {
     id: number;
     url: string;
     filename: string;
+    folder?: string | null;
 }
 
 interface GalleryPickerProps {
@@ -15,6 +16,8 @@ interface GalleryPickerProps {
 export default function GalleryPicker({ value, onChange, mediaImages }: GalleryPickerProps) {
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<Set<string>>(new Set(value));
+    const [search, setSearch] = useState('');
+    const [activeFolder, setActiveFolder] = useState<string | null>(null);
     const dialogRef = useRef<HTMLDivElement>(null);
 
     // Sync external value changes (e.g. on initial load)
@@ -171,48 +174,104 @@ export default function GalleryPicker({ value, onChange, mediaImages }: GalleryP
                             </button>
                         </div>
 
-                        {/* Grid */}
-                        <div className="overflow-y-auto flex-1 p-4">
-                            {mediaImages.length === 0 ? (
-                                <div className="text-center py-16 text-gray-500">
-                                    <p>Geen foto's in de mediabibliotheek.</p>
-                                    <p className="text-xs mt-1">Upload eerst foto's via Media → Foto's.</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                                    {mediaImages.map((img) => {
-                                        const isSelected = selected.has(img.url);
-                                        return (
+                        {/* Folder tabs + search */}
+                        {(() => {
+                            const folders = Array.from(new Set(mediaImages.map((m) => m.folder).filter(Boolean))) as string[];
+                            const filtered = mediaImages.filter((m) => {
+                                const matchesSearch = m.filename.toLowerCase().includes(search.toLowerCase());
+                                const matchesFolder = activeFolder === null ? !m.folder : m.folder === activeFolder;
+                                return matchesSearch && matchesFolder;
+                            });
+                            return (
+                                <>
+                                    {folders.length > 0 && (
+                                        <div className="px-4 pt-3 border-b border-gray-800 flex gap-1.5 overflow-x-auto pb-0">
                                             <button
-                                                key={img.id}
                                                 type="button"
-                                                onClick={() => toggle(img.url)}
-                                                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition focus:outline-none ${
-                                                    isSelected
-                                                        ? 'border-emerald-500 ring-2 ring-emerald-500/40'
-                                                        : 'border-transparent hover:border-gray-500'
+                                                onClick={() => setActiveFolder(null)}
+                                                className={`shrink-0 px-3 py-1.5 rounded-t-lg text-xs font-medium transition border-b-2 -mb-px ${
+                                                    activeFolder === null
+                                                        ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                                                        : 'border-transparent text-gray-400 hover:text-white'
                                                 }`}
                                             >
-                                                <img
-                                                    src={img.url}
-                                                    alt={img.filename}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                {isSelected && (
-                                                    <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center">
-                                                        <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
-                                                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                Geen map
                                             </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
+                                            {folders.map((f) => (
+                                                <button
+                                                    key={f}
+                                                    type="button"
+                                                    onClick={() => setActiveFolder(f)}
+                                                    className={`shrink-0 px-3 py-1.5 rounded-t-lg text-xs font-medium transition border-b-2 -mb-px ${
+                                                        activeFolder === f
+                                                            ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                                                            : 'border-transparent text-gray-400 hover:text-white'
+                                                    }`}
+                                                >
+                                                    📁 {f}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <div className="px-4 py-2 border-b border-gray-800 shrink-0">
+                                        <input
+                                            type="text"
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            placeholder="Zoek op bestandsnaam..."
+                                            className="w-full bg-[#0d0f14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition"
+                                        />
+                                    </div>
+
+                                    {/* Grid */}
+                                    <div className="overflow-y-auto flex-1 p-4">
+                                        {mediaImages.length === 0 ? (
+                                            <div className="text-center py-16 text-gray-500">
+                                                <p>Geen foto's in de mediabibliotheek.</p>
+                                                <p className="text-xs mt-1">Upload eerst foto's via Media → Foto's.</p>
+                                            </div>
+                                        ) : filtered.length === 0 ? (
+                                            <div className="text-center py-16 text-gray-500">
+                                                <p>Geen foto's gevonden.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                                    {filtered.map((img) => {
+                                                        const isSelected = selected.has(img.url);
+                                                        return (
+                                                            <button
+                                                                key={img.id}
+                                                                type="button"
+                                                                onClick={() => toggle(img.url)}
+                                                                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition focus:outline-none ${
+                                                                    isSelected
+                                                                        ? 'border-emerald-500 ring-2 ring-emerald-500/40'
+                                                                        : 'border-transparent hover:border-gray-500'
+                                                                }`}
+                                                            >
+                                                                <img
+                                                                    src={img.url}
+                                                                    alt={img.filename}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                                {isSelected && (
+                                                                    <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center">
+                                                                        <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                                                                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                        )}
+                                    </div>
+                                </>
+                            );
+                        })()}
 
                         {/* Footer */}
                         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-800 shrink-0">
