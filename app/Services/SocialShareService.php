@@ -90,25 +90,8 @@ class SocialShareService
 
         $creationId = $containerResponse->json('id');
 
-        // Step 2: Wait for Instagram to finish processing the container
-        if (! $this->waitForContainerReady($creationId, $accessToken, $graphUrl)) {
-            return ['success' => false, 'error' => 'Foto verwerking bij Instagram duurde te lang of mislukt.'];
-        }
-
-        // Step 3: Publish the media container
-        $publishResponse = Http::post("{$graphUrl}/{$accountId}/media_publish", [
-            'creation_id' => $creationId,
-            'access_token' => $accessToken,
-        ]);
-
-        if ($publishResponse->successful()) {
-            return ['success' => true, 'post_id' => $publishResponse->json('id')];
-        }
-
-        $error = $publishResponse->json('error.message') ?? $publishResponse->body();
-        Log::error('Instagram media_publish failed', ['status' => $publishResponse->status(), 'body' => $publishResponse->body()]);
-
-        return ['success' => false, 'error' => $error];
+        // Step 2: Publish (retries until ready, max ~30 seconds)
+        return $this->publishContainer($creationId, $accountId, $accessToken, $graphUrl);
     }
 
     /**
@@ -153,20 +136,10 @@ class SocialShareService
 
         $creationId = $containerResponse->json('id');
 
-        // Step 2: Wait for Instagram to finish processing the container
-        if (! $this->waitForContainerReady($creationId, $accessToken, $graphUrl)) {
-            Log::error('Instagram container not ready (outing)', ['creation_id' => $creationId]);
+        // Step 2: Publish (retries until ready, max ~30 seconds)
+        $result = $this->publishContainer($creationId, $accountId, $accessToken, $graphUrl);
 
-            return false;
-        }
-
-        // Step 3: Publish the media container
-        $publishResponse = Http::post("{$graphUrl}/{$accountId}/media_publish", [
-            'creation_id' => $creationId,
-            'access_token' => $accessToken,
-        ]);
-
-        if ($publishResponse->successful()) {
+        if ($result['success']) {
             SocialSnippet::create([
                 'outing_id' => $outing->id,
                 'platform' => 'instagram',
@@ -179,10 +152,7 @@ class SocialShareService
             return true;
         }
 
-        Log::error('Instagram media_publish failed', [
-            'status' => $publishResponse->status(),
-            'body' => $publishResponse->body(),
-        ]);
+        Log::error('Instagram publish failed (outing)', ['error' => $result['error'], 'creation_id' => $creationId]);
 
         return false;
     }
@@ -278,20 +248,10 @@ class SocialShareService
 
         $creationId = $containerResponse->json('id');
 
-        // Step 2: Wait for Instagram to finish processing the container
-        if (! $this->waitForContainerReady($creationId, $accessToken, $graphUrl)) {
-            Log::error('Instagram container not ready (story)', ['creation_id' => $creationId]);
+        // Step 2: Publish (retries until ready, max ~30 seconds)
+        $result = $this->publishContainer($creationId, $accountId, $accessToken, $graphUrl);
 
-            return false;
-        }
-
-        // Step 3: Publish the media container
-        $publishResponse = Http::post("{$graphUrl}/{$accountId}/media_publish", [
-            'creation_id' => $creationId,
-            'access_token' => $accessToken,
-        ]);
-
-        if ($publishResponse->successful()) {
+        if ($result['success']) {
             SocialSnippet::create([
                 'outing_id' => null,
                 'story_id' => $story->id,
@@ -305,42 +265,51 @@ class SocialShareService
             return true;
         }
 
-        Log::error('Instagram media_publish failed (story)', [
-            'status' => $publishResponse->status(),
-            'body' => $publishResponse->body(),
-        ]);
+        Log::error('Instagram publish failed (story)', ['error' => $result['error'], 'creation_id' => $creationId]);
 
         return false;
     }
 
     /**
-     * Poll the Instagram container until status is FINISHED or ERROR.
-     * Returns true if ready to publish, false on error or timeout.
+     * Try to publish an Instagram container, retrying if not yet ready.
+     * Attempts immediately first, then waits 3s between retries (max ~30s total).
+     *
+     * @return array{success: bool, post_id?: string, error?: string}
      */
-    private function waitForContainerReady(string $creationId, string $accessToken, string $graphUrl): bool
+    private function publishContainer(string $creationId, string $accountId, string $accessToken, string $graphUrl): array
     {
-        $maxAttempts = 20;
+        $maxAttempts = 10;
+
         for ($i = 0; $i < $maxAttempts; $i++) {
-            sleep(5);
-            $statusResponse = Http::get("{$graphUrl}/{$creationId}", [
-                'fields' => 'status_code',
+            if ($i > 0) {
+                sleep(3);
+            }
+
+            $response = Http::post("{$graphUrl}/{$accountId}/media_publish", [
+                'creation_id' => $creationId,
                 'access_token' => $accessToken,
             ]);
-            $statusCode = $statusResponse->json('status_code');
-            Log::info('Instagram container status', ['attempt' => $i + 1, 'status_code' => $statusCode, 'body' => $statusResponse->body()]);
-            if ($statusCode === 'FINISHED') {
-                return true;
-            }
-            if ($statusCode === 'ERROR') {
-                Log::error('Instagram container processing error', ['body' => $statusResponse->body()]);
 
-                return false;
+            if ($response->successful()) {
+                return ['success' => true, 'post_id' => $response->json('id')];
+            }
+
+            $subcode = $response->json('error.error_subcode');
+            Log::warning('Instagram publish attempt failed', [
+                'attempt' => $i + 1,
+                'subcode' => $subcode,
+                'body' => $response->body(),
+            ]);
+
+            // 2207027 = Media not yet processed, keep retrying
+            if ($subcode !== 2207027) {
+                return ['success' => false, 'error' => $response->json('error.message') ?? $response->body()];
             }
         }
 
-        Log::error('Instagram container polling timeout', ['creation_id' => $creationId]);
+        Log::error('Instagram publish timeout', ['creation_id' => $creationId]);
 
-        return false;
+        return ['success' => false, 'error' => 'Instagram verwerking duurde te lang. Probeer het opnieuw.'];
     }
 
     /**
