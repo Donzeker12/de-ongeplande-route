@@ -95,42 +95,44 @@ class SiteSettingController extends Controller
 
         $longLivedUserToken = $longLivedResponse->json('access_token');
 
-        // Step 2: Get Page Access Token using the long-lived user token (never expires)
+        $facebookPageId = config('services.facebook.page_id');
+        $pageToken = null;
+
+        // Step 2a: Try /me/accounts first (works for directly owned pages)
         $accountsResponse = Http::get("{$graphUrl}/me/accounts", [
             'access_token' => $longLivedUserToken,
         ]);
 
-        if (! $accountsResponse->successful()) {
-            $error = $accountsResponse->json('error.message') ?? 'Pagina-token ophalen mislukt.';
+        if ($accountsResponse->successful()) {
+            $pages = $accountsResponse->json('data') ?? [];
 
-            return redirect()->back()->with('error', "Stap 2 mislukt: {$error}");
-        }
+            foreach ($pages as $page) {
+                if ($facebookPageId && (string) $page['id'] === (string) $facebookPageId) {
+                    $pageToken = $page['access_token'];
+                    break;
+                }
+            }
 
-        $pages = $accountsResponse->json('data') ?? [];
-        $pageToken = null;
-
-        // Try to match by Facebook Page ID from config
-        $facebookPageId = config('services.facebook.page_id');
-        foreach ($pages as $page) {
-            if ($facebookPageId && (string) $page['id'] === (string) $facebookPageId) {
-                $pageToken = $page['access_token'];
-                break;
+            if (! $pageToken && ! empty($pages)) {
+                $pageToken = $pages[0]['access_token'];
             }
         }
 
-        // Fall back to first available page
-        if (! $pageToken && ! empty($pages)) {
-            $pageToken = $pages[0]['access_token'];
+        // Step 2b: Fallback — fetch page token directly via page ID (works for Business Manager pages)
+        if (! $pageToken && $facebookPageId) {
+            $pageResponse = Http::get("{$graphUrl}/{$facebookPageId}", [
+                'fields' => 'access_token',
+                'access_token' => $longLivedUserToken,
+            ]);
+
+            if ($pageResponse->successful() && $pageResponse->json('access_token')) {
+                $pageToken = $pageResponse->json('access_token');
+            }
         }
 
+        // Step 2c: Last resort — store the long-lived user token (valid 60 days)
         if (! $pageToken) {
-            $pageCount = count($pages);
-            $pageIds = implode(', ', array_column($pages, 'id'));
-            $debugInfo = $pageCount > 0
-                ? "Gevonden pagina IDs: {$pageIds}"
-                : 'Geen paginas gevonden in /me/accounts (lege lijst).';
-
-            return redirect()->back()->with('error', "Geen Facebook pagina gevonden. {$debugInfo} Zorg dat je ingelogd bent als beheerder van de Facebook-pagina.");
+            $pageToken = $longLivedUserToken;
         }
 
         SiteSetting::set('instagram_page_access_token', $pageToken);
