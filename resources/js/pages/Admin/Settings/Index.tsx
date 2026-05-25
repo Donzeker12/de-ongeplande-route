@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useRef, useState } from 'react';
+import { exchangeInstagramToken } from '@/actions/App/Http/Controllers/Admin/SiteSettingController';
 
 interface Settings {
     hero_background_url: string | null;
@@ -9,6 +10,7 @@ interface Settings {
     hero_description: string;
     instagram_business_account_id: string | null;
     instagram_page_access_token: string | null;
+    instagram_token_obtained_at: string | null;
 }
 
 interface SettingsPageProps {
@@ -16,7 +18,7 @@ interface SettingsPageProps {
 }
 
 export default function SettingsIndex({ settings }: SettingsPageProps) {
-    const { flash } = usePage<{ flash: { success?: string } }>().props;
+    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const [previewUrl, setPreviewUrl] = useState<string | null>(settings.hero_background_url);
     const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,6 +42,8 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
         instagram_page_access_token: settings.instagram_page_access_token ?? '',
         _method: 'PUT',
     });
+
+    const tokenForm = useForm<{ user_access_token: string }>({ user_access_token: '' });
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -70,7 +74,12 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
 
                     {flash?.success && (
                         <div className="bg-emerald-900/40 border border-emerald-700 text-emerald-300 px-4 py-3 rounded-xl text-sm">
-                            {flash.success}
+                            ✅ {flash.success}
+                        </div>
+                    )}
+                    {flash?.error && (
+                        <div className="bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-xl text-sm">
+                            ❌ {flash.error}
                         </div>
                     )}
 
@@ -257,6 +266,78 @@ export default function SettingsIndex({ settings }: SettingsPageProps) {
                             </button>
                         </div>
                     </form>
+
+                    {/* Token uitwisselen — aparte actie, buiten de hoofdform */}
+                    <div className="bg-[#16181f] border border-pink-900/40 rounded-xl p-6 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1 h-6 bg-gradient-to-b from-pink-400 to-purple-500 rounded-full" />
+                            <h3 className="text-base font-semibold text-white">Instagram Token vernieuwen</h3>
+                        </div>
+
+                        {settings.instagram_token_obtained_at && (
+                            <p className="text-xs text-gray-500">
+                                Laatste token opgeslagen op:{' '}
+                                <span className="text-gray-400">
+                                    {new Date(settings.instagram_token_obtained_at).toLocaleString('nl-NL')}
+                                </span>
+                            </p>
+                        )}
+
+                        <div className="bg-[#0f1117] rounded-lg p-4 border border-gray-800 space-y-2 text-xs text-gray-400 leading-relaxed">
+                            <p className="font-semibold text-gray-300">Hoe haal je een nieuwe token op?</p>
+                            <ol className="list-decimal list-inside space-y-1">
+                                <li>
+                                    Ga naar{' '}
+                                    <a
+                                        href="https://developers.facebook.com/tools/explorer/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-pink-400 hover:underline"
+                                    >
+                                        Graph API Explorer
+                                    </a>
+                                </li>
+                                <li>Selecteer jouw app (<strong className="text-gray-300">2136657173841416</strong>) rechtsboven</li>
+                                <li>Klik op <strong className="text-gray-300">Generate Access Token</strong></li>
+                                <li>Geef toestemming voor: <code className="text-pink-300">pages_manage_posts</code>, <code className="text-pink-300">instagram_basic</code>, <code className="text-pink-300">instagram_content_publish</code></li>
+                                <li>Kopieer de gegenereerde token en plak hem hieronder</li>
+                            </ol>
+                            <p className="text-gray-600 mt-2">De server wisselt de token automatisch om naar een token die <strong className="text-gray-400">nooit verloopt</strong>.</p>
+                        </div>
+
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                tokenForm.post(exchangeInstagramToken.url(), {
+                                    onSuccess: () => tokenForm.reset(),
+                                });
+                            }}
+                            className="space-y-3"
+                        >
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Kortstondige User Access Token (van Graph API Explorer)
+                                </label>
+                                <textarea
+                                    value={tokenForm.data.user_access_token}
+                                    onChange={(e) => tokenForm.setData('user_access_token', e.target.value)}
+                                    rows={3}
+                                    placeholder="EAAWPw..."
+                                    className="w-full px-3 py-2 bg-[#0f1117] border border-gray-700 rounded-lg text-gray-300 placeholder-gray-600 focus:outline-none focus:border-pink-500 transition text-xs font-mono resize-none"
+                                />
+                                {tokenForm.errors.user_access_token && (
+                                    <p className="mt-1 text-xs text-red-400">{tokenForm.errors.user_access_token}</p>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={tokenForm.processing || !tokenForm.data.user_access_token}
+                                className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition"
+                            >
+                                {tokenForm.processing ? 'Uitwisselen...' : '🔄 Token uitwisselen & opslaan'}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </AdminLayout>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,6 +23,7 @@ class SiteSettingController extends Controller
                 'hero_description' => SiteSetting::get('hero_description'),
                 'instagram_business_account_id' => SiteSetting::get('instagram_business_account_id'),
                 'instagram_page_access_token' => SiteSetting::get('instagram_page_access_token'),
+                'instagram_token_obtained_at' => SiteSetting::get('instagram_token_obtained_at'),
             ],
         ]);
     }
@@ -57,5 +59,72 @@ class SiteSettingController extends Controller
         SiteSetting::set('instagram_page_access_token', $validated['instagram_page_access_token'] ?? SiteSetting::get('instagram_page_access_token'));
 
         return redirect()->route('admin.settings.index')->with('success', 'Site instellingen opgeslagen.');
+    }
+
+    /**
+     * Exchange a short-lived User Access Token for a never-expiring Page Access Token.
+     * Flow: short-lived user token → long-lived user token (60d) → page token (never expires)
+     */
+    public function exchangeInstagramToken(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'user_access_token' => 'required|string',
+        ]);
+
+        $appId = config('services.facebook.app_id');
+        $appSecret = config('services.facebook.app_secret');
+        $graphUrl = config('services.facebook.graph_url');
+
+        if (! $appId || ! $appSecret) {
+            return redirect()->back()->with('error', 'FACEBOOK_APP_ID en FACEBOOK_APP_SECRET zijn niet ingesteld in .env.');
+        }
+
+        // Step 1: Exchange short-lived user token → long-lived user token (60 days)
+        $longLivedResponse = Http::get("{$graphUrl}/oauth/access_token", [
+            'grant_type' => 'fb_exchange_token',
+            'client_id' => $appId,
+            'client_secret' => $appSecret,
+            'fb_exchange_token' => $request->input('user_access_token'),
+        ]);
+
+        if (! $longLivedResponse->successful() || ! $longLivedResponse->json('access_token')) {
+            $error = $longLivedResponse->json('error.message') ?? 'Uitwisseling mislukt.';
+
+            return redirect()->back()->with('error', "Stap 1 mislukt: {$error}");
+        }
+
+        $longLivedUserToken = $longLivedResponse->json('access_token');
+
+        // Step 2: Get Page Access Token using the long-lived user token (never expires)
+        $pageId = SiteSetting::get('instagram_business_account_id') ?? config('services.facebook.page_id');
+        $accountsResponse = Http::get("{$graphUrl}/me/accounts", [
+            'access_token' => $longLivedUserToken,
+        ]);
+
+        if (! $accountsResponse->successful()) {
+            $error = $accountsResponse->json('error.message') ?? 'Pagina-token ophalen mislukt.';
+
+            return redirect()->back()->with('error', "Stap 2 mislukt: {$error}");
+        }
+
+        $pages = $accountsResponse->json('data') ?? [];
+        $pageToken = null;
+
+        // Find the page token — use the first page if pageId matches or if there's only one
+        foreach ($pages as $page) {
+            if ((string) $page['id'] === (string) $pageId || count($pages) === 1) {
+                $pageToken = $page['access_token'];
+                break;
+            }
+        }
+
+        if (! $pageToken) {
+            return redirect()->back()->with('error', 'Geen pagina gevonden bij dit account. Controleer het Business Account ID.');
+        }
+
+        SiteSetting::set('instagram_page_access_token', $pageToken);
+        SiteSetting::set('instagram_token_obtained_at', now()->toISOString());
+
+        return redirect()->route('admin.settings.index')->with('success', 'Token succesvol uitgewisseld en opgeslagen. Dit token verloopt nooit.');
     }
 }
