@@ -219,7 +219,7 @@ class SocialShareService
         $lines[] = '';
         $lines[] = '🔗 Link in bio!';
         $lines[] = '';
-        $lines[] = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #uitjemet #weekenduitje #gezinsuitje #nederlandseblog';
+        $lines[] = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #instagood #travel #familytravel #wanderlust #travelgram #nederland #gezin #weekenduitje #uitje #reisverhaal #roadtrip #familytime #nederlandseblog #photooftheday';
 
         return implode("\n", $lines);
     }
@@ -310,7 +310,7 @@ class SocialShareService
 
         $lines[] = '🔗 Link in bio!';
         $lines[] = '';
-        $lines[] = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #reisverhaal #weekenduitje #nederlandseblog';
+        $lines[] = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #instagood #travel #familytravel #wanderlust #travelgram #nederland #gezin #weekenduitje #uitje #reisverhaal #roadtrip #familytime #nederlandseblog #photooftheday';
 
         return implode("\n", $lines);
     }

@@ -24,7 +24,7 @@ class SiteSettingController extends Controller
                 'instagram_business_account_id' => SiteSetting::get('instagram_business_account_id'),
                 'instagram_page_access_token' => SiteSetting::get('instagram_page_access_token'),
                 'instagram_token_obtained_at' => SiteSetting::get('instagram_token_obtained_at'),
-                'instagram_hashtags' => SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal',
+                'instagram_hashtags' => SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #instagood #travel #familytravel #wanderlust #travelgram #nederland #gezin #weekenduitje #uitje #reisverhaal #roadtrip #familytime #nederlandseblog #photooftheday',
                 'over_ons_hero_title' => SiteSetting::get('over_ons_hero_title') ?? 'Over Ons',
                 'over_ons_hero_intro' => SiteSetting::get('over_ons_hero_intro') ?? 'Wij zijn een gezin dat van spontaniteit houdt. Geen uitgebreide planningen, geen stress over waar we naartoe gaan. Gewoon instappen en kijken waar de weg ons brengt.',
                 'over_ons_hero_image' => SiteSetting::get('over_ons_hero_image') ?? 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&q=80',

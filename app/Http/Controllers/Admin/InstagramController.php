@@ -20,7 +20,7 @@ class InstagramController extends Controller
                 ->where('mime_type', 'LIKE', 'image/%')
                 ->latest()
                 ->get(['id', 'url', 'filename']),
-            'defaultHashtags' => SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal',
+            'defaultHashtags' => SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #instagood #travel #familytravel #wanderlust #travelgram #nederland #gezin #weekenduitje #uitje #reisverhaal #roadtrip #familytime #nederlandseblog #photooftheday',
         ]);
     }
 
@@ -31,7 +31,7 @@ class InstagramController extends Controller
             'caption' => 'required|string|max:2200',
         ]);
 
-        $hashtags = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #weekenduitje #nederlandseblog #uitje #reisverhaal';
+        $hashtags = SiteSetting::get('instagram_hashtags') ?? '#deongeplanderoute #instagood #travel #familytravel #wanderlust #travelgram #nederland #gezin #weekenduitje #uitje #reisverhaal #roadtrip #familytime #nederlandseblog #photooftheday';
         $fullCaption = $validated['caption']."\n\n".$hashtags;
 
         $request->validate([
