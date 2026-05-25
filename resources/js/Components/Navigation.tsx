@@ -61,14 +61,6 @@ export default function Navigation({ variant = 'page', className = '' }: Navigat
                         >
                             Verhalen
                         </NavLink>
-                        <NavLink 
-                            href="/contact" 
-                            isActive={url === '/contact'}
-                            variant={isHome && !isSticky ? 'light' : 'dark'}
-                        >
-                            Contact
-                        </NavLink>
-                        
                         {/* Dashboard link voor admins */}
                         {user?.is_admin && (
                             <NavLink
@@ -128,9 +120,6 @@ export default function Navigation({ variant = 'page', className = '' }: Navigat
                             </MobileNavLink>
                             <MobileNavLink href="/verhalen" isActive={url.startsWith('/verhalen')}>
                                 Verhalen
-                            </MobileNavLink>
-                            <MobileNavLink href="/contact" isActive={url === '/contact'}>
-                                Contact
                             </MobileNavLink>
                             {user?.is_admin && (
                                 <MobileNavLink href="/admin/dashboard" isActive={url.startsWith('/admin')}>
