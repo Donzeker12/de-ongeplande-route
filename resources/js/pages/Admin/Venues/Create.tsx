@@ -137,7 +137,6 @@ export default function VenuesCreate({ types }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/admin/venues');
     };
 
     const toggleDay = (day: string) => {
@@ -805,8 +804,9 @@ export default function VenuesCreate({ types }: Props) {
                                     </button>
                                 ) : (
                                     <button
-                                        type="submit"
+                                        type="button"
                                         disabled={processing}
+                                        onClick={() => post('/admin/venues')}
                                         className="px-6 py-2.5 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition"
                                     >
                                         {processing ? 'Opslaan...' : 'Locatie opslaan'}

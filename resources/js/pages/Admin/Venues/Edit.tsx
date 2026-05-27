@@ -183,7 +183,6 @@ export default function VenuesEdit({ venue, types }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        patch(`/admin/venues/${venue.id}`);
     };
 
     const toggleDay = (day: string) => {
@@ -847,8 +846,9 @@ export default function VenuesEdit({ venue, types }: Props) {
                                     </button>
                                 ) : (
                                     <button
-                                        type="submit"
+                                        type="button"
                                         disabled={processing}
+                                        onClick={() => patch(`/admin/venues/${venue.id}`)}
                                         className="px-6 py-2.5 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition"
                                     >
                                         {processing ? 'Opslaan...' : 'Wijzigingen opslaan'}
