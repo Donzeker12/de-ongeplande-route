@@ -696,6 +696,7 @@ export default function VenuesCreate({ types }: Props) {
                                             className={inputClass}
                                             placeholder="Amsterdam"
                                         />
+                                        {errors.city && <p className="mt-1 text-xs text-red-400">{errors.city}</p>}
                                     </div>
                                     <div>
                                         <label className={labelClass}>Land</label>
@@ -705,6 +706,7 @@ export default function VenuesCreate({ types }: Props) {
                                             onChange={(e) => setData('country', e.target.value)}
                                             className={inputClass}
                                         />
+                                        {errors.country && <p className="mt-1 text-xs text-red-400">{errors.country}</p>}
                                     </div>
                                 </div>
 
@@ -717,17 +719,19 @@ export default function VenuesCreate({ types }: Props) {
                                         className={inputClass}
                                         placeholder="Plantage Kerklaan 38-40"
                                     />
+                                    {errors.address && <p className="mt-1 text-xs text-red-400">{errors.address}</p>}
                                 </div>
 
                                 <div>
                                     <label className={labelClass}>Website</label>
                                     <input
-                                        type="url"
+                                        type="text"
                                         value={data.website}
                                         onChange={(e) => setData('website', e.target.value)}
                                         className={inputClass}
                                         placeholder="https://www.artis.nl"
                                     />
+                                    {errors.website && <p className="mt-1 text-xs text-red-400">{errors.website}</p>}
                                 </div>
 
                                 <div>
@@ -735,6 +739,7 @@ export default function VenuesCreate({ types }: Props) {
                                         value={data.featured_image}
                                         onChange={(url) => setData('featured_image', url)}
                                     />
+                                    {errors.featured_image && <p className="mt-1 text-xs text-red-400">{errors.featured_image}</p>}
                                 </div>
                             </div>
                         )}
