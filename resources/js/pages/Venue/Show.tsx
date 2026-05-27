@@ -40,6 +40,7 @@ export default function VenueShow({ venue }: Props) {
     const priceRange = (() => {
         const entree = venue.prices?.entree ?? [];
         const prices = entree
+            .filter((e) => e.price != null)
             .map((e) => parseFloat(e.price.replace(',', '.')))
             .filter((p) => !isNaN(p) && p > 0);
         if (prices.length === 0) { return undefined; }
